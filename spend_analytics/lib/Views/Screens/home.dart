@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:spend_analytics/Utils/common.dart';
 import 'package:spend_analytics/Views/UI/ui_text.dart';
+import 'package:spend_analytics/Views/Widgets/item_container.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -41,13 +42,12 @@ class _HomeState extends State<Home> {
           context: context,
           builder: (context) => Dialog(
             child: ListView(
+              padding: EdgeInsets.all(
+                setSize(15.0),
+              ),
               shrinkWrap: true,
               children: [
-                SizedBox(
-                  height: setHeight(50.0),
-                  width: double.infinity,
-                  child: Text('data'),
-                ),
+                ItemContainer(),
               ],
             ),
           ),
