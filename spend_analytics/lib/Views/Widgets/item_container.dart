@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:spend_analytics/Utils/common.dart';
+import 'package:spend_analytics/Views/UI/ui_text.dart';
 
 class ItemContainer extends StatefulWidget {
   @override
@@ -7,6 +8,24 @@ class ItemContainer extends StatefulWidget {
 }
 
 class _ItemContainerState extends State<ItemContainer> {
+  String typeValue = "--Type--", categoryValue = "--Category--";
+  List<String> incomeCategory = [
+        "--Category--",
+        "Work",
+        "Internship",
+        "Buiseness",
+      ],
+      expensesCategory = [
+        "--Category--",
+        "Entertainment",
+        "Food",
+        "Medical",
+        "Gym",
+        "Rent",
+        "Travel",
+        "Clothing",
+        "Bills",
+      ];
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -31,26 +50,92 @@ class _ItemContainerState extends State<ItemContainer> {
         SizedBox(
           height: setHeight(20.0),
         ),
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(
+            horizontal: setSize(10.0),
+          ),
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(30.0),
+              border: Border.all(color: Colors.blue, width: 1.0)),
+          child: DropdownButton<String>(
+            elevation: 12,
+            value: typeValue,
+            items:
+                <String>["--Type--", "Expense", "Income"].map((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Padding(
+                  padding: EdgeInsets.all(
+                    setSize(10.0),
+                  ),
+                  child: Text(
+                    value,
+                    style: UiText.normalText,
+                  ),
+                ),
+              );
+            }).toList(),
+            onChanged: (val) {
+              setState(() {
+                typeValue = val;
+              });
+            },
+          ),
+        ),
+        SizedBox(
+          height: setHeight(20.0),
+        ),
+        if (typeValue != "--Type--")
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(
+              horizontal: setSize(10.0),
+            ),
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(30.0),
+                border: Border.all(color: Colors.blue, width: 1.0)),
+            child: DropdownButton<String>(
+              elevation: 12,
+              value: categoryValue,
+              items: setCategoryList(typeValue).map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Padding(
+                    padding: EdgeInsets.all(
+                      setSize(10.0),
+                    ),
+                    child: Text(
+                      value,
+                      style: UiText.normalText,
+                    ),
+                  ),
+                );
+              }).toList(),
+              onChanged: (val) {
+                setState(() {
+                  categoryValue = val;
+                });
+              },
+            ),
+          ),
+        SizedBox(
+          height: setHeight(20.0),
+        ),
       ],
     );
   }
 
-  String typeDropDown() {
-    String typeValue = "";
-    new DropdownButton<String>(
-      value: typeValue,
-      items: <String>["Income", "Expense"].map((String value) {
-        return new DropdownMenuItem<String>(
-          value: value,
-          child: new Text(value),
-        );
-      }).toList(),
-      onChanged: (val) {
-        setState(() {
-          typeValue = val;
-        });
-      },
-    );
-    return typeValue;
+  List<String> setCategoryList(String type) {
+    setState(() {
+      categoryValue = "--Category--";
+    });
+    switch (type) {
+      case "Income":
+        return incomeCategory;
+      case "Expense":
+        return expensesCategory;
+    }
+    return [];
   }
 }
