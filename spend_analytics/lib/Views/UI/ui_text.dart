@@ -17,8 +17,8 @@ class UiText {
 
   static final TextStyle buttonText = new TextStyle(
     fontFamily: 'Roboto',
-    fontSize: setFontSize(20.0),
-    fontWeight: FontWeight.w600,
+    fontSize: setFontSize(24.0),
+    fontWeight: FontWeight.w700,
     height: setHeight(1.5),
   );
 }

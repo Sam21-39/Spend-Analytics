@@ -60,6 +60,7 @@ class _ItemContainerState extends State<ItemContainer> {
               borderRadius: BorderRadius.circular(30.0),
               border: Border.all(color: Colors.blue, width: 1.0)),
           child: DropdownButton<String>(
+            underline: Container(),
             elevation: 12,
             value: typeValue,
             items:
@@ -97,6 +98,7 @@ class _ItemContainerState extends State<ItemContainer> {
                 borderRadius: BorderRadius.circular(30.0),
                 border: Border.all(color: Colors.blue, width: 1.0)),
             child: DropdownButton<String>(
+              underline: Container(),
               elevation: 12,
               value: categoryValue,
               items: setCategoryList(typeValue).map((String value) {
@@ -123,7 +125,7 @@ class _ItemContainerState extends State<ItemContainer> {
         SizedBox(
           height: setHeight(20.0),
         ),
-        CustomButton(text: "ADD", onPressed: () {}),
+        CustomButton(text: "Add", onPressed: () {}),
         SizedBox(
           height: setHeight(10.0),
         ),
