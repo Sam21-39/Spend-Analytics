@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:spend_analytics/Utils/common.dart';
 import 'package:spend_analytics/Views/UI/ui_text.dart';
+import 'package:spend_analytics/Views/Widgets/custom_button.dart';
 
 class ItemContainer extends StatefulWidget {
   @override
@@ -121,6 +122,10 @@ class _ItemContainerState extends State<ItemContainer> {
           ),
         SizedBox(
           height: setHeight(20.0),
+        ),
+        CustomButton(text: "ADD", onPressed: () {}),
+        SizedBox(
+          height: setHeight(10.0),
         ),
       ],
     );
