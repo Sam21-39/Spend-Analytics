@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:spend_analytics/Model/item_model.dart';
 import 'package:spend_analytics/Utils/common.dart';
+import 'package:spend_analytics/Views/Screens/home.dart';
 import 'package:spend_analytics/Views/UI/ui_text.dart';
 import 'package:spend_analytics/Views/Widgets/custom_button.dart';
 
 class ItemContainer extends StatefulWidget {
+  final callback;
+
+  const ItemContainer({Key key, this.callback}) : super(key: key);
   @override
   _ItemContainerState createState() => _ItemContainerState();
 }
 
 class _ItemContainerState extends State<ItemContainer> {
   String typeValue = "--Type--", categoryValue = "--Category--";
+  String amount = '', category = '';
+  bool isNotValid = false;
   List<String> incomeCategory = [
         "--Category--",
         "Work",
@@ -47,6 +54,11 @@ class _ItemContainerState extends State<ItemContainer> {
               borderRadius: BorderRadius.circular(30.0),
             ),
           ),
+          onChanged: (val) {
+            setState(() {
+              amount = val;
+            });
+          },
         ),
         SizedBox(
           height: setHeight(20.0),
@@ -118,6 +130,7 @@ class _ItemContainerState extends State<ItemContainer> {
               onChanged: (val) {
                 setState(() {
                   categoryValue = val;
+                  category = val;
                 });
               },
             ),
@@ -125,7 +138,39 @@ class _ItemContainerState extends State<ItemContainer> {
         SizedBox(
           height: setHeight(20.0),
         ),
-        CustomButton(text: "Add", onPressed: () {}),
+        isNotValid
+            ? Column(
+                children: [
+                  Text(
+                    'All fields must be filled',
+                    style: UiText.normalText.copyWith(
+                      color: Colors.redAccent,
+                    ),
+                  ),
+                  SizedBox(
+                    height: setHeight(20.0),
+                  ),
+                ],
+              )
+            : Container(),
+        CustomButton(
+          text: "Add",
+          onPressed: () {
+            isFormValid();
+            if (!isNotValid) {
+              spendingItems.add(
+                Items(
+                  amount: int.parse(amount),
+                  category: categoryValue,
+                  type: typeValue,
+                  date: DateTime.now(),
+                ),
+              );
+              widget.callback();
+              Navigator.pop(context);
+            }
+          },
+        ),
         SizedBox(
           height: setHeight(10.0),
         ),
@@ -144,5 +189,14 @@ class _ItemContainerState extends State<ItemContainer> {
         return expensesCategory;
     }
     return [];
+  }
+
+  void isFormValid() {
+    setState(() {
+      if (amount.isEmpty || typeValue == '--Type--' || category.isEmpty)
+        isNotValid = true;
+      else
+        isNotValid = false;
+    });
   }
 }
