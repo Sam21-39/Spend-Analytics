@@ -1,12 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:spend_analytics/Utils/common.dart';
+import 'package:spend_analytics/Views/UI/ui_color.dart';
 
 class UiText {
   static final TextStyle headerText = new TextStyle(
     fontFamily: 'Roboto',
     fontWeight: FontWeight.w900,
-    fontSize: setFontSize(25.0),
+    fontSize: setFontSize(30.0),
+    letterSpacing: setSize(1.1),
     height: setHeight(1.5),
+    color: UiColor.dark,
   );
 
   static final TextStyle normalText = new TextStyle(

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:spend_analytics/Model/item_model.dart';
 import 'package:spend_analytics/Utils/common.dart';
+import 'package:spend_analytics/Views/Screens/note.dart';
+import 'package:spend_analytics/Views/UI/ui_color.dart';
 import 'package:spend_analytics/Views/UI/ui_text.dart';
-import 'package:spend_analytics/Views/Widgets/item_container.dart';
 
 List<Items> spendingItems = [];
 
@@ -16,6 +17,7 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
+      backgroundColor: UiColor.light,
       body: ListView(
         children: [
           spendingItems.isEmpty
@@ -27,11 +29,12 @@ class _HomeState extends State<Home> {
                     Center(
                       child: Padding(
                         padding: EdgeInsets.all(
-                          setSize(20.0),
+                          setSize(30.0),
                         ),
                         child: Text(
                           'Nothing is here. To add some data press the "+" button',
                           style: UiText.normalText,
+                          textAlign: TextAlign.center,
                         ),
                       ),
                     ),
@@ -62,30 +65,17 @@ class _HomeState extends State<Home> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => showDialog(
-          context: context,
-          builder: (context) => Dialog(
-            child: ListView(
-              padding: EdgeInsets.all(
-                setSize(15.0),
-              ),
-              shrinkWrap: true,
-              children: [
-                ItemContainer(
-                  callback: setStateCallback,
-                ),
-              ],
-            ),
+        onPressed: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => Note(),
           ),
         ),
         child: Icon(
           Icons.add,
+          color: UiColor.dark,
+          size: setSize(35.0),
         ),
       ),
     );
-  }
-
-  void setStateCallback() {
-    setState(() {});
   }
 }
