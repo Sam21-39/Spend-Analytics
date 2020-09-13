@@ -13,7 +13,7 @@ class _SplashState extends State<Splash> {
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.height,
       color: Color(0xfff2f2f2),
-      child: SvgPicture.asset('assets/images/food.svg'),
+      child: SvgPicture.asset('assets/images/sp_logo.svg'),
     );
   }
 }
