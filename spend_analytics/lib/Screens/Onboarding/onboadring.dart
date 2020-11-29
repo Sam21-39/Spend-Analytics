@@ -34,7 +34,7 @@ class _OnboardingState extends State<Onboarding> {
                   padding: EdgeInsets.all(
                     setScreenUtill(2.0),
                   ),
-                  child: SvgPicture.asset('assets/images/sp_logo_tp.svg'),
+                  child: SvgPicture.asset('assets/images/sp_logo.svg'),
                 ),
                 SizedBox(
                   height: 30.h,
