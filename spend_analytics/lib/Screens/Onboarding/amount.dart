@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:spend_analytics/Screens/MainDashboard/main_dashboard.dart';
 import 'package:spend_analytics/UI/uicolors.dart';
 import 'package:spend_analytics/UI/uitext.dart';
 import 'package:spend_analytics/Utils/display_utils.dart';
@@ -81,7 +82,12 @@ class _AmountState extends State<Amount> {
           ],
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () {},
+          onPressed: () => Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (context) => MainDashboard(),
+            ),
+            (_) => false,
+          ),
           elevation: 8.0,
           child: Icon(
             Icons.arrow_forward_ios,

@@ -35,7 +35,7 @@ class _ButtonState extends State<Button> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20.0),
         ),
-        elevation: 8.0,
+        elevation: 10.0,
         color: UiColors.primary,
         textColor: UiColors.black,
       ),

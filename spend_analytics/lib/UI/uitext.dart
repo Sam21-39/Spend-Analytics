@@ -20,4 +20,9 @@ class UiText {
     color: UiColors.black,
     fontSize: setScreenUtill(18.0),
   );
+
+  static final normalText = TextStyle(
+    color: UiColors.black,
+    fontSize: setScreenUtill(16.0),
+  );
 }
