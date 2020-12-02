@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:spend_analytics/UI/uicolors.dart';
-import 'package:spend_analytics/UI/uitext.dart';
 import 'package:spend_analytics/Utils/display_utils.dart';
 
 class Button extends StatefulWidget {
@@ -30,14 +28,15 @@ class _ButtonState extends State<Button> {
         onPressed: widget.onPressed,
         child: Text(
           widget.text,
-          style: UiText.buttonText,
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20.0),
         ),
         elevation: 10.0,
-        color: UiColors.primary,
-        textColor: UiColors.black,
+        color: Theme.of(context).buttonColor,
+        disabledColor: Theme.of(context).buttonColor.withOpacity(0.25),
+        disabledTextColor: Theme.of(context).disabledColor,
+        textColor: Theme.of(context).textTheme.button.color,
       ),
     );
   }

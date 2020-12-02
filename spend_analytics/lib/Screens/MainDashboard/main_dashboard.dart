@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:spend_analytics/Screens/MainDashboard/itempage.dart';
 import 'package:spend_analytics/UI/uicolors.dart';
 import 'package:spend_analytics/UI/uitext.dart';
 import 'package:spend_analytics/Utils/display_utils.dart';
+import 'package:spend_analytics/Widgets/navigation_drawer.dart';
 
 class MainDashboard extends StatefulWidget {
   @override
@@ -16,9 +18,9 @@ class _MainDashboardState extends State<MainDashboard> {
       "." +
       DateTime.now().year.toString();
 
-  DateTime date = DateTime.now();
   @override
   Widget build(BuildContext context) {
+    var textTheme = Theme.of(context).textTheme;
     return Material(
       type: MaterialType.canvas,
       child: SafeArea(
@@ -26,7 +28,9 @@ class _MainDashboardState extends State<MainDashboard> {
           appBar: AppBar(
             title: Text(
               'Hi Sam!',
-              style: UiText.headerText,
+              style: textTheme.headline4.copyWith(
+                fontSize: setScreenUtill(32.0),
+              ),
             ),
             actions: [
               Padding(
@@ -35,41 +39,15 @@ class _MainDashboardState extends State<MainDashboard> {
                 ),
                 child: Text(
                   '$today',
-                  style: UiText.normalText.copyWith(
-                    color: UiColors.primary,
+                  style: textTheme.bodyText1.copyWith(
+                    color: Theme.of(context).primaryColor,
                   ),
                 ),
               ),
             ],
-            shape: Border(
-              bottom: BorderSide(
-                color: UiColors.darkGrey,
-              ),
-            ),
           ),
-          drawer: Drawer(
-            elevation: 10.0,
-            child: ListView(
-              children: [
-                DrawerHeader(
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: UiColors.darkGrey,
-                      ),
-                    ),
-                  ),
-                  child: Container(
-                    margin: EdgeInsets.all(
-                      setScreenUtill(10.0),
-                    ),
-                    child: SvgPicture.asset("assets/images/sp_logo.svg"),
-                  ),
-                )
-              ],
-            ),
-          ),
-          backgroundColor: UiColors.background,
+          drawer: NavigationDrawer(),
+          backgroundColor: Theme.of(context).backgroundColor,
           body: ListView.builder(
             itemCount: 1,
             itemBuilder: (context, index) {
@@ -77,12 +55,13 @@ class _MainDashboardState extends State<MainDashboard> {
                 children: [
                   Container(
                     padding: EdgeInsets.all(
-                      setScreenUtill(60.0),
+                      setScreenUtill(40.0),
                     ),
                     child: Text(
                       'Nothing here yet. Let’s add some Spendings by pressing the “+” button....',
-                      style: UiText.subtitleText.copyWith(
-                        color: UiColors.darkGrey.withOpacity(0.7),
+                      style: textTheme.subtitle1.copyWith(
+                        color: Theme.of(context).dividerColor.withOpacity(0.7),
+                        fontSize: setScreenUtill(28.0),
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -92,14 +71,16 @@ class _MainDashboardState extends State<MainDashboard> {
             },
           ),
           floatingActionButton: FloatingActionButton(
-            onPressed: () {},
-            elevation: 8.0,
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => ItemPage(),
+              ),
+            ),
             child: Icon(
               Icons.add,
-              color: UiColors.black,
+              color: Theme.of(context).iconTheme.color,
               size: setScreenUtill(30.0),
             ),
-            backgroundColor: UiColors.primary,
           ),
         ),
       ),

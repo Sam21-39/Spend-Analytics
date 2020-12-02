@@ -31,10 +31,13 @@ class _SplashState extends State<Splash> {
     return Container(
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.height,
-      color: Color(0xfff2f2f2),
+      color: Theme.of(context).backgroundColor,
       child: Center(
-        child: SvgPicture.asset(
-          'assets/images/sp_logo.svg',
+        child: Hero(
+          tag: "logo",
+          child: SvgPicture.asset(
+            'assets/images/sp_logo.svg',
+          ),
         ),
       ),
     );
