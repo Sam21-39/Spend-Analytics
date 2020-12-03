@@ -8,4 +8,5 @@ class UiColors {
   static final Color black = Color(0xff484848);
   static final Color darkGrey = Color(0xff878787);
   static final Color shadow = black.withOpacity(0.25);
+  static final Color brown = Color(0xff7C3C42);
 }

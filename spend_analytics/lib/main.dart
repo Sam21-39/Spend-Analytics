@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:spend_analytics/Screens/splash.dart';
+
 import 'package:spend_analytics/UI/uicolors.dart';
 import 'package:spend_analytics/UI/uitext.dart';
-import 'package:spend_analytics/Utils/display_utils.dart';
 
 void main() {
   runApp(MyApp());

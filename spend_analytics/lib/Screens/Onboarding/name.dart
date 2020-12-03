@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spend_analytics/Screens/Onboarding/amount.dart';
 import 'package:spend_analytics/Utils/display_utils.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:spend_analytics/Utils/sp_constants.dart';
 
 class Name extends StatefulWidget {
   @override
@@ -10,6 +12,8 @@ class Name extends StatefulWidget {
 
 class _NameState extends State<Name> {
   var nameController = TextEditingController();
+
+  var _nameKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -27,63 +31,82 @@ class _NameState extends State<Name> {
           ),
         ),
         backgroundColor: Theme.of(context).backgroundColor,
-        body: ListView(
-          padding: EdgeInsets.all(
-            setScreenUtill(30.0),
-          ),
-          children: [
-            Column(
-              children: [
-                Text(
-                  'What Should I Call You?',
-                  style: Theme.of(context).textTheme.headline4.copyWith(
-                        fontSize: setScreenUtill(36.0),
-                      ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(
-                  height: 100.h,
-                ),
-                TextField(
-                  controller: nameController,
-                  cursorRadius: Radius.circular(20.0),
-                  cursorWidth: 5.w,
-                  textCapitalization: TextCapitalization.words,
-                  style: Theme.of(context).textTheme.bodyText1.copyWith(
-                        fontSize: setScreenUtill(18.0),
-                      ),
-                  decoration: InputDecoration(
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Theme.of(context).dividerColor,
-                        width: 1.0,
-                      ),
-                    ),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Theme.of(context).focusColor,
-                        width: 1.0,
-                      ),
-                    ),
-                    contentPadding: EdgeInsets.only(
-                      left: setScreenUtill(15.0),
-                    ),
-                    hintText: 'Your Name',
-                    hintStyle: Theme.of(context).textTheme.caption.copyWith(
+        body: Form(
+          key: _nameKey,
+          child: ListView(
+            padding: EdgeInsets.all(
+              setScreenUtill(30.0),
+            ),
+            children: [
+              Column(
+                children: [
+                  Text(
+                    'What Should I Call You?',
+                    style: Theme.of(context).textTheme.headline4.copyWith(
+                          fontSize: setScreenUtill(36.0),
+                        ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(
+                    height: 100.h,
+                  ),
+                  TextFormField(
+                    controller: nameController,
+                    cursorRadius: Radius.circular(20.0),
+                    cursorWidth: 5.w,
+                    textCapitalization: TextCapitalization.words,
+                    style: Theme.of(context).textTheme.bodyText1.copyWith(
                           fontSize: setScreenUtill(18.0),
                         ),
+                    decoration: InputDecoration(
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Theme.of(context).dividerColor,
+                          width: 1.0,
+                        ),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Theme.of(context).focusColor,
+                          width: 1.0,
+                        ),
+                      ),
+                      contentPadding: EdgeInsets.only(
+                        left: setScreenUtill(15.0),
+                      ),
+                      hintText: 'Your Name',
+                      hintStyle: Theme.of(context).textTheme.caption.copyWith(
+                            fontSize: setScreenUtill(18.0),
+                          ),
+                    ),
+                    onEditingComplete: () => TextInputAction.done,
+                    onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
+                    validator: (val) => val.isEmpty
+                        ? "Required"
+                        : val.length < 3
+                            ? "Name should contain atleast 3 characters"
+                            : null,
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () => Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => Amount(),
-            ),
-          ),
+          onPressed: () async {
+            SharedPreferences sp = await SharedPreferences.getInstance();
+            if (_nameKey.currentState.validate()) {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => Amount(),
+                ),
+              );
+              sp.setString(
+                NAME,
+                nameController.text.trim(),
+              );
+            }
+          },
           child: Icon(
             Icons.arrow_forward_ios,
             color: Theme.of(context).iconTheme.color,

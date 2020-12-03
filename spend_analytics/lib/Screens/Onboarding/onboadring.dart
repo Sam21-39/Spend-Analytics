@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:spend_analytics/Screens/Onboarding/name.dart';
-import 'package:spend_analytics/UI/uicolors.dart';
-import 'package:spend_analytics/UI/uitext.dart';
 import 'package:spend_analytics/Utils/display_utils.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:spend_analytics/Widgets/button.dart';
