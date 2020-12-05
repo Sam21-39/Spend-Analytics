@@ -8,10 +8,14 @@ import 'package:spend_analytics/Widgets/button.dart';
 
 class ItemPage extends StatefulWidget {
   final onSaveCallback;
+  final bool isUpdating;
+  final SpendingModel spendingModel;
 
   const ItemPage({
     Key key,
     this.onSaveCallback,
+    this.isUpdating = false,
+    this.spendingModel,
   }) : super(key: key);
   @override
   _ItemPageState createState() => _ItemPageState();
@@ -25,6 +29,18 @@ class _ItemPageState extends State<ItemPage> {
   DbHelper _dbHelper = DbHelper.dbInstance;
 
   GlobalKey<FormState> _amountKey = GlobalKey();
+  @override
+  void initState() {
+    super.initState();
+    if (widget.isUpdating) {
+      setState(() {
+        amountController.text = widget.spendingModel.amount.toString();
+        descriptionController.text = widget.spendingModel.description;
+        choiceIndex = choiceType.indexOf(widget.spendingModel.type);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     var textTheme = Theme.of(context).textTheme;
@@ -166,23 +182,44 @@ class _ItemPageState extends State<ItemPage> {
                     ),
                     Button(
                       onPressed: choiceIndex != null &&
-                              amountController.text.length > 0
+                              amountController.text.length > 0 &&
+                              descriptionController.text.trim().length > 0
                           ? () async {
                               if (_amountKey.currentState.validate()) {
-                                SpendingModel spm = SpendingModel(
-                                  type: choiceType[choiceIndex],
-                                  amount: int.parse(
-                                    amountController.text.trim(),
-                                  ),
-                                  datetime: DateTime.now().day.toString() +
-                                      "/" +
-                                      DateTime.now().month.toString() +
-                                      "/" +
-                                      DateTime.now().year.toString(),
-                                  description: descriptionController.text,
-                                );
-                                var dbH = await _dbHelper.insert(spm.toJson());
-                                print(dbH);
+                                if (widget.isUpdating) {
+                                  SpendingModel spm = SpendingModel(
+                                    id: widget.spendingModel.id,
+                                    type: choiceType[choiceIndex],
+                                    amount: int.parse(
+                                      amountController.text.trim(),
+                                    ),
+                                    datetime: DateTime.now().day.toString() +
+                                        "/" +
+                                        DateTime.now().month.toString() +
+                                        "/" +
+                                        DateTime.now().year.toString(),
+                                    description: descriptionController.text,
+                                  );
+                                  var dbH =
+                                      await _dbHelper.update(spm.toJson());
+                                  print(dbH);
+                                } else {
+                                  SpendingModel spm = SpendingModel(
+                                    type: choiceType[choiceIndex],
+                                    amount: int.parse(
+                                      amountController.text.trim(),
+                                    ),
+                                    datetime: DateTime.now().day.toString() +
+                                        "/" +
+                                        DateTime.now().month.toString() +
+                                        "/" +
+                                        DateTime.now().year.toString(),
+                                    description: descriptionController.text,
+                                  );
+                                  var dbH =
+                                      await _dbHelper.insert(spm.toJson());
+                                  print(dbH);
+                                }
                                 widget.onSaveCallback();
                                 Navigator.pop(context, true);
                               }

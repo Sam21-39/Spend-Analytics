@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:spend_analytics/Model/spending_model.dart';
 import 'package:spend_analytics/Screens/MainDashboard/itempage.dart';
 import 'package:spend_analytics/Services/db_helper.dart';
@@ -14,9 +15,9 @@ class MainDashboard extends StatefulWidget {
 
 class _MainDashboardState extends State<MainDashboard> {
   String today = DateTime.now().day.toString() +
-      "." +
+      "/" +
       DateTime.now().month.toString() +
-      "." +
+      "/" +
       DateTime.now().year.toString();
 
   DbHelper _dbHelper = DbHelper.dbInstance;
@@ -67,10 +68,8 @@ class _MainDashboardState extends State<MainDashboard> {
                   height: double.infinity,
                   child: Loading(),
                 )
-              : ListView.builder(
-                  itemCount: 1,
-                  itemBuilder: (context, index) {
-                    return Column(
+              : spm.isEmpty
+                  ? Column(
                       children: [
                         Container(
                           padding: EdgeInsets.all(
@@ -88,9 +87,90 @@ class _MainDashboardState extends State<MainDashboard> {
                           ),
                         ),
                       ],
-                    );
-                  },
-                ),
+                    )
+                  : ListView.builder(
+                      itemCount: spm.length,
+                      itemBuilder: (context, index) {
+                        var cards = Theme.of(context).cardTheme;
+
+                        return InkWell(
+                          onTap: () => showDialog(
+                            context: (context),
+                            builder: (context) => showEditDialog(
+                              spm[index],
+                            ),
+                          ),
+                          child: Container(
+                            padding: EdgeInsets.all(
+                              setScreenUtill(10.0),
+                            ),
+                            margin: EdgeInsets.only(
+                              bottom: setScreenUtill(10.0),
+                            ),
+                            child: Card(
+                              shape: cards.shape,
+                              elevation: cards.elevation,
+                              color: cards.color,
+                              shadowColor: cards.shadowColor,
+                              child: Padding(
+                                padding: EdgeInsets.all(
+                                  setScreenUtill(20.0),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          spm[index].amount.toString(),
+                                          style: textTheme.headline4,
+                                        ),
+                                        Text(
+                                          spm[index].datetime,
+                                          style: textTheme.bodyText1.copyWith(
+                                            color: Theme.of(context).focusColor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(
+                                      height: setScreenUtill(10.0),
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          spm[index].description,
+                                          style: textTheme.caption,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        Container(
+                                          width: setScreenUtill(75.0),
+                                          height: setScreenUtill(75.0),
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(20.0),
+                                            border: Border.all(
+                                              color: Theme.of(context)
+                                                  .primaryColor,
+                                            ),
+                                          ),
+                                          child: SvgPicture.asset(
+                                              "assets/images/${spm[index].type.toLowerCase()}.svg"),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
           floatingActionButton: FloatingActionButton(
             onPressed: () {
               Navigator.of(context)
@@ -123,18 +203,134 @@ class _MainDashboardState extends State<MainDashboard> {
   }
 
   void getDbValues() async {
+    spm.clear();
     var data = await _dbHelper.queryAll();
-    data.map(
-      (e) => spm.add(
-        SpendingModel.fromJson(e),
-      ),
-    );
+    if (data.isNotEmpty)
+      data.forEach(
+        (e) => spm.add(
+          SpendingModel.fromJson(e),
+        ),
+      );
     if (data != null) {
       setState(() {
         isLoading = false;
       });
+      print(data);
     }
-    print(spm);
-    print(data);
+  }
+
+  Widget showEditDialog(SpendingModel spm) {
+    var dialog = Theme.of(context).dialogTheme;
+    var texts = Theme.of(context).textTheme;
+    return Dialog(
+      backgroundColor: dialog.backgroundColor,
+      elevation: dialog.elevation,
+      shape: dialog.shape,
+      child: ListView(
+        shrinkWrap: true,
+        children: [
+          Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    spm.amount.toString(),
+                    style: texts.headline4,
+                  ),
+                  Text(
+                    spm.datetime,
+                    style: texts.bodyText1.copyWith(
+                      color: Theme.of(context).focusColor,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: setScreenUtill(10.0),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Flexible(
+                    child: Text(
+                      spm.description,
+                      style: texts.caption,
+                    ),
+                  ),
+                  Column(
+                    children: [
+                      Container(
+                        width: setScreenUtill(75.0),
+                        height: setScreenUtill(75.0),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20.0),
+                          border: Border.all(
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        ),
+                        child: SvgPicture.asset(
+                            "assets/images/${spm.type.toLowerCase()}.svg"),
+                      ),
+                      SizedBox(
+                        height: setScreenUtill(10.0),
+                      ),
+                      Text(
+                        "Expense Type:",
+                        style: texts.caption,
+                      ),
+                      Text(
+                        spm.type,
+                        style: texts.caption.copyWith(
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: setScreenUtill(20.0),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      Icons.edit,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                    onPressed: () => Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ItemPage(
+                          spendingModel: spm,
+                          isUpdating: true,
+                          onSaveCallback: getDbValues,
+                        ),
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      Icons.delete,
+                      color: Theme.of(context).errorColor,
+                    ),
+                    onPressed: () async {
+                      _dbHelper.delete(spm.id);
+                      getDbValues();
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              )
+            ],
+          ),
+        ],
+        padding: EdgeInsets.all(
+          setScreenUtill(20.0),
+        ),
+      ),
+    );
   }
 }
