@@ -215,7 +215,6 @@ class _MainDashboardState extends State<MainDashboard> {
       setState(() {
         isLoading = false;
       });
-      print(data);
     }
   }
 
