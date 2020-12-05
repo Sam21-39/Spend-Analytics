@@ -15,9 +15,9 @@ class MainDashboard extends StatefulWidget {
 
 class _MainDashboardState extends State<MainDashboard> {
   String today = DateTime.now().day.toString() +
-      "/" +
+      "." +
       DateTime.now().month.toString() +
-      "/" +
+      "." +
       DateTime.now().year.toString();
 
   DbHelper _dbHelper = DbHelper.dbInstance;
@@ -62,13 +62,9 @@ class _MainDashboardState extends State<MainDashboard> {
           ),
           drawer: NavigationDrawer(),
           backgroundColor: Theme.of(context).backgroundColor,
-          body: isLoading
-              ? Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  child: Loading(),
-                )
-              : spm.isEmpty
+          body: ListView(
+            children: [
+              spm.isEmpty
                   ? Column(
                       children: [
                         Container(
@@ -89,6 +85,8 @@ class _MainDashboardState extends State<MainDashboard> {
                       ],
                     )
                   : ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
                       itemCount: spm.length,
                       itemBuilder: (context, index) {
                         var cards = Theme.of(context).cardTheme;
@@ -108,6 +106,7 @@ class _MainDashboardState extends State<MainDashboard> {
                               bottom: setScreenUtill(10.0),
                             ),
                             child: Card(
+                              borderOnForeground: true,
                               shape: cards.shape,
                               elevation: cards.elevation,
                               color: cards.color,
@@ -141,11 +140,13 @@ class _MainDashboardState extends State<MainDashboard> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text(
-                                          spm[index].description,
-                                          style: textTheme.caption,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
+                                        Flexible(
+                                          child: Text(
+                                            spm[index].description,
+                                            style: textTheme.caption,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                         ),
                                         Container(
                                           width: setScreenUtill(75.0),
@@ -171,6 +172,8 @@ class _MainDashboardState extends State<MainDashboard> {
                         );
                       },
                     ),
+            ],
+          ),
           floatingActionButton: FloatingActionButton(
             onPressed: () {
               Navigator.of(context)
