@@ -3,7 +3,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:spend_analytics/Model/spending_model.dart';
 import 'package:spend_analytics/Screens/MainDashboard/itempage.dart';
 import 'package:spend_analytics/Services/db_helper.dart';
-import 'package:spend_analytics/UI/loading.dart';
 
 import 'package:spend_analytics/Utils/display_utils.dart';
 import 'package:spend_analytics/Widgets/navigation_drawer.dart';

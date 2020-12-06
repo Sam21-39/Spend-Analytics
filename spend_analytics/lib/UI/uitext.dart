@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:spend_analytics/UI/uicolors.dart';
 
 class UiText {
   static final TextStyle headerText = TextStyle(

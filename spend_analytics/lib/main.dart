@@ -1,14 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spend_analytics/Screens/splash.dart';
 
 import 'package:spend_analytics/UI/uicolors.dart';
 import 'package:spend_analytics/UI/uitext.dart';
+import 'package:spend_analytics/Utils/sp_constants.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(
+    MyApp(
+      key: appKey,
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
+GlobalKey appKey = GlobalKey();
+bool isDarkMode = false;
+
+class MyApp extends StatefulWidget {
+  const MyApp({Key key}) : super(key: key);
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    SharedPreferences.getInstance().then((sp) {
+      setState(() {
+        isDarkMode = sp.getBool(THEME) == null ? false : sp.getBool(THEME);
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -16,7 +41,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: lightTheme(),
       darkTheme: darkTheme(),
-      themeMode: ThemeMode.light,
+      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
       home: Splash(),
     );
   }
