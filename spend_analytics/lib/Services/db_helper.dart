@@ -64,7 +64,10 @@ class DbHelper {
   // DATABASE QUERY FETCH ALL ROW
   Future<List<Map<String, dynamic>>> queryAll() async {
     Database db = await dbInstance.databse;
-    return await db.query(_tableName);
+    return await db.query(
+      _tableName,
+      where: "ORDER BY $_columnId DESC",
+    );
   }
 
   // DATABASE QUERY FETCH SELECTED ROW
@@ -72,7 +75,7 @@ class DbHelper {
     Database db = await dbInstance.databse;
     return await db.query(
       _tableName,
-      where: "$_columnDateTime LIKE ?",
+      where: "$_columnDateTime LIKE ? ORDER BY $_columnId DESC",
       whereArgs: ["%/$month/%"],
     );
   }

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:spend_analytics/Model/spending_model.dart';
@@ -60,118 +61,152 @@ class _MainDashboardState extends State<MainDashboard> {
             ],
           ),
           drawer: NavigationDrawer(),
-          backgroundColor: Theme.of(context).backgroundColor,
-          body: ListView(
-            children: [
-              spm.isEmpty
-                  ? Column(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.all(
-                            setScreenUtill(40.0),
-                          ),
-                          child: Text(
-                            'Nothing here yet. Let’s add some Spendings by pressing the “+” button....',
-                            style: textTheme.subtitle1.copyWith(
-                              color: Theme.of(context)
-                                  .dividerColor
-                                  .withOpacity(0.7),
-                              fontSize: setScreenUtill(28.0),
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ],
-                    )
-                  : ListView.builder(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemCount: spm.length,
-                      itemBuilder: (context, index) {
-                        var cards = Theme.of(context).cardTheme;
-
-                        return InkWell(
-                          onTap: () => showDialog(
-                            context: (context),
-                            builder: (context) => showEditDialog(
-                              spm[index],
-                            ),
-                          ),
-                          child: Container(
+          //backgroundColor: Theme.of(context).backgroundColor,
+          body: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topRight,
+                end: Alignment.bottomLeft,
+                tileMode: TileMode.clamp,
+                stops: [
+                  0.1,
+                  0.3,
+                  0.7,
+                  0.9,
+                ],
+                colors: [
+                  Theme.of(context).focusColor.withOpacity(0.5),
+                  Theme.of(context).backgroundColor.withOpacity(0.75),
+                  Theme.of(context).primaryColor.withOpacity(0.25),
+                  Theme.of(context).backgroundColor,
+                ],
+              ),
+            ),
+            child: ListView(
+              children: [
+                Align(
+                  alignment: Alignment.topRight,
+                  child: IconButton(
+                    icon: Icon(Icons.filter_list_rounded),
+                    onPressed: () {
+                      showCupertinoDialog(
+                        context: context,
+                        builder: (context) => Dialog(),
+                      );
+                    },
+                  ),
+                ),
+                spm.isEmpty
+                    ? Column(
+                        children: [
+                          Container(
                             padding: EdgeInsets.all(
-                              setScreenUtill(10.0),
+                              setScreenUtill(40.0),
                             ),
-                            margin: EdgeInsets.only(
-                              bottom: setScreenUtill(10.0),
+                            child: Text(
+                              'Nothing here yet. Let’s add some Spendings by pressing the “+” button....',
+                              style: textTheme.subtitle1.copyWith(
+                                color: Theme.of(context)
+                                    .dividerColor
+                                    .withOpacity(0.7),
+                                fontSize: setScreenUtill(28.0),
+                              ),
+                              textAlign: TextAlign.center,
                             ),
-                            child: Card(
-                              borderOnForeground: true,
-                              shape: cards.shape,
-                              elevation: cards.elevation,
-                              color: cards.color,
-                              shadowColor: cards.shadowColor,
-                              child: Padding(
-                                padding: EdgeInsets.all(
-                                  setScreenUtill(20.0),
-                                ),
-                                child: Column(
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          spm[index].amount.toString(),
-                                          style: textTheme.headline4,
-                                        ),
-                                        Text(
-                                          spm[index].datetime,
-                                          style: textTheme.bodyText1.copyWith(
-                                            color: Theme.of(context).focusColor,
+                          ),
+                        ],
+                      )
+                    : ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: spm.length,
+                        itemBuilder: (context, index) {
+                          var cards = Theme.of(context).cardTheme;
+
+                          return InkWell(
+                            onTap: () => showDialog(
+                              context: (context),
+                              builder: (context) => showEditDialog(
+                                spm[index],
+                              ),
+                            ),
+                            child: Container(
+                              padding: EdgeInsets.all(
+                                setScreenUtill(10.0),
+                              ),
+                              margin: EdgeInsets.only(
+                                bottom: setScreenUtill(10.0),
+                              ),
+                              child: Card(
+                                borderOnForeground: true,
+                                shape: cards.shape,
+                                elevation: cards.elevation,
+                                color: cards.color,
+                                shadowColor: cards.shadowColor,
+                                child: Padding(
+                                  padding: EdgeInsets.all(
+                                    setScreenUtill(20.0),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            spm[index].amount.toString(),
+                                            style: textTheme.headline4,
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(
-                                      height: setScreenUtill(10.0),
-                                    ),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Flexible(
-                                          child: Text(
-                                            spm[index].description,
-                                            style: textTheme.caption,
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        Container(
-                                          width: setScreenUtill(75.0),
-                                          height: setScreenUtill(75.0),
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(20.0),
-                                            border: Border.all(
-                                              color: Theme.of(context)
-                                                  .primaryColor,
+                                          Text(
+                                            spm[index].datetime,
+                                            style: textTheme.bodyText1.copyWith(
+                                              color:
+                                                  Theme.of(context).focusColor,
                                             ),
                                           ),
-                                          child: SvgPicture.asset(
-                                              "assets/images/${spm[index].type.toLowerCase()}.svg"),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                        ],
+                                      ),
+                                      SizedBox(
+                                        height: setScreenUtill(10.0),
+                                      ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Flexible(
+                                            child: Text(
+                                              spm[index].description,
+                                              style: textTheme.caption,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          Container(
+                                            width: setScreenUtill(75.0),
+                                            height: setScreenUtill(75.0),
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(20.0),
+                                              border: Border.all(
+                                                color: Theme.of(context)
+                                                    .primaryColor,
+                                              ),
+                                            ),
+                                            child: SvgPicture.asset(
+                                                "assets/images/${spm[index].type.toLowerCase()}.svg"),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
-            ],
+                          );
+                        },
+                      ),
+              ],
+            ),
           ),
           floatingActionButton: FloatingActionButton(
             onPressed: () {
@@ -206,7 +241,9 @@ class _MainDashboardState extends State<MainDashboard> {
 
   void getDbValues() async {
     spm.clear();
-    var data = await _dbHelper.queryAll();
+    var data = await _dbHelper.querySelected(
+      DateTime.now().month.toString(),
+    );
     if (data.isNotEmpty)
       data.forEach(
         (e) => spm.add(
