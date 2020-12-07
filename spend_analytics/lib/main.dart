@@ -148,6 +148,16 @@ class _MyAppState extends State<MyApp> {
       iconTheme: IconThemeData(
         color: Colors.white,
       ),
+      popupMenuTheme: PopupMenuThemeData(
+        textStyle: Theme.of(context).textTheme.caption.copyWith(
+              color: Colors.white,
+            ),
+        color: UiColors.black,
+        elevation: 10.0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.0),
+        ),
+      ),
       visualDensity: VisualDensity.adaptivePlatformDensity,
     );
   }
@@ -175,7 +185,7 @@ class _MyAppState extends State<MyApp> {
         subtitle1: UiText.subtitleText.copyWith(color: UiColors.black),
         button: UiText.buttonText.copyWith(color: UiColors.black),
         caption: UiText.normalText.copyWith(
-          color: UiColors.darkGrey.withOpacity(0.7),
+          color: UiColors.darkGrey.withOpacity(0.8),
         ),
       ),
       focusColor: UiColors.lightBlue,
@@ -243,6 +253,14 @@ class _MyAppState extends State<MyApp> {
       ),
       iconTheme: IconThemeData(
         color: UiColors.black,
+      ),
+      popupMenuTheme: PopupMenuThemeData(
+        textStyle: UiText.normalText,
+        color: UiColors.violet,
+        elevation: 10.0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.0),
+        ),
       ),
       visualDensity: VisualDensity.adaptivePlatformDensity,
     );

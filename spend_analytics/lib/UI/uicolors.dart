@@ -9,5 +9,5 @@ class UiColors {
   static final Color darkGrey = Color(0xff594D67);
   static final Color shadow = black.withOpacity(0.25);
   static final Color brown = Color(0xff7C3C42);
-  static final Color violet = Color(0xFFC297D7);
+  static final Color violet = Color(0xFF985FB4);
 }

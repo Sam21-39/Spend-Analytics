@@ -195,7 +195,8 @@ class _ItemPageState extends State<ItemPage> {
                                     ),
                                     datetime: DateTime.now().day.toString() +
                                         "/" +
-                                        DateTime.now().month.toString() +
+                                        (DateTime.now().month)
+                                            .toString() + // this code needs to be changed
                                         "/" +
                                         DateTime.now().year.toString(),
                                     description: descriptionController.text,

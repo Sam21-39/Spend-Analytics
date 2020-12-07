@@ -66,7 +66,7 @@ class DbHelper {
     Database db = await dbInstance.databse;
     return await db.query(
       _tableName,
-      where: "ORDER BY $_columnId DESC",
+      orderBy: "$_columnId DESC",
     );
   }
 
