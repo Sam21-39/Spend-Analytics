@@ -161,14 +161,14 @@ class _MyAppState extends State<MyApp> {
         color: UiColors.black,
       ),
       bannerTheme: MaterialBannerThemeData(
-        backgroundColor: Colors.white,
+        backgroundColor: UiColors.violet,
         contentTextStyle: UiText.normalText,
       ),
       buttonColor: UiColors.primary,
       disabledColor: UiColors.darkGrey.withOpacity(0.5),
       cursorColor: UiColors.primary,
       dividerColor: UiColors.darkGrey,
-      canvasColor: Colors.white,
+      canvasColor: UiColors.background,
       textTheme: TextTheme(
         headline4: UiText.headerText.copyWith(color: UiColors.black),
         bodyText1: UiText.normalText.copyWith(color: UiColors.black),
@@ -181,7 +181,7 @@ class _MyAppState extends State<MyApp> {
       focusColor: UiColors.lightBlue,
       errorColor: UiColors.red,
       cardTheme: CardTheme(
-        color: Colors.white,
+        color: UiColors.violet,
         elevation: 8.0,
         shadowColor: UiColors.shadow,
         shape: RoundedRectangleBorder(
@@ -191,7 +191,7 @@ class _MyAppState extends State<MyApp> {
       fontFamily: 'Roboto',
       dialogTheme: DialogTheme(
         titleTextStyle: UiText.headerText,
-        backgroundColor: Colors.white,
+        backgroundColor: UiColors.violet,
         elevation: 10.0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20.0),
@@ -202,7 +202,7 @@ class _MyAppState extends State<MyApp> {
         elevation: 10.0,
         shadowColor: UiColors.shadow,
         selectedShadowColor: UiColors.lightBlue.withOpacity(0.25),
-        backgroundColor: Colors.white,
+        backgroundColor: UiColors.violet,
         disabledColor: UiColors.darkGrey.withOpacity(0.5),
         selectedColor: UiColors.primary.withOpacity(0.5),
         secondarySelectedColor: UiColors.lightBlue.withOpacity(0.5),
