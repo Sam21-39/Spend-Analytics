@@ -255,7 +255,7 @@ class _MyAppState extends State<MyApp> {
         color: UiColors.black,
       ),
       popupMenuTheme: PopupMenuThemeData(
-        textStyle: UiText.normalText,
+        textStyle: Theme.of(context).textTheme.bodyText1,
         color: UiColors.violet,
         elevation: 10.0,
         shape: RoundedRectangleBorder(
