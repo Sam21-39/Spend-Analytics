@@ -87,7 +87,7 @@ class _MyAppState extends State<MyApp> {
       focusColor: UiColors.lightBlue,
       errorColor: UiColors.red,
       cardTheme: CardTheme(
-        color: UiColors.black,
+        color: UiColors.black.withBlue(60),
         elevation: 8.0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.0),
@@ -108,7 +108,7 @@ class _MyAppState extends State<MyApp> {
       chipTheme: ChipThemeData(
         elevation: 10.0,
         selectedShadowColor: UiColors.lightBlue.withOpacity(0.25),
-        backgroundColor: UiColors.black,
+        backgroundColor: UiColors.black.withBlue(60),
         disabledColor: UiColors.darkGrey.withOpacity(0.5),
         selectedColor: UiColors.primary.withOpacity(0.5),
         secondarySelectedColor: UiColors.lightBlue.withOpacity(0.5),

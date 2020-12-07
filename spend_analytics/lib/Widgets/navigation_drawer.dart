@@ -6,12 +6,21 @@ import 'package:spend_analytics/Utils/sp_constants.dart';
 import 'package:spend_analytics/main.dart';
 
 class NavigationDrawer extends StatefulWidget {
+  final tabChangeCallback;
+  final bool isAnalysis;
+
+  const NavigationDrawer({
+    Key key,
+    this.tabChangeCallback,
+    this.isAnalysis = false,
+  }) : super(key: key);
   @override
   _NavigationDrawerState createState() => _NavigationDrawerState();
 }
 
 class _NavigationDrawerState extends State<NavigationDrawer> {
   bool isDarkTheme = false;
+
   @override
   void initState() {
     super.initState();
@@ -83,6 +92,32 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
             trailing: Icon(
               Icons.arrow_forward_ios_rounded,
             ),
+          ),
+          Divider(
+            thickness: 1.0,
+            color: Theme.of(context).dividerColor,
+          ),
+          ListTile(
+            selected: !widget.isAnalysis,
+            leading: Icon(
+              Icons.home_rounded,
+            ),
+            title: Text("Home"),
+            onTap: () {
+              widget.tabChangeCallback(false);
+              Navigator.pop(context);
+            },
+          ),
+          ListTile(
+            selected: widget.isAnalysis,
+            leading: Icon(
+              Icons.bar_chart_rounded,
+            ),
+            title: Text("Spending Anlysis"),
+            onTap: () {
+              widget.tabChangeCallback(true);
+              Navigator.pop(context);
+            },
           ),
         ],
       ),
