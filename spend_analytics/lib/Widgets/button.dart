@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:spend_analytics/UI/uicolors.dart';
 import 'package:spend_analytics/Utils/display_utils.dart';
 
 class Button extends StatefulWidget {
@@ -34,7 +35,7 @@ class _ButtonState extends State<Button> {
         ),
         elevation: 10.0,
         color: Theme.of(context).buttonColor,
-        disabledColor: Theme.of(context).buttonColor.withOpacity(0.25),
+        disabledColor: UiColors.lightRed.withOpacity(0.5),
         disabledTextColor: Theme.of(context).disabledColor,
         textColor: Theme.of(context).textTheme.button.color,
       ),

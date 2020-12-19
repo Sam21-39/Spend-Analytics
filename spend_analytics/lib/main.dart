@@ -40,10 +40,18 @@ class _MyAppState extends State<MyApp> {
     SystemChrome.setSystemUIOverlayStyle(
       isDarkMode
           ? SystemUiOverlayStyle.dark.copyWith(
+              statusBarBrightness: Brightness.light,
+              statusBarIconBrightness: Brightness.light,
+              systemNavigationBarDividerColor: UiColors.darkGrey,
               systemNavigationBarColor: UiColors.black,
+              systemNavigationBarIconBrightness: Brightness.light,
             )
           : SystemUiOverlayStyle.light.copyWith(
+              statusBarBrightness: Brightness.dark,
+              statusBarIconBrightness: Brightness.dark,
+              systemNavigationBarDividerColor: UiColors.darkGrey,
               systemNavigationBarColor: UiColors.background,
+              systemNavigationBarIconBrightness: Brightness.dark,
             ),
     );
     return MaterialApp(
@@ -87,10 +95,16 @@ class _MyAppState extends State<MyApp> {
       focusColor: UiColors.lightBlue,
       errorColor: UiColors.red,
       cardTheme: CardTheme(
-        color: UiColors.black.withBlue(60),
+        color: UiColors.lightRed,
+        shadowColor: UiColors.lightRed.withOpacity(0.75),
         elevation: 8.0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.0),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(12.0),
+            topRight: Radius.circular(62.0),
+            bottomLeft: Radius.circular(12.0),
+            bottomRight: Radius.circular(12.0),
+          ),
         ),
       ),
       fontFamily: 'Roboto',
@@ -107,8 +121,9 @@ class _MyAppState extends State<MyApp> {
       dialogBackgroundColor: UiColors.shadow,
       chipTheme: ChipThemeData(
         elevation: 10.0,
+        shadowColor: UiColors.lightRed.withOpacity(0.75),
         selectedShadowColor: UiColors.lightBlue.withOpacity(0.25),
-        backgroundColor: UiColors.black.withBlue(60),
+        backgroundColor: UiColors.lightRed,
         disabledColor: UiColors.darkGrey.withOpacity(0.5),
         selectedColor: UiColors.primary.withOpacity(0.5),
         secondarySelectedColor: UiColors.lightBlue.withOpacity(0.5),
@@ -126,6 +141,9 @@ class _MyAppState extends State<MyApp> {
         elevation: 10.0,
         backgroundColor: UiColors.primary,
         foregroundColor: UiColors.primary.withOpacity(0.7),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(22.0),
+        ),
       ),
       buttonTheme: ButtonThemeData(
         buttonColor: UiColors.primary,
@@ -136,7 +154,7 @@ class _MyAppState extends State<MyApp> {
       ),
       accentColorBrightness: Brightness.dark,
       appBarTheme: AppBarTheme(
-        elevation: 8.0,
+        elevation: 0.0,
         textTheme: TextTheme(
           headline1: UiText.headerText.copyWith(color: Colors.white),
         ),
@@ -152,7 +170,7 @@ class _MyAppState extends State<MyApp> {
         textStyle: Theme.of(context).textTheme.caption.copyWith(
               color: Colors.white,
             ),
-        color: UiColors.black,
+        color: UiColors.lightRed,
         elevation: 10.0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20.0),
@@ -171,7 +189,7 @@ class _MyAppState extends State<MyApp> {
         color: UiColors.black,
       ),
       bannerTheme: MaterialBannerThemeData(
-        backgroundColor: UiColors.violet,
+        backgroundColor: UiColors.background,
         contentTextStyle: UiText.normalText,
       ),
       buttonColor: UiColors.primary,
@@ -191,17 +209,22 @@ class _MyAppState extends State<MyApp> {
       focusColor: UiColors.lightBlue,
       errorColor: UiColors.red,
       cardTheme: CardTheme(
-        color: UiColors.violet,
+        color: UiColors.lightRed,
         elevation: 8.0,
-        shadowColor: UiColors.shadow,
+        shadowColor: UiColors.lightRed.withOpacity(0.75),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.0),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(12.0),
+            topRight: Radius.circular(62.0),
+            bottomLeft: Radius.circular(12.0),
+            bottomRight: Radius.circular(12.0),
+          ),
         ),
       ),
       fontFamily: 'Roboto',
       dialogTheme: DialogTheme(
         titleTextStyle: UiText.headerText,
-        backgroundColor: UiColors.violet,
+        backgroundColor: UiColors.background.withOpacity(0.8),
         elevation: 10.0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20.0),
@@ -210,9 +233,9 @@ class _MyAppState extends State<MyApp> {
       dialogBackgroundColor: UiColors.shadow,
       chipTheme: ChipThemeData(
         elevation: 10.0,
-        shadowColor: UiColors.shadow,
+        shadowColor: UiColors.lightRed.withOpacity(0.75),
         selectedShadowColor: UiColors.lightBlue.withOpacity(0.25),
-        backgroundColor: UiColors.violet,
+        backgroundColor: UiColors.lightRed,
         disabledColor: UiColors.darkGrey.withOpacity(0.5),
         selectedColor: UiColors.primary.withOpacity(0.5),
         secondarySelectedColor: UiColors.lightBlue.withOpacity(0.5),
@@ -230,6 +253,9 @@ class _MyAppState extends State<MyApp> {
         elevation: 10.0,
         backgroundColor: UiColors.primary,
         foregroundColor: UiColors.primary.withOpacity(0.7),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(22.0),
+        ),
       ),
       buttonTheme: ButtonThemeData(
         buttonColor: UiColors.primary,
@@ -241,8 +267,7 @@ class _MyAppState extends State<MyApp> {
       accentColorBrightness: Brightness.light,
       shadowColor: UiColors.shadow,
       appBarTheme: AppBarTheme(
-        elevation: 8.0,
-        shadowColor: UiColors.shadow,
+        elevation: 0.0,
         textTheme: TextTheme(
           headline1: UiText.headerText,
         ),
@@ -255,8 +280,10 @@ class _MyAppState extends State<MyApp> {
         color: UiColors.black,
       ),
       popupMenuTheme: PopupMenuThemeData(
-        textStyle: Theme.of(context).textTheme.bodyText1,
-        color: UiColors.violet,
+        textStyle: Theme.of(context).textTheme.bodyText1.copyWith(
+              color: Colors.white,
+            ),
+        color: UiColors.lightRed,
         elevation: 10.0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20.0),
