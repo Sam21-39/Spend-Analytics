@@ -9,4 +9,5 @@ class UiColors {
   static final Color darkGrey = Color(0xff594D67);
   static final Color shadow = black.withOpacity(0.25);
   static final Color lightRed = red.withOpacity(0.7);
+  static final Color orange = Color(0xffC9704A);
 }
