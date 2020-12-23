@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:spend_analytics/UI/uicolors.dart';
 import 'package:spend_analytics/Utils/display_utils.dart';
 import 'package:spend_analytics/Utils/sp_constants.dart';
 import 'package:spend_analytics/main.dart';
+import 'package:toast/toast.dart';
 
 class NavigationDrawer extends StatefulWidget {
   final tabChangeCallback;
   final bool isAnalysis;
-
+  final bool isSpendingsAdded;
   const NavigationDrawer({
     Key key,
     this.tabChangeCallback,
     this.isAnalysis = false,
+    this.isSpendingsAdded = false,
   }) : super(key: key);
   @override
   _NavigationDrawerState createState() => _NavigationDrawerState();
@@ -101,6 +104,8 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
             selected: !widget.isAnalysis,
             leading: Icon(
               Icons.home_rounded,
+              color:
+                  !widget.isAnalysis ? null : Theme.of(context).iconTheme.color,
             ),
             title: Text("Home"),
             onTap: () {
@@ -108,16 +113,36 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
               Navigator.pop(context);
             },
           ),
-          ListTile(
-            selected: widget.isAnalysis,
-            leading: Icon(
-              Icons.bar_chart_rounded,
+          InkWell(
+            onTap: widget.isSpendingsAdded
+                ? null
+                : () => Toast.show(
+                      "Add spendings to unlock",
+                      context,
+                      duration: Toast.LENGTH_LONG,
+                    ),
+            child: ListTile(
+              enabled: widget.isSpendingsAdded ? true : false,
+              selected: widget.isAnalysis,
+              leading: Icon(
+                Icons.bar_chart_rounded,
+                color: widget.isAnalysis || !widget.isSpendingsAdded
+                    ? null
+                    : Theme.of(context).iconTheme.color,
+              ),
+              title: Text("Spending Anlysis"),
+              onTap: widget.isSpendingsAdded
+                  ? () {
+                      widget.tabChangeCallback(true);
+                      Navigator.pop(context);
+                    }
+                  : null,
+              trailing: widget.isSpendingsAdded
+                  ? null
+                  : Icon(
+                      Icons.lock,
+                    ),
             ),
-            title: Text("Spending Anlysis"),
-            onTap: () {
-              widget.tabChangeCallback(true);
-              Navigator.pop(context);
-            },
           ),
         ],
       ),

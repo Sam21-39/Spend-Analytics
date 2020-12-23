@@ -106,19 +106,20 @@ class _AnalysisState extends State<Analysis> {
 
   List getChartValues(Map map, int index) {
     List holder = map.keys.toList();
-    bool isTouched =
-        index == -1 ? false : map.containsKey(holder.elementAt(index));
+
+    //index is there for future use purpose.. can be removed in future...
+
     return holder
         .map(
           (val) => PieChartSectionData(
             value: (map[val] / spm.length) * 100,
             title: "${((map[val] / spm.length) * 100).floor()}%",
-            radius: isTouched ? setScreenUtill(170.0) : setScreenUtill(150.0),
+            radius: setScreenUtill(150.0),
             color: getChartColor(((map[val] / spm.length) * 100).floor()),
             badgePositionPercentageOffset: 1,
             badgeWidget: Container(
-              width: isTouched ? setScreenUtill(80.0) : setScreenUtill(70.0),
-              height: isTouched ? setScreenUtill(80.0) : setScreenUtill(70.0),
+              width: setScreenUtill(70.0),
+              height: setScreenUtill(70.0),
               padding: EdgeInsets.all(
                 setScreenUtill(5.0),
               ),

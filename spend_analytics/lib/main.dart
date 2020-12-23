@@ -154,7 +154,7 @@ class _MyAppState extends State<MyApp> {
       ),
       accentColorBrightness: Brightness.dark,
       appBarTheme: AppBarTheme(
-        elevation: 0.0,
+        elevation: 10.0,
         textTheme: TextTheme(
           headline1: UiText.headerText.copyWith(color: Colors.white),
         ),
@@ -267,7 +267,7 @@ class _MyAppState extends State<MyApp> {
       accentColorBrightness: Brightness.light,
       shadowColor: UiColors.shadow,
       appBarTheme: AppBarTheme(
-        elevation: 0.0,
+        elevation: 10.0,
         textTheme: TextTheme(
           headline1: UiText.headerText,
         ),

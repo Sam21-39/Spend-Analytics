@@ -66,6 +66,7 @@ class _MainDashboardState extends State<MainDashboard> {
           drawer: NavigationDrawer(
             isAnalysis: isAnalysis,
             tabChangeCallback: changeTabCallback,
+            isSpendingsAdded: spm.isNotEmpty,
           ),
           backgroundColor: Theme.of(context).backgroundColor,
           body: isAnalysis
@@ -240,33 +241,35 @@ class _MainDashboardState extends State<MainDashboard> {
                 ),
           floatingActionButtonLocation:
               FloatingActionButtonLocation.centerFloat,
-          floatingActionButton: FloatingActionButton(
-            tooltip: "Add Spendings",
-            onPressed: () {
-              Navigator.of(context)
-                  .push(
-                MaterialPageRoute(
-                  builder: (context) => ItemPage(
-                    onSaveCallback: getDbValues,
+          floatingActionButton: isAnalysis
+              ? null
+              : FloatingActionButton(
+                  tooltip: "Add Spendings",
+                  onPressed: () {
+                    Navigator.of(context)
+                        .push(
+                      MaterialPageRoute(
+                        builder: (context) => ItemPage(
+                          onSaveCallback: getDbValues,
+                        ),
+                      ),
+                    )
+                        .then(
+                      (value) {
+                        setState(
+                          () {
+                            isLoading = value;
+                          },
+                        );
+                      },
+                    );
+                  },
+                  child: Icon(
+                    Icons.add,
+                    color: Theme.of(context).iconTheme.color,
+                    size: setScreenUtill(30.0),
                   ),
                 ),
-              )
-                  .then(
-                (value) {
-                  setState(
-                    () {
-                      isLoading = value;
-                    },
-                  );
-                },
-              );
-            },
-            child: Icon(
-              Icons.add,
-              color: Theme.of(context).iconTheme.color,
-              size: setScreenUtill(30.0),
-            ),
-          ),
         ),
       ),
     );

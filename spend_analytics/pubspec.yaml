@@ -11,7 +11,7 @@ dependencies:
     sdk: flutter
   
   # device related
-  intl: ^0.16.1
+  intl: ^0.16.1 #not used
   package_info: ^0.4.3+2
 
   # UI related
@@ -19,8 +19,10 @@ dependencies:
   flutter_svg: ^0.18.1
   flutter_screenutil: ^2.3.1
   flutter_launcher_icons: ^0.8.1
-  flutter_spinkit: ^4.1.2+1
+  flutter_spinkit: ^4.1.2+1 #not used
   fl_chart: ^0.12.0
+  toast: ^0.1.5
+ 
 
   # DB related
   path_provider: ^1.6.24
