@@ -26,6 +26,7 @@ class _ItemPageState extends State<ItemPage> {
   var descriptionController = TextEditingController(text: "");
   int choiceIndex;
 
+  String date;
   DbHelper _dbHelper = DbHelper.dbInstance;
 
   GlobalKey<FormState> _amountKey = GlobalKey();
@@ -37,6 +38,11 @@ class _ItemPageState extends State<ItemPage> {
         amountController.text = widget.spendingModel.amount.toString();
         descriptionController.text = widget.spendingModel.description;
         choiceIndex = choiceType.indexOf(widget.spendingModel.type);
+        date = DateTime.now().day.toString() +
+            "/" +
+            DateTime.now().month.toString() +
+            "/" +
+            DateTime.now().year.toString();
       });
     }
   }
@@ -143,6 +149,41 @@ class _ItemPageState extends State<ItemPage> {
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(
+                      height: 20.h,
+                    ),
+                    Container(
+                      child: Button(
+                        onPressed: () async {
+                          var result = await showDatePicker(
+                            context: context,
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime.now().subtract(
+                              Duration(days: 365),
+                            ),
+                            lastDate: DateTime.now().add(Duration(days: 1825)),
+                          );
+
+                          date = result.day.toString() +
+                              "/" +
+                              result.month.toString() +
+                              "/" +
+                              result.year.toString();
+                          setState(() {});
+                        },
+                        text: "Select Date",
+                      ),
+                    ),
+                    SizedBox(
+                      height: 20.h,
+                    ),
+                    Text(
+                      "Selected date: $date",
+                      style: textTheme.caption.copyWith(
+                        fontSize: setScreenUtill(20.0),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(
                       height: 30.h,
                     ),
                     TextFormField(
@@ -193,12 +234,7 @@ class _ItemPageState extends State<ItemPage> {
                                     amount: int.parse(
                                       amountController.text.trim(),
                                     ),
-                                    datetime: DateTime.now().day.toString() +
-                                        "/" +
-                                        (DateTime.now().month)
-                                            .toString() + // this code needs to be changed
-                                        "/" +
-                                        DateTime.now().year.toString(),
+                                    datetime: date,
                                     description: descriptionController.text,
                                   );
                                   var dbH =
