@@ -26,7 +26,11 @@ class _ItemPageState extends State<ItemPage> {
   var descriptionController = TextEditingController(text: "");
   int choiceIndex;
 
-  String date;
+  String date = DateTime.now().day.toString() +
+      "/" +
+      DateTime.now().month.toString() +
+      "/" +
+      DateTime.now().year.toString();
   DbHelper _dbHelper = DbHelper.dbInstance;
 
   GlobalKey<FormState> _amountKey = GlobalKey();
@@ -38,11 +42,7 @@ class _ItemPageState extends State<ItemPage> {
         amountController.text = widget.spendingModel.amount.toString();
         descriptionController.text = widget.spendingModel.description;
         choiceIndex = choiceType.indexOf(widget.spendingModel.type);
-        date = DateTime.now().day.toString() +
-            "/" +
-            DateTime.now().month.toString() +
-            "/" +
-            DateTime.now().year.toString();
+        date = widget.spendingModel.datetime;
       });
     }
   }
@@ -162,12 +162,12 @@ class _ItemPageState extends State<ItemPage> {
                             ),
                             lastDate: DateTime.now().add(Duration(days: 1825)),
                           );
-
-                          date = result.day.toString() +
-                              "/" +
-                              result.month.toString() +
-                              "/" +
-                              result.year.toString();
+                          if (result != null)
+                            date = result.day.toString() +
+                                "/" +
+                                result.month.toString() +
+                                "/" +
+                                result.year.toString();
                           setState(() {});
                         },
                         text: "Select Date",
@@ -246,11 +246,7 @@ class _ItemPageState extends State<ItemPage> {
                                     amount: int.parse(
                                       amountController.text.trim(),
                                     ),
-                                    datetime: DateTime.now().day.toString() +
-                                        "/" +
-                                        DateTime.now().month.toString() +
-                                        "/" +
-                                        DateTime.now().year.toString(),
+                                    datetime: date,
                                     description: descriptionController.text,
                                   );
                                   var dbH =

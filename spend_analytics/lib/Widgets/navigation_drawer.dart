@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:package_info/package_info.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:spend_analytics/Screens/DrawerMenu/about.dart';
 import 'package:spend_analytics/Utils/display_utils.dart';
 import 'package:spend_analytics/Utils/sp_constants.dart';
 import 'package:spend_analytics/main.dart';
@@ -21,8 +23,9 @@ class NavigationDrawer extends StatefulWidget {
 }
 
 class _NavigationDrawerState extends State<NavigationDrawer> {
-  bool isDarkTheme = false;
+  bool isDarkTheme = true;
 
+  String versionInfo = "";
   @override
   void initState() {
     super.initState();
@@ -32,6 +35,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
           isDarkTheme = sp.getBool(THEME);
         });
     });
+    version();
   }
 
   @override
@@ -87,9 +91,24 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
           ),
           ListTile(
             selected: true,
-            leading: Icon(
-              Icons.info_outline_rounded,
-            ),
+            leading: Icon(Icons.perm_device_info_rounded),
+            title: Text("Version: $versionInfo"),
+            // trailing: Icon(
+            //   Icons.arrow_forward_ios_rounded,
+            // ),
+          ),
+          ListTile(
+            onTap: () => Navigator.of(context)
+                .push(
+                  MaterialPageRoute(
+                    builder: (context) => About(),
+                  ),
+                )
+                .then(
+                  (value) => Navigator.pop(context),
+                ),
+            selected: true,
+            leading: Icon(Icons.info_outline_rounded),
             title: Text("About App"),
             trailing: Icon(
               Icons.arrow_forward_ios_rounded,
@@ -146,5 +165,11 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
         ],
       ),
     );
+  }
+
+  void version() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    versionInfo = packageInfo.version;
+    setState(() {});
   }
 }

@@ -5,6 +5,7 @@ import 'package:spend_analytics/Model/spending_model.dart';
 import 'package:spend_analytics/Services/db_helper.dart';
 import 'package:spend_analytics/UI/uicolors.dart';
 import 'package:spend_analytics/Utils/display_utils.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class Analysis extends StatefulWidget {
   @override
@@ -27,84 +28,122 @@ class _AnalysisState extends State<Analysis> {
 
   @override
   Widget build(BuildContext context) {
+    var textTheme = Theme.of(context).textTheme;
     return ListView(
       padding: EdgeInsets.all(
         setScreenUtill(20.0),
       ),
       children: [
-        Container(
-          padding: EdgeInsets.all(
-            setScreenUtill(20.0),
-          ),
-          child: AspectRatio(
-            aspectRatio: 1.0,
-            child: PieChart(
-              PieChartData(
-                pieTouchData: PieTouchData(
-                  enabled: true,
-                  touchCallback: (pieTouchResponse) {
-                    setState(() {
-                      if (pieTouchResponse.touchInput is FlLongPressEnd ||
-                          pieTouchResponse.touchInput is FlPanEnd) {
-                        touchedIndex = -1;
-                      } else {
-                        touchedIndex = pieTouchResponse.touchedSectionIndex;
-                      }
-                    });
-                  },
-                ),
-                borderData: FlBorderData(
-                  show: false,
-                ),
-                centerSpaceColor: UiColors.lightRed,
-                centerSpaceRadius: setScreenUtill(20.0),
-                sections: getChartValues(
-                  pieChartData,
-                  touchedIndex,
-                ),
-              ),
-            ),
+        Text(
+          "Current Month's Spendings:",
+          style: textTheme.headline4.copyWith(
+            fontSize: setScreenUtill(30.0),
           ),
         ),
-        Container(
-          padding: EdgeInsets.all(
-            setScreenUtill(20.0),
-          ),
-          child: AspectRatio(
-            aspectRatio: 1.0,
-            child: PieChart(
-              PieChartData(
-                pieTouchData: PieTouchData(
-                  enabled: true,
-                  touchCallback: (pieTouchResponse) {
-                    setState(() {
-                      if (pieTouchResponse.touchInput is FlLongPressEnd ||
-                          pieTouchResponse.touchInput is FlPanEnd) {
-                        touchedIndexAll = -1;
-                      } else {
-                        touchedIndexAll = pieTouchResponse.touchedSectionIndex;
-                      }
-                    });
-                  },
+        SizedBox(
+          height: 10.h,
+        ),
+        pieChartData.isEmpty
+            ? Text(
+                "Nothing added",
+                style: textTheme.bodyText1.copyWith(),
+                textAlign: TextAlign.center,
+              )
+            : Container(
+                padding: EdgeInsets.all(
+                  setScreenUtill(20.0),
                 ),
-                borderData: FlBorderData(
-                  show: false,
-                ),
-                centerSpaceColor: UiColors.lightRed,
-                centerSpaceRadius: setScreenUtill(20.0),
-                sections: getChartValues(
-                  pieChartDataAll,
-                  touchedIndexAll,
+                child: AspectRatio(
+                  aspectRatio: 1.0,
+                  child: PieChart(
+                    PieChartData(
+                      pieTouchData: PieTouchData(
+                        enabled: true,
+                        touchCallback: (pieTouchResponse) {
+                          setState(() {
+                            if (pieTouchResponse.touchInput is FlLongPressEnd ||
+                                pieTouchResponse.touchInput is FlPanEnd) {
+                              touchedIndex = -1;
+                            } else {
+                              touchedIndex =
+                                  pieTouchResponse.touchedSectionIndex;
+                            }
+                          });
+                        },
+                      ),
+                      borderData: FlBorderData(
+                        show: false,
+                      ),
+                      centerSpaceColor: UiColors.lightRed,
+                      centerSpaceRadius: setScreenUtill(20.0),
+                      sections: getChartValues(
+                        pieChartData,
+                        touchedIndex,
+                        spm,
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
+        SizedBox(
+          height: 10.h,
+        ),
+        Text(
+          "Overall Spendings:",
+          style: textTheme.headline4.copyWith(
+            fontSize: setScreenUtill(30.0),
           ),
         ),
+        SizedBox(
+          height: 10.h,
+        ),
+        pieChartDataAll.isEmpty
+            ? Text(
+                "Nothing added",
+                style: textTheme.bodyText1.copyWith(),
+                textAlign: TextAlign.center,
+              )
+            : Container(
+                padding: EdgeInsets.all(
+                  setScreenUtill(20.0),
+                ),
+                child: AspectRatio(
+                  aspectRatio: 1.0,
+                  child: PieChart(
+                    PieChartData(
+                      pieTouchData: PieTouchData(
+                        enabled: true,
+                        touchCallback: (pieTouchResponse) {
+                          setState(() {
+                            if (pieTouchResponse.touchInput is FlLongPressEnd ||
+                                pieTouchResponse.touchInput is FlPanEnd) {
+                              touchedIndexAll = -1;
+                            } else {
+                              touchedIndexAll =
+                                  pieTouchResponse.touchedSectionIndex;
+                            }
+                          });
+                        },
+                      ),
+                      borderData: FlBorderData(
+                        show: false,
+                      ),
+                      centerSpaceColor: UiColors.lightRed,
+                      centerSpaceRadius: setScreenUtill(20.0),
+                      sections: getChartValues(
+                        pieChartDataAll,
+                        touchedIndexAll,
+                        spm1,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
       ],
     );
   }
 
-  List getChartValues(Map map, int index) {
+  List getChartValues(Map map, int index, spm) {
     List holder = map.keys.toList();
 
     //index is there for future use purpose.. can be removed in future...
@@ -112,10 +151,13 @@ class _AnalysisState extends State<Analysis> {
     return holder
         .map(
           (val) => PieChartSectionData(
-            value: (map[val] / spm.length) * 100,
-            title: "${((map[val] / spm.length) * 100).floor()}%",
+            value: (map[val] / (spm.length == 0 ? 1 : spm.length)) * 100,
+            title:
+                "${((map[val] / (spm.length == 0 ? 1 : spm.length)) * 100).floor()}%",
             radius: setScreenUtill(150.0),
-            color: getChartColor(((map[val] / spm.length) * 100).floor()),
+            color: getChartColor(
+                ((map[val] / (spm.length == 0 ? 1 : spm.length)) * 100)
+                    .floor()),
             badgePositionPercentageOffset: 1,
             badgeWidget: Container(
               width: setScreenUtill(70.0),
@@ -145,14 +187,15 @@ class _AnalysisState extends State<Analysis> {
     spm1.clear();
     pieChartDataAll.clear();
     var data = await _dbHelper.queryAll();
-    if (data.isNotEmpty)
+    if (data.isNotEmpty) {
       data.forEach(
         (e) => spm1.add(
           SpendingModel.fromJson(e),
         ),
       );
 
-    pieChartDataAll = calculationOfSpendings(spm1);
+      pieChartDataAll = calculationOfSpendings(spm1);
+    }
     setState(() {});
   }
 
@@ -162,20 +205,22 @@ class _AnalysisState extends State<Analysis> {
     var data = await _dbHelper.querySelected(
       DateTime.now().month.toString(),
     );
-    if (data.isNotEmpty)
+
+    if (data.isNotEmpty) {
       data.forEach(
         (e) => spm.add(
           SpendingModel.fromJson(e),
         ),
       );
 
-    pieChartData = calculationOfSpendings(spm);
+      pieChartData = calculationOfSpendings(spm);
+    }
     setState(() {});
   }
 
-  Map calculationOfSpendings(spm) {
+  Map calculationOfSpendings(spm2) {
     var map = Map();
-    spm.forEach((element) {
+    spm2.forEach((element) {
       if (!map.containsKey(element.type.toLowerCase())) {
         map[element.type.toLowerCase()] = 1;
       } else {
