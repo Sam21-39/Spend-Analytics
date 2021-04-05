@@ -38,7 +38,9 @@ class _MainDashboardState extends State<MainDashboard> {
   void initState() {
     super.initState();
     SharedPreferences.getInstance().then((value) {
-      name = value.getString(NAME)==null?"User":value.getString(NAME);
+      name = value.getString(NAME) == null
+          ? "User"
+          : value.getString(NAME).split(" ")[0];
       setState(() {});
     });
     getDbValues();
