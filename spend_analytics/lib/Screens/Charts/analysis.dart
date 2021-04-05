@@ -7,6 +7,8 @@ import 'package:spend_analytics/UI/uicolors.dart';
 import 'package:spend_analytics/Utils/display_utils.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../UI/uicolors.dart';
+
 class Analysis extends StatefulWidget {
   @override
   _AnalysisState createState() => _AnalysisState();
@@ -35,6 +37,16 @@ class _AnalysisState extends State<Analysis> {
       ),
       children: [
         Text(
+          "*This chart represents how much percentage of spending is done in which category. Not the exact amount of spending.",
+          style: textTheme.bodyText1.copyWith(
+            fontSize: setScreenUtill(18.0),
+            color: UiColors.red,
+          ),
+        ),
+        SizedBox(
+          height: 20.h,
+        ),
+        Text(
           "Current Month's Spendings:",
           style: textTheme.headline4.copyWith(
             fontSize: setScreenUtill(30.0),
@@ -60,9 +72,7 @@ class _AnalysisState extends State<Analysis> {
                       pieTouchData: PieTouchData(
                         enabled: true,
                         touchCallback: (pieTouchResponse) {
-                          setState(() {
-                           
-                          });
+                          setState(() {});
                         },
                       ),
                       borderData: FlBorderData(
@@ -108,9 +118,7 @@ class _AnalysisState extends State<Analysis> {
                       pieTouchData: PieTouchData(
                         enabled: true,
                         touchCallback: (pieTouchResponse) {
-                          setState(() {
-                            
-                          });
+                          setState(() {});
                         },
                       ),
                       borderData: FlBorderData(
