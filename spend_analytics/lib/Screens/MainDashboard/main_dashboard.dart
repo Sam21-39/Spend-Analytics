@@ -38,7 +38,7 @@ class _MainDashboardState extends State<MainDashboard> {
   void initState() {
     super.initState();
     SharedPreferences.getInstance().then((value) {
-      name = value.getString(NAME);
+      name = value.getString(NAME)==null?"User":value.getString(NAME);
       setState(() {});
     });
     getDbValues();
@@ -55,7 +55,7 @@ class _MainDashboardState extends State<MainDashboard> {
             title: Text(
               'Hi $name!',
               style: textTheme.headline4.copyWith(
-                fontSize: setScreenUtill(32.0),
+                fontSize: setScreenUtill(26.0),
               ),
             ),
             actions: [
