@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spend_analytics/Model/spending_model.dart';
 import 'package:spend_analytics/Screens/Charts/analysis.dart';
 import 'package:spend_analytics/Screens/MainDashboard/itempage.dart';
@@ -9,6 +10,9 @@ import 'package:spend_analytics/UI/uicolors.dart';
 
 import 'package:spend_analytics/Utils/display_utils.dart';
 import 'package:spend_analytics/Widgets/navigation_drawer.dart';
+
+import '../../UI/uicolors.dart';
+import '../../Utils/sp_constants.dart';
 
 class MainDashboard extends StatefulWidget {
   @override
@@ -29,9 +33,14 @@ class _MainDashboardState extends State<MainDashboard> {
   bool isLoading = false;
 
   bool isAnalysis = false;
+  String name = "";
   @override
   void initState() {
     super.initState();
+    SharedPreferences.getInstance().then((value) {
+      name = value.getString(NAME);
+      setState(() {});
+    });
     getDbValues();
   }
 
@@ -44,7 +53,7 @@ class _MainDashboardState extends State<MainDashboard> {
         child: Scaffold(
           appBar: AppBar(
             title: Text(
-              'Hi Sam!',
+              'Hi $name!',
               style: textTheme.headline4.copyWith(
                 fontSize: setScreenUtill(32.0),
               ),
@@ -159,11 +168,15 @@ class _MainDashboardState extends State<MainDashboard> {
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                        spm[index]
-                                                            .amount
-                                                            .toString(),
-                                                        style: textTheme
-                                                            .headline4),
+                                                      spm[index]
+                                                          .amount
+                                                          .toString(),
+                                                      style: textTheme.headline4
+                                                          .copyWith(
+                                                        color:
+                                                            UiColors.background,
+                                                      ),
+                                                    ),
                                                     SizedBox(
                                                       height:
                                                           setScreenUtill(10.0),
@@ -178,7 +191,14 @@ class _MainDashboardState extends State<MainDashboard> {
                                                             spm[index]
                                                                 .description,
                                                             style: textTheme
-                                                                .caption,
+                                                                .caption
+                                                                .copyWith(
+                                                              color: UiColors
+                                                                  .background
+                                                                  .withOpacity(
+                                                                0.75,
+                                                              ),
+                                                            ),
                                                             maxLines: 2,
                                                             overflow:
                                                                 TextOverflow
@@ -192,7 +212,10 @@ class _MainDashboardState extends State<MainDashboard> {
                                                               .copyWith(
                                                             color: Theme.of(
                                                                     context)
-                                                                .focusColor,
+                                                                .focusColor
+                                                                .withBlue(
+                                                                  200,
+                                                                ),
                                                           ),
                                                         ),
                                                       ],

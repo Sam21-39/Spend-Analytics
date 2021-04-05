@@ -61,13 +61,7 @@ class _AnalysisState extends State<Analysis> {
                         enabled: true,
                         touchCallback: (pieTouchResponse) {
                           setState(() {
-                            if (pieTouchResponse.touchInput is FlLongPressEnd ||
-                                pieTouchResponse.touchInput is FlPanEnd) {
-                              touchedIndex = -1;
-                            } else {
-                              touchedIndex =
-                                  pieTouchResponse.touchedSectionIndex;
-                            }
+                           
                           });
                         },
                       ),
@@ -115,13 +109,7 @@ class _AnalysisState extends State<Analysis> {
                         enabled: true,
                         touchCallback: (pieTouchResponse) {
                           setState(() {
-                            if (pieTouchResponse.touchInput is FlLongPressEnd ||
-                                pieTouchResponse.touchInput is FlPanEnd) {
-                              touchedIndexAll = -1;
-                            } else {
-                              touchedIndexAll =
-                                  pieTouchResponse.touchedSectionIndex;
-                            }
+                            
                           });
                         },
                       ),

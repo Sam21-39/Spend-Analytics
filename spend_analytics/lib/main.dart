@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spend_analytics/Screens/splash.dart';
 
@@ -54,13 +55,17 @@ class _MyAppState extends State<MyApp> {
               systemNavigationBarIconBrightness: Brightness.dark,
             ),
     );
-    return MaterialApp(
-      title: 'Spend Analytics',
-      debugShowCheckedModeBanner: false,
-      theme: lightTheme(),
-      darkTheme: darkTheme(),
-      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      home: Splash(),
+    return ScreenUtilInit(
+      designSize: Size(480.0, 800.0),
+      allowFontScaling: true,
+      builder: () => MaterialApp(
+        title: 'Spend Analytics',
+        debugShowCheckedModeBanner: false,
+        theme: lightTheme(),
+        darkTheme: darkTheme(),
+        themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
+        home: Splash(),
+      ),
     );
   }
 

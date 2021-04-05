@@ -223,8 +223,7 @@ class _ItemPageState extends State<ItemPage> {
                     ),
                     Button(
                       onPressed: choiceIndex != null &&
-                              amountController.text.length > 0 &&
-                              descriptionController.text.trim().length > 0
+                              amountController.text.length > 0
                           ? () async {
                               if (_amountKey.currentState.validate()) {
                                 if (widget.isUpdating) {
