@@ -13,6 +13,7 @@ const choiceType = [
   "Loan",
   "Gaming",
   "Travel",
+  "Investment",
   "Others"
 ];
 
@@ -25,5 +26,6 @@ const choiceTypeAvatar = [
   "assets/images/loan.svg",
   "assets/images/gaming.svg",
   "assets/images/travel.svg",
+  "assets/images/investment.svg",
   "assets/images/others.svg",
 ];
