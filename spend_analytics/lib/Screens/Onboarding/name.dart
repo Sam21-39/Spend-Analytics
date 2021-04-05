@@ -74,7 +74,7 @@ class _NameState extends State<Name> {
                       contentPadding: EdgeInsets.only(
                         left: setScreenUtill(15.0),
                       ),
-                      hintText: 'Your Name',
+                      hintText: 'Your Name (max. 6 character)',
                       hintStyle: Theme.of(context).textTheme.caption.copyWith(
                             fontSize: setScreenUtill(18.0),
                           ),
@@ -83,8 +83,8 @@ class _NameState extends State<Name> {
                     onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
                     validator: (val) => val.isEmpty
                         ? "Required"
-                        : val.length < 3
-                            ? "Name should contain atleast 3 characters"
+                        : val.length > 6
+                            ? "Name should contain maximum 6 characters"
                             : null,
                   ),
                 ],
