@@ -7,6 +7,7 @@ import 'package:spend_analytics/Screens/Charts/analysis.dart';
 import 'package:spend_analytics/Screens/MainDashboard/itempage.dart';
 import 'package:spend_analytics/Services/db_helper.dart';
 import 'package:spend_analytics/UI/uicolors.dart';
+import 'package:spend_analytics/Utils/common_utils.dart';
 
 import 'package:spend_analytics/Utils/display_utils.dart';
 import 'package:spend_analytics/Widgets/navigation_drawer.dart';
@@ -21,9 +22,9 @@ class MainDashboard extends StatefulWidget {
 
 class _MainDashboardState extends State<MainDashboard> {
   String today = DateTime.now().day.toString() +
-      "." +
-      DateTime.now().month.toString() +
-      "." +
+      "-" +
+      monthFormat(DateTime.now().month) +
+      "-" +
       DateTime.now().year.toString();
 
   DbHelper _dbHelper = DbHelper.dbInstance;
