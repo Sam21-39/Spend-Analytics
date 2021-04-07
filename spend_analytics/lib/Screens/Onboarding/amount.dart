@@ -4,8 +4,16 @@ import 'package:spend_analytics/Screens/MainDashboard/main_dashboard.dart';
 import 'package:spend_analytics/Utils/display_utils.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:spend_analytics/Utils/sp_constants.dart';
+import 'package:spend_analytics/Widgets/button.dart';
 
 class Amount extends StatefulWidget {
+  final isChanging;
+
+  const Amount({
+    Key key,
+    this.isChanging = false,
+  }) : super(key: key);
+
   @override
   _AmountState createState() => _AmountState();
 }
@@ -13,8 +21,19 @@ class Amount extends StatefulWidget {
 class _AmountState extends State<Amount> {
   var amountController = TextEditingController();
   var _amountKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    SharedPreferences.getInstance().then((sp) {
+      amountController.text = sp.getInt(AMOUNT).toString();
+      setState(() {});
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -76,6 +95,7 @@ class _AmountState extends State<Amount> {
                             fontSize: setScreenUtill(18.0),
                           ),
                     ),
+                    maxLength: 8,
                     keyboardType: TextInputType.number,
                     onEditingComplete: () => TextInputAction.done,
                     onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
@@ -89,33 +109,61 @@ class _AmountState extends State<Amount> {
                   ),
                 ],
               ),
+              SizedBox(
+                height: width * 0.8,
+              ),
+              widget.isChanging
+                  ? Button(
+                      onPressed: () async {
+                        SharedPreferences sp =
+                            await SharedPreferences.getInstance();
+                        if (_amountKey.currentState.validate()) {
+                          Navigator.of(context).pushAndRemoveUntil(
+                            MaterialPageRoute(
+                              builder: (context) => MainDashboard(),
+                            ),
+                            (route) => false,
+                          );
+                          sp.setInt(
+                            AMOUNT,
+                            int.parse(
+                              amountController.text.trim(),
+                            ),
+                          );
+                        }
+                      },
+                      text: "Save",
+                    )
+                  : Container(),
             ],
           ),
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () async {
-            SharedPreferences sp = await SharedPreferences.getInstance();
-            if (_amountKey.currentState.validate()) {
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(
-                  builder: (context) => MainDashboard(),
+        floatingActionButton: widget.isChanging
+            ? null
+            : FloatingActionButton(
+                onPressed: () async {
+                  SharedPreferences sp = await SharedPreferences.getInstance();
+                  if (_amountKey.currentState.validate()) {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        builder: (context) => MainDashboard(),
+                      ),
+                      (_) => false,
+                    );
+                    sp.setInt(
+                      AMOUNT,
+                      int.parse(
+                        amountController.text.trim(),
+                      ),
+                    );
+                  }
+                },
+                child: Icon(
+                  Icons.arrow_forward_ios,
+                  color: Theme.of(context).iconTheme.color,
+                  size: setScreenUtill(30.0),
                 ),
-                (_) => false,
-              );
-              sp.setInt(
-                AMOUNT,
-                int.parse(
-                  amountController.text.trim(),
-                ),
-              );
-            }
-          },
-          child: Icon(
-            Icons.arrow_forward_ios,
-            color: Theme.of(context).iconTheme.color,
-            size: setScreenUtill(30.0),
-          ),
-        ),
+              ),
       ),
     );
   }

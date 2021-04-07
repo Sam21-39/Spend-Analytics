@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:package_info/package_info.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spend_analytics/Screens/DrawerMenu/about.dart';
+import 'package:spend_analytics/Screens/Onboarding/amount.dart';
 import 'package:spend_analytics/Screens/Onboarding/name.dart';
 import 'package:spend_analytics/Utils/display_utils.dart';
 import 'package:spend_analytics/Utils/sp_constants.dart';
@@ -133,6 +134,29 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
             ),
             title: Text(
               "Change Name",
+            ),
+            trailing: Icon(
+              Icons.arrow_forward_ios_rounded,
+            ),
+          ),
+          ListTile(
+            onTap: () => Navigator.of(context)
+                .push(
+                  MaterialPageRoute(
+                    builder: (context) => Amount(
+                      isChanging: true,
+                    ),
+                  ),
+                )
+                .then(
+                  (value) => Navigator.pop(context),
+                ),
+            selected: true,
+            leading: Icon(
+              Icons.monetization_on_outlined,
+            ),
+            title: Text(
+              "Change Amount",
             ),
             trailing: Icon(
               Icons.arrow_forward_ios_rounded,
