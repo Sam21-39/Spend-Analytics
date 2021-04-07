@@ -26,7 +26,8 @@ class _AmountState extends State<Amount> {
   void initState() {
     super.initState();
     SharedPreferences.getInstance().then((sp) {
-      amountController.text = sp.getInt(AMOUNT).toString();
+      amountController.text =
+          sp.getInt(AMOUNT) == null ? "" : sp.getInt(AMOUNT).toString();
       setState(() {});
     });
   }
@@ -90,7 +91,7 @@ class _AmountState extends State<Amount> {
                       contentPadding: EdgeInsets.only(
                         left: setScreenUtill(15.0),
                       ),
-                      hintText: 'Amount',
+                      hintText: 'Amount (Max. 8 Character)',
                       hintStyle: Theme.of(context).textTheme.caption.copyWith(
                             fontSize: setScreenUtill(18.0),
                           ),

@@ -225,10 +225,7 @@ class _MainDashboardState extends State<MainDashboard> {
                                                                   .copyWith(
                                                                 color: Theme.of(
                                                                         context)
-                                                                    .focusColor
-                                                                    .withBlue(
-                                                                      200,
-                                                                    ),
+                                                                    .focusColor,
                                                               ),
                                                             ),
                                                           ],
