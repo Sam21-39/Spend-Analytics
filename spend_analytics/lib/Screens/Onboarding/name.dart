@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:spend_analytics/Screens/MainDashboard/main_dashboard.dart';
 import 'package:spend_analytics/Screens/Onboarding/amount.dart';
 import 'package:spend_analytics/Utils/display_utils.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:spend_analytics/Utils/sp_constants.dart';
+import 'package:spend_analytics/Widgets/button.dart';
 
 class Name extends StatefulWidget {
+  final bool isChanging;
+
+  const Name({
+    Key key,
+    this.isChanging = false,
+  }) : super(key: key);
   @override
   _NameState createState() => _NameState();
 }
@@ -16,7 +24,18 @@ class _NameState extends State<Name> {
   var _nameKey = GlobalKey<FormState>();
 
   @override
+  void initState() {
+    super.initState();
+    SharedPreferences.getInstance().then((sp) => {
+          nameController.text =
+              sp.getString(NAME) == null ? "" : sp.getString(NAME),
+          setState(() {}),
+        });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -89,30 +108,56 @@ class _NameState extends State<Name> {
                   ),
                 ],
               ),
+              SizedBox(
+                height: width * 0.8,
+              ),
+              widget.isChanging
+                  ? Button(
+                      onPressed: () async {
+                        SharedPreferences sp =
+                            await SharedPreferences.getInstance();
+                        if (_nameKey.currentState.validate()) {
+                          Navigator.of(context).pushAndRemoveUntil(
+                            MaterialPageRoute(
+                              builder: (context) => MainDashboard(),
+                            ),
+                            (route) => false,
+                          );
+                          sp.setString(
+                            NAME,
+                            nameController.text.trim(),
+                          );
+                        }
+                      },
+                      text: "Save",
+                    )
+                  : Container(),
             ],
           ),
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () async {
-            SharedPreferences sp = await SharedPreferences.getInstance();
-            if (_nameKey.currentState.validate()) {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => Amount(),
+        floatingActionButton: widget.isChanging
+            ? null
+            : FloatingActionButton(
+                onPressed: () async {
+                  SharedPreferences sp = await SharedPreferences.getInstance();
+                  if (_nameKey.currentState.validate()) {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => Amount(),
+                      ),
+                    );
+                    sp.setString(
+                      NAME,
+                      nameController.text.trim(),
+                    );
+                  }
+                },
+                child: Icon(
+                  Icons.arrow_forward_ios,
+                  color: Theme.of(context).iconTheme.color,
+                  size: setScreenUtill(30.0),
                 ),
-              );
-              sp.setString(
-                NAME,
-                nameController.text.trim(),
-              );
-            }
-          },
-          child: Icon(
-            Icons.arrow_forward_ios,
-            color: Theme.of(context).iconTheme.color,
-            size: setScreenUtill(30.0),
-          ),
-        ),
+              ),
       ),
     );
   }
