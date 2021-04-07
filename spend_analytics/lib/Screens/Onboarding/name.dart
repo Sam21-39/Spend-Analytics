@@ -98,12 +98,13 @@ class _NameState extends State<Name> {
                             fontSize: setScreenUtill(18.0),
                           ),
                     ),
+                    maxLength: 6,
                     onEditingComplete: () => TextInputAction.done,
                     onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
                     validator: (val) => val.isEmpty
                         ? "Required"
-                        : val.length > 6
-                            ? "Name should contain maximum 6 characters"
+                        : val.length < 2
+                            ? "Name should contain atleast 2 characters"
                             : null,
                   ),
                 ],
