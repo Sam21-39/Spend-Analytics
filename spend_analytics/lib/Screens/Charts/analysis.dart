@@ -49,7 +49,7 @@ class _AnalysisState extends State<Analysis> {
         Text(
           "Current Month's Spendings:",
           style: textTheme.headline4.copyWith(
-            fontSize: setScreenUtill(30.0),
+            fontSize: setScreenUtill(26.0),
           ),
         ),
         SizedBox(
@@ -95,7 +95,7 @@ class _AnalysisState extends State<Analysis> {
         Text(
           "Overall Spendings:",
           style: textTheme.headline4.copyWith(
-            fontSize: setScreenUtill(30.0),
+            fontSize: setScreenUtill(26.0),
           ),
         ),
         SizedBox(

@@ -13,10 +13,12 @@ import 'package:toast/toast.dart';
 class NavigationDrawer extends StatefulWidget {
   final tabChangeCallback;
   final bool isAnalysis;
+  final bool isEstimate;
   final bool isSpendingsAdded;
   const NavigationDrawer({
     Key key,
     this.tabChangeCallback,
+    this.isEstimate = false,
     this.isAnalysis = false,
     this.isSpendingsAdded = false,
   }) : super(key: key);
@@ -191,12 +193,43 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
               enabled: widget.isSpendingsAdded ? true : false,
               selected: widget.isAnalysis,
               leading: Icon(
-                Icons.bar_chart_rounded,
+                Icons.pie_chart_rounded,
                 color: widget.isAnalysis || !widget.isSpendingsAdded
                     ? null
                     : Theme.of(context).iconTheme.color,
               ),
               title: Text("Spending Anlysis"),
+              onTap: widget.isSpendingsAdded
+                  ? () {
+                      widget.tabChangeCallback(true);
+                      Navigator.pop(context);
+                    }
+                  : null,
+              trailing: widget.isSpendingsAdded
+                  ? null
+                  : Icon(
+                      Icons.lock,
+                    ),
+            ),
+          ),
+          InkWell(
+            onTap: widget.isSpendingsAdded
+                ? null
+                : () => Toast.show(
+                      "Add spendings to unlock",
+                      context,
+                      duration: Toast.LENGTH_LONG,
+                    ),
+            child: ListTile(
+              enabled: widget.isSpendingsAdded ? true : false,
+              selected: widget.isEstimate,
+              leading: Icon(
+                Icons.bar_chart_rounded,
+                color: widget.isEstimate || !widget.isSpendingsAdded
+                    ? null
+                    : Theme.of(context).iconTheme.color,
+              ),
+              title: Text("Spending Estimate"),
               onTap: widget.isSpendingsAdded
                   ? () {
                       widget.tabChangeCallback(true);

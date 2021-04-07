@@ -80,7 +80,7 @@ class _ItemPageState extends State<ItemPage> {
                     Text(
                       "Enter Amount you've spent",
                       style: textTheme.headline4.copyWith(
-                        fontSize: setScreenUtill(36.0),
+                        fontSize: setScreenUtill(30.0),
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -127,7 +127,7 @@ class _ItemPageState extends State<ItemPage> {
                     Text(
                       "Choose type of spending",
                       style: textTheme.headline4.copyWith(
-                        fontSize: setScreenUtill(36.0),
+                        fontSize: setScreenUtill(30.0),
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -144,7 +144,7 @@ class _ItemPageState extends State<ItemPage> {
                     Text(
                       "Selected: ${choiceIndex != null ? choiceType[choiceIndex] : ''}",
                       style: textTheme.caption.copyWith(
-                        fontSize: setScreenUtill(20.0),
+                        fontSize: setScreenUtill(18.0),
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -179,7 +179,7 @@ class _ItemPageState extends State<ItemPage> {
                     Text(
                       "Selected date: $date",
                       style: textTheme.caption.copyWith(
-                        fontSize: setScreenUtill(20.0),
+                        fontSize: setScreenUtill(18.0),
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -290,7 +290,9 @@ class _ItemPageState extends State<ItemPage> {
               ),
               label: Text(
                 "${choiceType[index]}",
-                style: chipsTheme.labelStyle,
+                style: chipsTheme.labelStyle.copyWith(
+                  fontSize: setScreenUtill(28.0),
+                ),
               ),
               selected: choiceIndex == index,
               onSelected: (selected) {

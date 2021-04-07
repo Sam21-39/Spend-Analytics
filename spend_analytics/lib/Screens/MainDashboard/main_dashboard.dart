@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spend_analytics/Model/spending_model.dart';
 import 'package:spend_analytics/Screens/Charts/analysis.dart';
+import 'package:spend_analytics/Screens/Charts/estimate.dart';
 import 'package:spend_analytics/Screens/MainDashboard/itempage.dart';
 import 'package:spend_analytics/Services/db_helper.dart';
 import 'package:spend_analytics/UI/uicolors.dart';
@@ -34,6 +35,8 @@ class _MainDashboardState extends State<MainDashboard> {
   bool isLoading = false;
 
   bool isAnalysis = false;
+
+  bool isEstimate = false;
   String name = "";
   @override
   void initState() {
@@ -81,188 +84,199 @@ class _MainDashboardState extends State<MainDashboard> {
           backgroundColor: Theme.of(context).backgroundColor,
           body: isAnalysis
               ? Analysis()
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    PopupMenuButton(
-                      tooltip: "Date Filter",
-                      icon: Icon(
-                        Icons.filter_list_rounded,
-                      ),
-                      itemBuilder: (BuildContext context) =>
-                          <PopupMenuEntry<String>>[
-                        const PopupMenuItem<String>(
-                          value: "all",
-                          child: Text('All'),
-                        ),
-                        const PopupMenuItem<String>(
-                          value: "current",
-                          child: Text(
-                            'Current Month',
+              : isEstimate
+                  ? Estimate()
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        PopupMenuButton(
+                          tooltip: "Date Filter",
+                          icon: Icon(
+                            Icons.filter_list_rounded,
                           ),
+                          itemBuilder: (BuildContext context) =>
+                              <PopupMenuEntry<String>>[
+                            const PopupMenuItem<String>(
+                              value: "all",
+                              child: Text('All'),
+                            ),
+                            const PopupMenuItem<String>(
+                              value: "current",
+                              child: Text(
+                                'Current Month',
+                              ),
+                            ),
+                          ],
+                          onSelected: (val) =>
+                              val == "all" ? getDbValuesAll() : getDbValues(),
                         ),
-                      ],
-                      onSelected: (val) =>
-                          val == "all" ? getDbValuesAll() : getDbValues(),
-                    ),
-                    Expanded(
-                      child: ListView(
-                        padding: EdgeInsets.all(
-                          setScreenUtill(30.0),
-                        ),
-                        children: [
-                          spm.isEmpty
-                              ? Column(
-                                  children: [
-                                    Container(
-                                      padding: EdgeInsets.all(
-                                        setScreenUtill(40.0),
-                                      ),
-                                      child: Text(
-                                        'Nothing here yet. Let’s add some Spendings by pressing the “+” button....',
-                                        style: textTheme.subtitle1.copyWith(
-                                          color: Theme.of(context)
-                                              .dividerColor
-                                              .withOpacity(0.7),
-                                          fontSize: setScreenUtill(28.0),
+                        Expanded(
+                          child: ListView(
+                            padding: EdgeInsets.all(
+                              setScreenUtill(30.0),
+                            ),
+                            children: [
+                              spm.isEmpty
+                                  ? Column(
+                                      children: [
+                                        Container(
+                                          padding: EdgeInsets.all(
+                                            setScreenUtill(40.0),
+                                          ),
+                                          child: Text(
+                                            'Nothing here yet. Let’s add some Spendings by pressing the “+” button....',
+                                            style: textTheme.subtitle1.copyWith(
+                                              color: Theme.of(context)
+                                                  .dividerColor
+                                                  .withOpacity(0.7),
+                                              fontSize: setScreenUtill(28.0),
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
                                         ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                  ],
-                                )
-                              : ListView.builder(
-                                  shrinkWrap: true,
-                                  physics: NeverScrollableScrollPhysics(),
-                                  itemCount: spm.length,
-                                  itemBuilder: (context, index) {
-                                    var cards = Theme.of(context).cardTheme;
+                                      ],
+                                    )
+                                  : ListView.builder(
+                                      shrinkWrap: true,
+                                      physics: NeverScrollableScrollPhysics(),
+                                      itemCount: spm.length,
+                                      itemBuilder: (context, index) {
+                                        var cards = Theme.of(context).cardTheme;
 
-                                    return InkWell(
-                                      onTap: () => showDialog(
-                                        context: (context),
-                                        builder: (context) => showEditDialog(
-                                          spm[index],
-                                        ),
-                                      ),
-                                      child: Stack(
-                                        children: [
-                                          Container(
-                                            padding: EdgeInsets.all(
-                                              setScreenUtill(10.0),
+                                        return InkWell(
+                                          onTap: () => showDialog(
+                                            context: (context),
+                                            builder: (context) =>
+                                                showEditDialog(
+                                              spm[index],
                                             ),
-                                            margin: EdgeInsets.only(
-                                              bottom: setScreenUtill(10.0),
-                                            ),
-                                            child: Card(
-                                              borderOnForeground: true,
-                                              shape: cards.shape,
-                                              elevation: cards.elevation,
-                                              color: cards.color,
-                                              shadowColor: cards.shadowColor,
-                                              child: Padding(
+                                          ),
+                                          child: Stack(
+                                            children: [
+                                              Container(
                                                 padding: EdgeInsets.all(
-                                                  setScreenUtill(20.0),
+                                                  setScreenUtill(10.0),
                                                 ),
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      spm[index]
-                                                          .amount
-                                                          .toString(),
-                                                      style: textTheme.headline4
-                                                          .copyWith(
-                                                        color:
-                                                            UiColors.background,
-                                                      ),
+                                                margin: EdgeInsets.only(
+                                                  bottom: setScreenUtill(10.0),
+                                                ),
+                                                child: Card(
+                                                  borderOnForeground: true,
+                                                  shape: cards.shape,
+                                                  elevation: cards.elevation,
+                                                  color: cards.color,
+                                                  shadowColor:
+                                                      cards.shadowColor,
+                                                  child: Padding(
+                                                    padding: EdgeInsets.all(
+                                                      setScreenUtill(20.0),
                                                     ),
-                                                    SizedBox(
-                                                      height:
-                                                          setScreenUtill(10.0),
-                                                    ),
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
                                                       children: [
-                                                        Flexible(
-                                                          child: Text(
-                                                            spm[index]
-                                                                .description,
-                                                            style: textTheme
-                                                                .caption
-                                                                .copyWith(
-                                                              color: UiColors
-                                                                  .background
-                                                                  .withOpacity(
-                                                                0.75,
-                                                              ),
-                                                            ),
-                                                            maxLines: 2,
-                                                            overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
+                                                        Text(
+                                                          spm[index]
+                                                              .amount
+                                                              .toString(),
+                                                          style: textTheme
+                                                              .headline4
+                                                              .copyWith(
+                                                            color: UiColors
+                                                                .background,
                                                           ),
                                                         ),
-                                                        Text(
-                                                          spm[index].datetime,
-                                                          style: textTheme
-                                                              .bodyText1
-                                                              .copyWith(
-                                                            color: Theme.of(
-                                                                    context)
-                                                                .focusColor
-                                                                .withBlue(
-                                                                  200,
+                                                        SizedBox(
+                                                          height:
+                                                              setScreenUtill(
+                                                                  10.0),
+                                                        ),
+                                                        Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
+                                                          children: [
+                                                            Flexible(
+                                                              child: Text(
+                                                                spm[index]
+                                                                    .description,
+                                                                style: textTheme
+                                                                    .caption
+                                                                    .copyWith(
+                                                                  color: UiColors
+                                                                      .background
+                                                                      .withOpacity(
+                                                                    0.75,
+                                                                  ),
                                                                 ),
-                                                          ),
+                                                                maxLines: 2,
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
+                                                              ),
+                                                            ),
+                                                            Text(
+                                                              spm[index]
+                                                                  .datetime,
+                                                              style: textTheme
+                                                                  .bodyText1
+                                                                  .copyWith(
+                                                                color: Theme.of(
+                                                                        context)
+                                                                    .focusColor
+                                                                    .withBlue(
+                                                                      200,
+                                                                    ),
+                                                              ),
+                                                            ),
+                                                          ],
                                                         ),
                                                       ],
                                                     ),
-                                                  ],
+                                                  ),
                                                 ),
                                               ),
-                                            ),
-                                          ),
-                                          Positioned(
-                                            right: setScreenUtill(2.0),
-                                            child: Container(
-                                              width: setScreenUtill(70.0),
-                                              height: setScreenUtill(70.0),
-                                              padding: EdgeInsets.all(
-                                                setScreenUtill(4.0),
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: UiColors.lightRed,
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    blurRadius:
-                                                        setScreenUtill(20.0),
-                                                    color: UiColors.black
-                                                        .withOpacity(0.25),
-                                                    offset: Offset(-10.0, 10.0),
-                                                    spreadRadius: 1.0,
+                                              Positioned(
+                                                right: setScreenUtill(2.0),
+                                                child: Container(
+                                                  width: setScreenUtill(70.0),
+                                                  height: setScreenUtill(70.0),
+                                                  padding: EdgeInsets.all(
+                                                    setScreenUtill(4.0),
                                                   ),
-                                                ],
-                                                borderRadius:
-                                                    BorderRadius.circular(22.0),
+                                                  decoration: BoxDecoration(
+                                                    color: UiColors.lightRed,
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        blurRadius:
+                                                            setScreenUtill(
+                                                                20.0),
+                                                        color: UiColors.black
+                                                            .withOpacity(0.25),
+                                                        offset:
+                                                            Offset(-10.0, 10.0),
+                                                        spreadRadius: 1.0,
+                                                      ),
+                                                    ],
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            22.0),
+                                                  ),
+                                                  child: SvgPicture.asset(
+                                                      "assets/images/${spm[index].type.toLowerCase()}.svg"),
+                                                ),
                                               ),
-                                              child: SvgPicture.asset(
-                                                  "assets/images/${spm[index].type.toLowerCase()}.svg"),
-                                            ),
+                                            ],
                                           ),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                ),
-                        ],
-                      ),
+                                        );
+                                      },
+                                    ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
           floatingActionButtonLocation:
               FloatingActionButtonLocation.centerFloat,
           floatingActionButton: isAnalysis
@@ -299,9 +313,10 @@ class _MainDashboardState extends State<MainDashboard> {
     );
   }
 
-  void changeTabCallback(bool val) {
+  void changeTabCallback(bool val, {bool val1}) {
     setState(() {
       isAnalysis = val;
+      isEstimate = val1;
     });
   }
 
