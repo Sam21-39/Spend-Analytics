@@ -37,7 +37,7 @@ class _AnalysisState extends State<Analysis> {
       ),
       children: [
         Text(
-          "*This chart represents how much percentage of spending is done in which category. Not the exact amount of spending.",
+          "*This chart represents what percentage of spending is done and in which category. \n\nIt does not represent the exact amount of spending.",
           style: textTheme.bodyText1.copyWith(
             fontSize: setScreenUtill(18.0),
             color: UiColors.red,
