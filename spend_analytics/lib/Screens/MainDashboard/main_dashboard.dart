@@ -80,6 +80,7 @@ class _MainDashboardState extends State<MainDashboard> {
             isAnalysis: isAnalysis,
             tabChangeCallback: changeTabCallback,
             isSpendingsAdded: spm.isNotEmpty,
+            isEstimate: isEstimate,
           ),
           backgroundColor: Theme.of(context).backgroundColor,
           body: isAnalysis
@@ -279,7 +280,7 @@ class _MainDashboardState extends State<MainDashboard> {
                     ),
           floatingActionButtonLocation:
               FloatingActionButtonLocation.centerFloat,
-          floatingActionButton: isAnalysis
+          floatingActionButton: isAnalysis || isEstimate
               ? null
               : FloatingActionButton(
                   tooltip: "Add Spendings",
@@ -313,7 +314,7 @@ class _MainDashboardState extends State<MainDashboard> {
     );
   }
 
-  void changeTabCallback(bool val, {bool val1}) {
+  void changeTabCallback(bool val, bool val1) {
     setState(() {
       isAnalysis = val;
       isEstimate = val1;

@@ -169,15 +169,16 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
             color: Theme.of(context).dividerColor,
           ),
           ListTile(
-            selected: !widget.isAnalysis,
+            selected: !widget.isAnalysis && !widget.isEstimate,
             leading: Icon(
               Icons.home_rounded,
-              color:
-                  !widget.isAnalysis ? null : Theme.of(context).iconTheme.color,
+              color: !widget.isAnalysis && !widget.isEstimate
+                  ? null
+                  : Theme.of(context).iconTheme.color,
             ),
             title: Text("Home"),
             onTap: () {
-              widget.tabChangeCallback(false);
+              widget.tabChangeCallback(false,false);
               Navigator.pop(context);
             },
           ),
@@ -201,7 +202,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
               title: Text("Spending Anlysis"),
               onTap: widget.isSpendingsAdded
                   ? () {
-                      widget.tabChangeCallback(true);
+                      widget.tabChangeCallback(true, false);
                       Navigator.pop(context);
                     }
                   : null,
@@ -232,7 +233,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
               title: Text("Spending Estimate"),
               onTap: widget.isSpendingsAdded
                   ? () {
-                      widget.tabChangeCallback(true);
+                      widget.tabChangeCallback(false, true);
                       Navigator.pop(context);
                     }
                   : null,
