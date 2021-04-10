@@ -1,3 +1,4 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:spend_analytics/UI/uicolors.dart';
@@ -17,18 +18,29 @@ class _EstimateState extends State<Estimate> {
         setScreenUtill(20.0),
       ),
       children: [
-        SvgPicture.asset("assets/images/under_construction.svg"),
-        SizedBox(
-          height: setScreenUtill(50.0),
-        ),
         Text(
-          "Coming Soon! \n...Stay Tuned...",
+          "*This Chart shows the estimation of monthly total spendings and monthly income",
           style: textTheme.headline4.copyWith(
-            fontSize: setScreenUtill(32.0),
-            color: UiColors.lightBlue,
+            fontSize: setScreenUtill(18.0),
+            color: UiColors.red,
           ),
-          textAlign: TextAlign.center,
         ),
+        SizedBox(
+          height: setScreenUtill(20.0),
+        ),
+        SizedBox(
+          height: setScreenUtill(500.0),
+          child: BarChart(
+            BarChartData(
+              alignment: BarChartAlignment.center,
+              backgroundColor: UiColors.lightBlue,
+              gridData: FlGridData(
+                drawHorizontalLine: true,
+                drawVerticalLine: true,
+              ),
+            ),
+          ),
+        )
       ],
     );
   }
