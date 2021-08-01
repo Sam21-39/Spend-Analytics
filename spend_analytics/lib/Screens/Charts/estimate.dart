@@ -52,7 +52,7 @@ class _EstimateState extends State<Estimate> {
           height: setScreenUtill(20.0),
         ),
         Text(
-          "Monthly Estimations:",
+          "Monthly Estimations: (in the scale of 1000 )",
           style: textTheme.headline4.copyWith(
             fontSize: setScreenUtill(26.0),
           ),
@@ -81,7 +81,9 @@ class _EstimateState extends State<Estimate> {
               child: BarChart(
                 BarChartData(
                   groupsSpace: setScreenUtill(80.0),
-                  maxY: (income + min((income - expense).abs(), expense)),
+                  maxY:
+                      (income + min((income - expense).abs(), expense) + 1000) /
+                          1000,
                   alignment: BarChartAlignment.center,
                   borderData: FlBorderData(show: false),
                   barTouchData: BarTouchData(
@@ -89,6 +91,16 @@ class _EstimateState extends State<Estimate> {
                     touchTooltipData: BarTouchTooltipData(
                       tooltipBgColor: UiColors.lightRed.withOpacity(0.75),
                       tooltipRoundedRadius: 12.0,
+                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                        // print(rod.y * 1000);
+                        BarTooltipItem bti = BarTooltipItem(
+                          (rod.y * 1000).floor().toString(),
+                          UiText.normalText.copyWith(
+                            fontSize: setScreenUtill(15.0),
+                          ),
+                        );
+                        return bti;
+                      },
                     ),
                   ),
                   barGroups: BarData.barData(income, expense)
@@ -102,7 +114,7 @@ class _EstimateState extends State<Estimate> {
                           x: e.id,
                           barRods: [
                             BarChartRodData(
-                              y: e.y,
+                              y: e.y / 1000,
                               colors: [e.color],
                               borderRadius: BorderRadius.circular(4.0),
                             ),

@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:package_info/package_info.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:spend_analytics/Model/spending_model.dart';
 import 'package:spend_analytics/Screens/DrawerMenu/about.dart';
 import 'package:spend_analytics/Screens/Onboarding/amount.dart';
 import 'package:spend_analytics/Screens/Onboarding/name.dart';
+import 'package:spend_analytics/Services/db_helper.dart';
 import 'package:spend_analytics/Utils/display_utils.dart';
 import 'package:spend_analytics/Utils/sp_constants.dart';
 import 'package:spend_analytics/main.dart';
@@ -30,6 +32,10 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
   bool isDarkTheme = true;
 
   String versionInfo = "";
+
+  double expense = 0.0;
+  List<SpendingModel> spm = [];
+  DbHelper _dbHelper = DbHelper.dbInstance;
   @override
   void initState() {
     super.initState();
@@ -40,6 +46,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
         });
     });
     version();
+    getDbValues();
   }
 
   @override
@@ -164,6 +171,39 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
               Icons.arrow_forward_ios_rounded,
             ),
           ),
+          ListTile(
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) => Dialog(
+                  child: Container(
+                    alignment: Alignment.center,
+                    height: setScreenUtill(200.0),
+                    width: setScreenUtill(200.0),
+                    child: Text(
+                      "Total Expanse on previous Month:\n ${expense.floor()}",
+                      style: Theme.of(context).textTheme.bodyText1.copyWith(
+                            fontSize: setScreenUtill(24.0),
+                          ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ).then(
+                (value) => Navigator.pop(context),
+              );
+            },
+            selected: true,
+            leading: Icon(
+              Icons.monetization_on,
+            ),
+            title: Text(
+              "Previous Expense",
+            ),
+            trailing: Icon(
+              Icons.arrow_forward_ios_rounded,
+            ),
+          ),
           Divider(
             thickness: 1.0,
             color: Theme.of(context).dividerColor,
@@ -178,7 +218,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
             ),
             title: Text("Home"),
             onTap: () {
-              widget.tabChangeCallback(false,false);
+              widget.tabChangeCallback(false, false);
               Navigator.pop(context);
             },
           ),
@@ -252,6 +292,26 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
   void version() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     versionInfo = packageInfo.version;
+    setState(() {});
+  }
+
+  void getDbValues() async {
+    spm.clear();
+
+    var data = await _dbHelper.querySelected(
+      (DateTime.now().month - 1).toString(),
+    );
+
+    if (data.isNotEmpty) {
+      data.forEach(
+        (e) => spm.add(
+          SpendingModel.fromJson(e),
+        ),
+      );
+    }
+    spm.forEach((element) {
+      expense += element.amount.toDouble();
+    });
     setState(() {});
   }
 }
