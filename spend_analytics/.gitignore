@@ -29,8 +29,8 @@
 .packages
 .pub-cache/
 .pub/
-.analysis_options/
 /build/
+.DS_Store
 
 # Web related
 lib/generated_plugin_registrant.dart
