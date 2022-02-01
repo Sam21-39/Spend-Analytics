@@ -29,6 +29,7 @@
 .packages
 .pub-cache/
 .pub/
+.analysis_options/
 /build/
 
 # Web related
