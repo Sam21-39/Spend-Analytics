@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spend_analytics/Screens/splash.dart';
-
 import 'package:spend_analytics/UI/uicolors.dart';
 import 'package:spend_analytics/UI/uitext.dart';
 import 'package:spend_analytics/Utils/sp_constants.dart';
