@@ -46,8 +46,8 @@ android {
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.sumit.spofficial.spend_analytics"
-        minSdkVersion 21
-        targetSdkVersion 31
+        minSdkVersion 19
+        targetSdkVersion 30
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true
@@ -72,9 +72,9 @@ android {
             
             minifyEnabled true
             shrinkResources true
-            useProguard true
+            // useProguard true
             
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro' 
+            // proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro' 
         }
     }
 }
@@ -87,4 +87,5 @@ dependencies {
     implementation 'com.google.android.material:material:1.4.0-alpha02'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.android.support:multidex:1.0.3'
+    implementation 'com.google.android.gms:play-services-ads:21.0.0'
 }

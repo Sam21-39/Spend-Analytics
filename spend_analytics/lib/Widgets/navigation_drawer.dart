@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -34,6 +35,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
   String versionInfo = "";
 
   double expense = 0.0;
+  double savings = 0.0;
   List<SpendingModel> spm = [];
   DbHelper _dbHelper = DbHelper.dbInstance;
   @override
@@ -69,8 +71,89 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
               margin: EdgeInsets.all(
                 setScreenUtill(10.0),
               ),
+              width: 60.w,
               child: SvgPicture.asset("assets/images/sp_logo.svg"),
             ),
+          ),
+          ListTile(
+            selected: !widget.isAnalysis && !widget.isEstimate,
+            leading: Icon(
+              Icons.home_rounded,
+              color: !widget.isAnalysis && !widget.isEstimate
+                  ? null
+                  : Theme.of(context).iconTheme.color,
+            ),
+            title: Text("Home"),
+            onTap: () {
+              widget.tabChangeCallback(false, false);
+              Navigator.pop(context);
+            },
+          ),
+          InkWell(
+            onTap: widget.isSpendingsAdded
+                ? null
+                : () => Toast.show(
+                      "Add spendings to unlock",
+                      context,
+                      duration: Toast.LENGTH_LONG,
+                    ),
+            child: ListTile(
+              enabled: widget.isSpendingsAdded ? true : false,
+              selected: widget.isAnalysis,
+              leading: Icon(
+                Icons.pie_chart_rounded,
+                color: widget.isAnalysis || !widget.isSpendingsAdded
+                    ? null
+                    : Theme.of(context).iconTheme.color,
+              ),
+              title: Text("Spending Anlysis"),
+              onTap: widget.isSpendingsAdded
+                  ? () {
+                      widget.tabChangeCallback(true, false);
+                      Navigator.pop(context);
+                    }
+                  : null,
+              trailing: widget.isSpendingsAdded
+                  ? null
+                  : Icon(
+                      Icons.lock,
+                    ),
+            ),
+          ),
+          InkWell(
+            onTap: widget.isSpendingsAdded
+                ? null
+                : () => Toast.show(
+                      "Add spendings to unlock",
+                      context,
+                      duration: Toast.LENGTH_LONG,
+                    ),
+            child: ListTile(
+              enabled: widget.isSpendingsAdded ? true : false,
+              selected: widget.isEstimate,
+              leading: Icon(
+                Icons.bar_chart_rounded,
+                color: widget.isEstimate || !widget.isSpendingsAdded
+                    ? null
+                    : Theme.of(context).iconTheme.color,
+              ),
+              title: Text("Spending Estimate"),
+              onTap: widget.isSpendingsAdded
+                  ? () {
+                      widget.tabChangeCallback(false, true);
+                      Navigator.pop(context);
+                    }
+                  : null,
+              trailing: widget.isSpendingsAdded
+                  ? null
+                  : Icon(
+                      Icons.lock,
+                    ),
+            ),
+          ),
+          Divider(
+            thickness: 1.0,
+            color: Theme.of(context).dividerColor,
           ),
           ListTile(
             leading: isDarkTheme
@@ -177,6 +260,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
                 context: context,
                 builder: (context) => Dialog(
                   child: Container(
+                    padding: EdgeInsets.all(10.sp),
                     alignment: Alignment.center,
                     height: setScreenUtill(200.0),
                     width: setScreenUtill(200.0),
@@ -204,85 +288,43 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
               Icons.arrow_forward_ios_rounded,
             ),
           ),
+          ListTile(
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) => Dialog(
+                  child: Container(
+                    padding: EdgeInsets.all(10.sp),
+                    alignment: Alignment.center,
+                    height: setScreenUtill(200.0),
+                    width: setScreenUtill(200.0),
+                    child: Text(
+                      "Total ${savings >= 0 ? 'savings' : 'overdraft'} on previous Month:\n ${savings.abs().floor()}",
+                      style: Theme.of(context).textTheme.bodyText1.copyWith(
+                            fontSize: setScreenUtill(24.0),
+                          ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ).then(
+                (value) => Navigator.pop(context),
+              );
+            },
+            selected: true,
+            leading: Icon(
+              Icons.monetization_on,
+            ),
+            title: Text(
+              "Previous Savings",
+            ),
+            trailing: Icon(
+              Icons.arrow_forward_ios_rounded,
+            ),
+          ),
           Divider(
             thickness: 1.0,
             color: Theme.of(context).dividerColor,
-          ),
-          ListTile(
-            selected: !widget.isAnalysis && !widget.isEstimate,
-            leading: Icon(
-              Icons.home_rounded,
-              color: !widget.isAnalysis && !widget.isEstimate
-                  ? null
-                  : Theme.of(context).iconTheme.color,
-            ),
-            title: Text("Home"),
-            onTap: () {
-              widget.tabChangeCallback(false, false);
-              Navigator.pop(context);
-            },
-          ),
-          InkWell(
-            onTap: widget.isSpendingsAdded
-                ? null
-                : () => Toast.show(
-                      "Add spendings to unlock",
-                      context,
-                      duration: Toast.LENGTH_LONG,
-                    ),
-            child: ListTile(
-              enabled: widget.isSpendingsAdded ? true : false,
-              selected: widget.isAnalysis,
-              leading: Icon(
-                Icons.pie_chart_rounded,
-                color: widget.isAnalysis || !widget.isSpendingsAdded
-                    ? null
-                    : Theme.of(context).iconTheme.color,
-              ),
-              title: Text("Spending Anlysis"),
-              onTap: widget.isSpendingsAdded
-                  ? () {
-                      widget.tabChangeCallback(true, false);
-                      Navigator.pop(context);
-                    }
-                  : null,
-              trailing: widget.isSpendingsAdded
-                  ? null
-                  : Icon(
-                      Icons.lock,
-                    ),
-            ),
-          ),
-          InkWell(
-            onTap: widget.isSpendingsAdded
-                ? null
-                : () => Toast.show(
-                      "Add spendings to unlock",
-                      context,
-                      duration: Toast.LENGTH_LONG,
-                    ),
-            child: ListTile(
-              enabled: widget.isSpendingsAdded ? true : false,
-              selected: widget.isEstimate,
-              leading: Icon(
-                Icons.bar_chart_rounded,
-                color: widget.isEstimate || !widget.isSpendingsAdded
-                    ? null
-                    : Theme.of(context).iconTheme.color,
-              ),
-              title: Text("Spending Estimate"),
-              onTap: widget.isSpendingsAdded
-                  ? () {
-                      widget.tabChangeCallback(false, true);
-                      Navigator.pop(context);
-                    }
-                  : null,
-              trailing: widget.isSpendingsAdded
-                  ? null
-                  : Icon(
-                      Icons.lock,
-                    ),
-            ),
           ),
         ],
       ),
@@ -297,7 +339,11 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
 
   void getDbValues() async {
     spm.clear();
-
+    num amount = 0;
+    SharedPreferences.getInstance().then((sp) {
+      amount = sp.getInt(AMOUNT) == null ? "" : sp.getInt(AMOUNT);
+      setState(() {});
+    });
     var data = await _dbHelper.querySelected(
       (DateTime.now().month - 1).toString(),
     );
@@ -312,6 +358,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
     spm.forEach((element) {
       expense += element.amount.toDouble();
     });
+    savings = amount - expense;
     setState(() {});
   }
 }

@@ -57,7 +57,7 @@ class _AboutState extends State<About> {
                 height: setScreenUtill(80.0),
               ),
               Text(
-                "© MSP's Appamania",
+                "© Appamania",
                 style: textTheme.bodyText1.copyWith(
                   fontSize: setScreenUtill(15.0),
                 ),

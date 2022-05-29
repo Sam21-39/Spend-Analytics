@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spend_analytics/Screens/MainDashboard/main_dashboard.dart';
@@ -46,8 +47,11 @@ class _SplashState extends State<Splash> {
       child: Center(
         child: Hero(
           tag: "logo",
-          child: SvgPicture.asset(
-            'assets/images/sp_logo.svg',
+          child: SizedBox(
+            width: 150.w,
+            child: SvgPicture.asset(
+              'assets/images/sp_logo.svg',
+            ),
           ),
         ),
       ),

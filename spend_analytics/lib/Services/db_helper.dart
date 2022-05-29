@@ -71,12 +71,13 @@ class DbHelper {
   }
 
   // DATABASE QUERY FETCH SELECTED ROW
-  Future<List<Map<String, dynamic>>> querySelected(String month) async {
+  Future<List<Map<String, dynamic>>> querySelected(String month,
+      {String year}) async {
     Database db = await dbInstance.databse;
     return await db.query(
       _tableName,
       where: "$_columnDateTime LIKE ? ORDER BY $_columnId DESC",
-      whereArgs: ["%/$month/%"],
+      whereArgs: ["%/$month/$year"],
     );
   }
 

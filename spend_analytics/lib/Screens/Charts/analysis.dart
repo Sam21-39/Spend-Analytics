@@ -200,6 +200,7 @@ class _AnalysisState extends State<Analysis> {
     pieChartData.clear();
     var data = await _dbHelper.querySelected(
       DateTime.now().month.toString(),
+      year: DateTime.now().year.toString(),
     );
 
     if (data.isNotEmpty) {

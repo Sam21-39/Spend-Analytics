@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spend_analytics/Screens/splash.dart';
 import 'package:spend_analytics/UI/uicolors.dart';
@@ -8,6 +9,9 @@ import 'package:spend_analytics/UI/uitext.dart';
 import 'package:spend_analytics/Utils/sp_constants.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Initialize without device test ids.
+  MobileAds.instance.initialize();
   runApp(
     MyApp(
       key: appKey,
@@ -30,7 +34,8 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     SharedPreferences.getInstance().then((sp) {
       setState(() {
-        isDarkMode = sp.getBool(THEME) == null ? true : sp.getBool(THEME);
+        isDarkMode =
+            sp.getBool(THEME) == null ? true : sp.getBool(THEME) as bool;
       });
     });
   }

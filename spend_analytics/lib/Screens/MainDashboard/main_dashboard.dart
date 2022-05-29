@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spend_analytics/Model/spending_model.dart';
 import 'package:spend_analytics/Screens/Charts/analysis.dart';
@@ -37,7 +38,33 @@ class _MainDashboardState extends State<MainDashboard> {
   bool isAnalysis = false;
 
   bool isEstimate = false;
+  String selected = "current";
   String name = "";
+
+// BANNER SPECIFICS
+  final BannerAd myBanner = BannerAd(
+    adUnitId: 'ca-app-pub-4026417628443700/1900606500',
+    size: AdSize.banner,
+    request: AdRequest(),
+    listener: BannerAdListener(),
+  );
+  final BannerAdListener listener = BannerAdListener(
+    // Called when an ad is successfully received.
+    onAdLoaded: (Ad ad) => print('Ad loaded.'),
+    // Called when an ad request failed.
+    onAdFailedToLoad: (Ad ad, LoadAdError error) {
+      // Dispose the ad here to free resources.
+      ad.dispose();
+      print('Ad failed to load: $error');
+    },
+    // Called when an ad opens an overlay that covers the screen.
+    onAdOpened: (Ad ad) => print('Ad opened.'),
+    // Called when an ad removes an overlay that covers the screen.
+    onAdClosed: (Ad ad) => print('Ad closed.'),
+    // Called when an impression occurs on the ad.
+    onAdImpression: (Ad ad) => print('Ad impression.'),
+  );
+
   @override
   void initState() {
     super.initState();
@@ -46,6 +73,7 @@ class _MainDashboardState extends State<MainDashboard> {
       setState(() {});
     });
     getDbValues();
+    myBanner.load();
   }
 
   @override
@@ -91,26 +119,57 @@ class _MainDashboardState extends State<MainDashboard> {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         PopupMenuButton(
-                          tooltip: "Date Filter",
-                          icon: Icon(
-                            Icons.filter_list_rounded,
-                          ),
-                          itemBuilder: (BuildContext context) =>
-                              <PopupMenuEntry<String>>[
-                            const PopupMenuItem<String>(
-                              value: "all",
-                              child: Text('All'),
+                            tooltip: "Date Filter",
+                            icon: Icon(
+                              Icons.filter_list_rounded,
                             ),
-                            const PopupMenuItem<String>(
-                              value: "current",
-                              child: Text(
-                                'Current Month',
-                              ),
-                            ),
-                          ],
-                          onSelected: (val) =>
-                              val == "all" ? getDbValuesAll() : getDbValues(),
-                        ),
+                            itemBuilder: (BuildContext context) =>
+                                <PopupMenuEntry<String>>[
+                                  PopupMenuItem<String>(
+                                    value: "all",
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('All'),
+                                        selected == "all"
+                                            ? Icon(
+                                                Icons.done,
+                                                color: Theme.of(context)
+                                                    .iconTheme
+                                                    .color,
+                                              )
+                                            : Container(),
+                                      ],
+                                    ),
+                                  ),
+                                  PopupMenuItem<String>(
+                                    value: "current",
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          'Current Month',
+                                        ),
+                                        selected == "current"
+                                            ? Icon(
+                                                Icons.done,
+                                                color: Theme.of(context)
+                                                    .iconTheme
+                                                    .color,
+                                              )
+                                            : Container(),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                            onSelected: (val) {
+                              val == "all" ? getDbValuesAll() : getDbValues();
+                              setState(() {
+                                selected = val;
+                              });
+                            }),
                         Expanded(
                           child: ListView(
                             padding: EdgeInsets.all(
@@ -275,6 +334,7 @@ class _MainDashboardState extends State<MainDashboard> {
                         ),
                       ],
                     ),
+          bottomNavigationBar: adContainer(),
           floatingActionButtonLocation:
               FloatingActionButtonLocation.centerFloat,
           floatingActionButton: isAnalysis || isEstimate
@@ -338,6 +398,7 @@ class _MainDashboardState extends State<MainDashboard> {
     spm.clear();
     var data = await _dbHelper.querySelected(
       DateTime.now().month.toString(),
+      year: DateTime.now().year.toString(),
     );
     if (data.isNotEmpty)
       data.forEach(
@@ -466,4 +527,11 @@ class _MainDashboardState extends State<MainDashboard> {
       ),
     );
   }
+
+  Widget adContainer() => Container(
+        alignment: Alignment.center,
+        child: AdWidget(ad: myBanner),
+        width: myBanner.size.width.toDouble(),
+        height: myBanner.size.height.toDouble(),
+      );
 }

@@ -152,6 +152,7 @@ class _EstimateState extends State<Estimate> {
 
     var data = await _dbHelper.querySelected(
       DateTime.now().month.toString(),
+      year: DateTime.now().year.toString(),
     );
 
     if (data.isNotEmpty) {
