@@ -59,7 +59,7 @@ class _AmountState extends State<Amount> {
               Column(
                 children: [
                   Text(
-                    'Your Monthly Income (Only Amount)',
+                    'Your Monthly Budget (Only Amount)',
                     style: Theme.of(context).textTheme.headline4.copyWith(
                           fontSize: setScreenUtill(36.0),
                         ),

@@ -34,9 +34,9 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
 
   String versionInfo = "";
 
-  double expense = 0.0;
-  double savings = 0.0;
-  List<SpendingModel> spm = [];
+  double expense = 0.0, expenseNow = 0.0;
+  double savings = 0.0, savingsNow = 0.0;
+  List<SpendingModel> spm = [], spm2 = [];
   DbHelper _dbHelper = DbHelper.dbInstance;
   @override
   void initState() {
@@ -49,6 +49,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
     });
     version();
     getDbValues();
+    getDbValuesNow();
   }
 
   @override
@@ -265,7 +266,75 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
                     height: setScreenUtill(200.0),
                     width: setScreenUtill(200.0),
                     child: Text(
-                      "Total Expanse on previous Month:\n ${expense.floor()}",
+                      "Total Expanse on previous Month:\n ${spm2.isEmpty ? 'No Data' : expenseNow.floor()}",
+                      style: Theme.of(context).textTheme.bodyText1.copyWith(
+                            fontSize: setScreenUtill(24.0),
+                          ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ).then(
+                (value) => Navigator.pop(context),
+              );
+            },
+            selected: true,
+            leading: Icon(
+              Icons.monetization_on,
+            ),
+            title: Text(
+              "Current Expense",
+            ),
+            trailing: Icon(
+              Icons.arrow_forward_ios_rounded,
+            ),
+          ),
+          ListTile(
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) => Dialog(
+                  child: Container(
+                    padding: EdgeInsets.all(10.sp),
+                    alignment: Alignment.center,
+                    height: setScreenUtill(200.0),
+                    width: setScreenUtill(200.0),
+                    child: Text(
+                      "Total ${savingsNow >= 0 ? 'savings' : 'overdraft'} on previous Month:\n ${spm2.isEmpty ? 'No Data' : savingsNow.abs().floor()}",
+                      style: Theme.of(context).textTheme.bodyText1.copyWith(
+                            fontSize: setScreenUtill(24.0),
+                          ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ).then(
+                (value) => Navigator.pop(context),
+              );
+            },
+            selected: true,
+            leading: Icon(
+              Icons.monetization_on,
+            ),
+            title: Text(
+              "Current Savings",
+            ),
+            trailing: Icon(
+              Icons.arrow_forward_ios_rounded,
+            ),
+          ),
+          ListTile(
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) => Dialog(
+                  child: Container(
+                    padding: EdgeInsets.all(10.sp),
+                    alignment: Alignment.center,
+                    height: setScreenUtill(200.0),
+                    width: setScreenUtill(200.0),
+                    child: Text(
+                      "Total Expanse on previous Month:\n ${spm.isEmpty ? 'No Data' : expense.floor()}",
                       style: Theme.of(context).textTheme.bodyText1.copyWith(
                             fontSize: setScreenUtill(24.0),
                           ),
@@ -299,7 +368,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
                     height: setScreenUtill(200.0),
                     width: setScreenUtill(200.0),
                     child: Text(
-                      "Total ${savings >= 0 ? 'savings' : 'overdraft'} on previous Month:\n ${savings.abs().floor()}",
+                      "Total ${savings >= 0 ? 'savings' : 'overdraft'} on previous Month:\n ${spm.isEmpty ? 'No Data' : savings.abs().floor()}",
                       style: Theme.of(context).textTheme.bodyText1.copyWith(
                             fontSize: setScreenUtill(24.0),
                           ),
@@ -346,6 +415,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
     });
     var data = await _dbHelper.querySelected(
       (DateTime.now().month - 1).toString(),
+      year: (DateTime.now().year).toString(),
     );
 
     if (data.isNotEmpty) {
@@ -359,6 +429,32 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
       expense += element.amount.toDouble();
     });
     savings = amount - expense;
+    setState(() {});
+  }
+
+  void getDbValuesNow() async {
+    spm2.clear();
+    num amount = 0;
+    SharedPreferences.getInstance().then((sp) {
+      amount = sp.getInt(AMOUNT) == null ? "" : sp.getInt(AMOUNT);
+      setState(() {});
+    });
+    var data = await _dbHelper.querySelected(
+      (DateTime.now().month).toString(),
+      year: (DateTime.now().year).toString(),
+    );
+
+    if (data.isNotEmpty) {
+      data.forEach(
+        (e) => spm2.add(
+          SpendingModel.fromJson(e),
+        ),
+      );
+    }
+    spm2.forEach((element) {
+      expenseNow += element.amount.toDouble();
+    });
+    savingsNow = amount - expenseNow;
     setState(() {});
   }
 }
