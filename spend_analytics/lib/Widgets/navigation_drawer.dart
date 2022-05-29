@@ -266,7 +266,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
                     height: setScreenUtill(200.0),
                     width: setScreenUtill(200.0),
                     child: Text(
-                      "Total Expanse on previous Month:\n ${spm2.isEmpty ? 'No Data' : expenseNow.floor()}",
+                      "Total Expanse on current Month:\n ${spm2.isEmpty ? 'No Data' : expenseNow.floor()}",
                       style: Theme.of(context).textTheme.bodyText1.copyWith(
                             fontSize: setScreenUtill(24.0),
                           ),
@@ -334,7 +334,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
                     height: setScreenUtill(200.0),
                     width: setScreenUtill(200.0),
                     child: Text(
-                      "Total Expanse on current Month:\n ${spm.isEmpty ? 'No Data' : expense.floor()}",
+                      "Total Expanse on previous Month:\n ${spm.isEmpty ? 'No Data' : expense.floor()}",
                       style: Theme.of(context).textTheme.bodyText1.copyWith(
                             fontSize: setScreenUtill(24.0),
                           ),
