@@ -5,6 +5,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spend_analytics/Model/spending_model.dart';
 import 'package:spend_analytics/Screens/DrawerMenu/about.dart';
+import 'package:spend_analytics/Screens/DrawerMenu/settings.dart';
 import 'package:spend_analytics/Screens/Onboarding/amount.dart';
 import 'package:spend_analytics/Screens/Onboarding/name.dart';
 import 'package:spend_analytics/Services/db_helper.dart';
@@ -184,77 +185,77 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
               });
             },
           ),
-          ListTile(
-            selected: true,
-            leading: Icon(Icons.perm_device_info_rounded),
-            title: Text("Version: $versionInfo"),
-            // trailing: Icon(
-            //   Icons.arrow_forward_ios_rounded,
-            // ),
-          ),
+          // ListTile(
+          //   selected: true,
+          //   leading: Icon(Icons.perm_device_info_rounded),
+          //   title: Text("Version: $versionInfo"),
+          //   // trailing: Icon(
+          //   //   Icons.arrow_forward_ios_rounded,
+          //   // ),
+          // ),
           ListTile(
             onTap: () => Navigator.of(context)
                 .push(
                   MaterialPageRoute(
-                    builder: (context) => About(),
+                    builder: (context) => Settings(),
                   ),
                 )
                 .then(
                   (value) => Navigator.pop(context),
                 ),
             selected: true,
-            leading: Icon(Icons.info_outline_rounded),
-            title: Text("About App"),
+            leading: Icon(Icons.settings),
+            title: Text("Settings"),
             trailing: Icon(
               Icons.arrow_forward_ios_rounded,
             ),
           ),
-          ListTile(
-            onTap: () => Navigator.of(context)
-                .push(
-                  MaterialPageRoute(
-                    builder: (context) => Name(
-                      isChanging: true,
-                    ),
-                  ),
-                )
-                .then(
-                  (value) => Navigator.pop(context),
-                ),
-            selected: true,
-            leading: Icon(
-              Icons.edit,
-            ),
-            title: Text(
-              "Change Name",
-            ),
-            trailing: Icon(
-              Icons.arrow_forward_ios_rounded,
-            ),
-          ),
-          ListTile(
-            onTap: () => Navigator.of(context)
-                .push(
-                  MaterialPageRoute(
-                    builder: (context) => Amount(
-                      isChanging: true,
-                    ),
-                  ),
-                )
-                .then(
-                  (value) => Navigator.pop(context),
-                ),
-            selected: true,
-            leading: Icon(
-              Icons.monetization_on_outlined,
-            ),
-            title: Text(
-              "Change Amount",
-            ),
-            trailing: Icon(
-              Icons.arrow_forward_ios_rounded,
-            ),
-          ),
+          // ListTile(
+          //   onTap: () => Navigator.of(context)
+          //       .push(
+          //         MaterialPageRoute(
+          //           builder: (context) => Name(
+          //             isChanging: true,
+          //           ),
+          //         ),
+          //       )
+          //       .then(
+          //         (value) => Navigator.pop(context),
+          //       ),
+          //   selected: true,
+          //   leading: Icon(
+          //     Icons.edit,
+          //   ),
+          //   title: Text(
+          //     "Change Name",
+          //   ),
+          //   trailing: Icon(
+          //     Icons.arrow_forward_ios_rounded,
+          //   ),
+          // ),
+          // ListTile(
+          //   onTap: () => Navigator.of(context)
+          //       .push(
+          //         MaterialPageRoute(
+          //           builder: (context) => Amount(
+          //             isChanging: true,
+          //           ),
+          //         ),
+          //       )
+          //       .then(
+          //         (value) => Navigator.pop(context),
+          //       ),
+          //   selected: true,
+          //   leading: Icon(
+          //     Icons.monetization_on_outlined,
+          //   ),
+          //   title: Text(
+          //     "Change Amount",
+          //   ),
+          //   trailing: Icon(
+          //     Icons.arrow_forward_ios_rounded,
+          //   ),
+          // ),
           ListTile(
             onTap: () {
               showDialog(

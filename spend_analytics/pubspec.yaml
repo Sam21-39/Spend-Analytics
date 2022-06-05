@@ -1,7 +1,7 @@
 name: spend_analytics
 description: A new Flutter project.
 publish_to: 'none'
-version: 1.4.1+9
+version: 1.5.0+10
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -20,12 +20,16 @@ dependencies:
   flutter_launcher_icons: any
   fl_chart: any
   toast: any
+  
  
 
   # DB related
+  downloads_path_provider: any
+  permission_handler: any
   path_provider: any
   shared_preferences: any
   sqflite: any
+  csv: any
 
   # Ads Related
   google_mobile_ads: any

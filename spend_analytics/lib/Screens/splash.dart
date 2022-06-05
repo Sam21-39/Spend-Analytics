@@ -26,7 +26,7 @@ class _SplashState extends State<Splash> {
     });
     Future.delayed(
       Duration(
-        seconds: 4,
+        seconds: 2,
       ),
     ).then(
       (_) => Navigator.of(context).pushReplacement(
