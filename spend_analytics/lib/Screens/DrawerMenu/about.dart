@@ -47,7 +47,7 @@ class _AboutState extends State<About> {
                 height: setScreenUtill(40.0),
               ),
               Text(
-                "\"Spend Analytics\" is an app to help visualize your day-to-day spending.\n\n It keeps track of your overall and monthly expenditure and gives it a chart form to visualize. It neither affiliated with any website nor any organization. \n\nThe app does not require any permissions to run. The app does not save your data to any server or website. It stores the data in its in-built database. Once, uninstalled the data will be lost.",
+                "\"Spend Analytics\" is an app to help visualize your day-to-day spending.\n\n It keeps track of your overall and monthly expenditure and gives it a chart form to visualize. It neither affiliated with any website nor any organization. \n\nThe app does not require any special permissions to run. The app does not save your data to any server or website. It stores the data in its in-built database. Once, uninstalled the data will be lost. \n\n*(Now the data can be stored in CSV files, But it requires Storage access)",
                 style: textTheme.bodyText1.copyWith(
                   fontSize: setScreenUtill(24.0),
                 ),
