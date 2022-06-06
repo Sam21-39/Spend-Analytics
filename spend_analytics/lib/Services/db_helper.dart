@@ -6,12 +6,13 @@ import 'package:path/path.dart';
 
 class DbHelper {
   // DATABASE STATICS
-  static final _dbName = "spendigsTable.db";
-  static final _dbVersion = 1;
-  static final _tableName = "spendings";
+  static final _dbName = "_spendigsTable.db";
+  static final _dbVersion = 2; // new version
+  static final _tableName = "_spendings";
   static final _columnId = "_id";
   static final _columnAmount = "_amount";
   static final _columnType = "_type";
+  static final _columnMode = "_mode";
   static final _columnDateTime = "_datetime";
   static final _columnDescription = "_description";
 
@@ -49,6 +50,7 @@ class DbHelper {
         $_columnAmount INTEGER NOT NULL,
         $_columnType TEXT NOT NULL,
         $_columnDateTime TEXT NOT NULL,
+        $_columnMode TEXT NOT NULL,
         $_columnDescription TEXT)
       '''
           .trim(),

@@ -53,6 +53,7 @@ class _ItemPageState extends State<ItemPage> {
     return WillPopScope(
       onWillPop: () {
         Navigator.pop(context, false);
+        return Future.value(true);
       },
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),

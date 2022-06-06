@@ -3,6 +3,7 @@ class SpendingModel {
     this.id,
     this.amount,
     this.type,
+    this.mode,
     this.datetime,
     this.description,
   });
@@ -10,6 +11,7 @@ class SpendingModel {
   int id;
   int amount;
   String type;
+  String mode;
   String datetime;
   String description;
 
@@ -17,6 +19,7 @@ class SpendingModel {
         id: json["_id"],
         amount: json["_amount"],
         type: json["_type"],
+        mode: json["_mode"],
         datetime: json["_datetime"],
         description: json["_description"],
       );
@@ -25,6 +28,7 @@ class SpendingModel {
         "_id": id,
         "_amount": amount,
         "_type": type,
+        "_mode": mode,
         "_datetime": datetime,
         "_description": description,
       };
