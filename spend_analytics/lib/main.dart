@@ -34,8 +34,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     SharedPreferences.getInstance().then((sp) {
       setState(() {
-        isDarkMode =
-            sp.getBool(THEME) == null ? true : sp.getBool(THEME) as bool;
+        isDarkMode = sp.getBool(THEME) == null ? true : sp.getBool(THEME);
       });
     });
   }
