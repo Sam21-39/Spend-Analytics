@@ -144,6 +144,26 @@ class _MainDashboardState extends State<MainDashboard> {
                                     ),
                                   ),
                                   PopupMenuItem<String>(
+                                    value: "previous",
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          'Previous Month',
+                                        ),
+                                        selected == "previous"
+                                            ? Icon(
+                                                Icons.done,
+                                                color: Theme.of(context)
+                                                    .iconTheme
+                                                    .color,
+                                              )
+                                            : Container(),
+                                      ],
+                                    ),
+                                  ),
+                                  PopupMenuItem<String>(
                                     value: "current",
                                     child: Row(
                                       mainAxisAlignment:
@@ -165,7 +185,11 @@ class _MainDashboardState extends State<MainDashboard> {
                                   ),
                                 ],
                             onSelected: (val) {
-                              val == "all" ? getDbValuesAll() : getDbValues();
+                              val == "all"
+                                  ? getDbValuesAll()
+                                  : val == "previous"
+                                      ? getDbValuesPrev()
+                                      : getDbValues();
                               setState(() {
                                 selected = val;
                               });
@@ -380,7 +404,11 @@ class _MainDashboardState extends State<MainDashboard> {
                         .push(
                       MaterialPageRoute(
                         builder: (context) => ItemPage(
-                          onSaveCallback: getDbValues,
+                          onSaveCallback: selected == "all"
+                              ? getDbValuesAll
+                              : selected == "current"
+                                  ? getDbValues
+                                  : getDbValuesPrev,
                         ),
                       ),
                     )
@@ -415,6 +443,28 @@ class _MainDashboardState extends State<MainDashboard> {
   void getDbValuesAll() async {
     spm.clear();
     var data = await _dbHelper.queryAll();
+    if (data.isNotEmpty)
+      data.forEach(
+        (e) => spm.add(
+          SpendingModel.fromJson(e),
+        ),
+      );
+    if (data != null) {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  void getDbValuesPrev() async {
+    spm.clear();
+    var data = await _dbHelper.querySelected(
+      (DateTime.now().month - 1).toString(),
+      year: (DateTime.now().month - 1 == 12
+              ? DateTime.now().year - 1
+              : DateTime.now().year)
+          .toString(),
+    );
     if (data.isNotEmpty)
       data.forEach(
         (e) => spm.add(
