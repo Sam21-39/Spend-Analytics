@@ -151,7 +151,8 @@ class _SettingsState extends State<Settings> {
                   List<dynamic> row = [];
                   row.add("Amount");
                   row.add("Type");
-                  row.add("Date & Time");
+                  row.add("Date");
+                  row.add("Mode");
                   row.add("Description");
                   rows.add(row);
                   for (int i = 0; i < spm.length; i++) {
@@ -159,6 +160,7 @@ class _SettingsState extends State<Settings> {
                     row.add(spm[i].amount);
                     row.add(spm[i].type);
                     row.add(spm[i].datetime);
+                    row.add(spm[i].mode);
                     row.add(spm[i].description);
                     rows.add(row);
                   }
