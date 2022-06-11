@@ -33,3 +33,17 @@ const choiceTypeAvatar = [
   "assets/images/investment.svg",
   "assets/images/others.svg",
 ];
+
+const modeType = [
+  "Cash",
+  "Card",
+  "Online",
+  "Others",
+];
+
+const modeTypeAvatar = [
+  "assets/images/cash.svg",
+  "assets/images/card.svg",
+  "assets/images/online.svg",
+  "assets/images/others.svg",
+];

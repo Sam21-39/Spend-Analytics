@@ -236,16 +236,50 @@ class _MainDashboardState extends State<MainDashboard> {
                                                           CrossAxisAlignment
                                                               .start,
                                                       children: [
-                                                        Text(
-                                                          spm[index]
-                                                              .amount
-                                                              .toString(),
-                                                          style: textTheme
-                                                              .headline4
-                                                              .copyWith(
-                                                            color: UiColors
-                                                                .background,
-                                                          ),
+                                                        Row(
+                                                          children: [
+                                                            Text(
+                                                              spm[index]
+                                                                  .amount
+                                                                  .toString(),
+                                                              style: textTheme
+                                                                  .headline4
+                                                                  .copyWith(
+                                                                color: UiColors
+                                                                    .background,
+                                                              ),
+                                                            ),
+                                                            Container(
+                                                              margin: EdgeInsets.only(
+                                                                  left:
+                                                                      setScreenUtill(
+                                                                          10)),
+                                                              width:
+                                                                  setScreenUtill(
+                                                                      50.0),
+                                                              height:
+                                                                  setScreenUtill(
+                                                                      50.0),
+                                                              padding:
+                                                                  EdgeInsets
+                                                                      .all(
+                                                                setScreenUtill(
+                                                                    2.0),
+                                                              ),
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                color: UiColors
+                                                                    .lightRed,
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            50.0),
+                                                              ),
+                                                              child: SvgPicture
+                                                                  .asset(
+                                                                      "assets/images/${spm[index].mode.toLowerCase()}.svg"),
+                                                            ),
+                                                          ],
                                                         ),
                                                         SizedBox(
                                                           height:
@@ -427,10 +461,43 @@ class _MainDashboardState extends State<MainDashboard> {
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     spm.amount.toString(),
                     style: texts.headline4,
+                  ),
+                  Column(
+                    children: [
+                      Container(
+                        width: setScreenUtill(45.0),
+                        height: setScreenUtill(45.0),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(50.0),
+                          border: Border.all(
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        ),
+                        child: SvgPicture.asset(
+                            "assets/images/${spm.mode.toLowerCase()}.svg"),
+                      ),
+                      SizedBox(
+                        height: setScreenUtill(10.0),
+                      ),
+                      Text(
+                        "Payment Type:",
+                        style: texts.caption.copyWith(
+                          fontSize: setScreenUtill(14),
+                        ),
+                      ),
+                      Text(
+                        spm.mode,
+                        style: texts.caption.copyWith(
+                          fontSize: setScreenUtill(15),
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                    ],
                   ),
                   Text(
                     spm.datetime,
