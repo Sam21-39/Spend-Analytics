@@ -25,6 +25,7 @@ class _ItemPageState extends State<ItemPage> {
   var amountController = TextEditingController();
   var descriptionController = TextEditingController(text: "");
   int choiceIndex;
+  int modeIndex;
 
   String date = DateTime.now().day.toString() +
       "/" +
@@ -43,6 +44,7 @@ class _ItemPageState extends State<ItemPage> {
         descriptionController.text = widget.spendingModel.description;
         choiceIndex = choiceType.indexOf(widget.spendingModel.type);
         date = widget.spendingModel.datetime;
+        modeIndex = modeType.indexOf(widget.spendingModel.mode);
       });
     }
   }
@@ -53,6 +55,7 @@ class _ItemPageState extends State<ItemPage> {
     return WillPopScope(
       onWillPop: () {
         Navigator.pop(context, false);
+        return Future.value(true);
       },
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
@@ -136,7 +139,11 @@ class _ItemPageState extends State<ItemPage> {
                     ),
                     SizedBox(
                       height: 100.h,
-                      child: spendTypeChoice(),
+                      child: spendTypeChoice(
+                        choiceType,
+                        choiceTypeAvatar,
+                        false,
+                      ),
                     ),
                     SizedBox(
                       height: 20.h,
@@ -186,6 +193,37 @@ class _ItemPageState extends State<ItemPage> {
                     SizedBox(
                       height: 30.h,
                     ),
+                    Text(
+                      "Choose Payment Mode",
+                      style: textTheme.headline4.copyWith(
+                        fontSize: setScreenUtill(30.0),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(
+                      height: 20.h,
+                    ),
+                    SizedBox(
+                      height: 100.h,
+                      child: spendTypeChoice(
+                        modeType,
+                        modeTypeAvatar,
+                        true,
+                      ),
+                    ),
+                    SizedBox(
+                      height: 20.h,
+                    ),
+                    Text(
+                      "Selected: ${modeIndex != null ? modeType[modeIndex] : ''}",
+                      style: textTheme.caption.copyWith(
+                        fontSize: setScreenUtill(18.0),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(
+                      height: 20.h,
+                    ),
                     TextFormField(
                       controller: descriptionController,
                       cursorRadius: Radius.circular(20.0),
@@ -223,6 +261,7 @@ class _ItemPageState extends State<ItemPage> {
                     ),
                     Button(
                       onPressed: choiceIndex != null &&
+                              modeIndex != null &&
                               amountController.text.length > 0
                           ? () async {
                               if (_amountKey.currentState.validate()) {
@@ -233,6 +272,7 @@ class _ItemPageState extends State<ItemPage> {
                                     amount: int.parse(
                                       amountController.text.trim(),
                                     ),
+                                    mode: modeType[modeIndex],
                                     datetime: date,
                                     description: descriptionController.text,
                                   );
@@ -245,6 +285,7 @@ class _ItemPageState extends State<ItemPage> {
                                     amount: int.parse(
                                       amountController.text.trim(),
                                     ),
+                                    mode: modeType[modeIndex],
                                     datetime: date,
                                     description: descriptionController.text,
                                   );
@@ -269,11 +310,15 @@ class _ItemPageState extends State<ItemPage> {
     );
   }
 
-  Widget spendTypeChoice() {
+  Widget spendTypeChoice(
+    List<String> choice,
+    List<String> avatar,
+    bool isMode,
+  ) {
     var chipsTheme = Theme.of(context).chipTheme;
     return ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: choiceType.length,
+        itemCount: choice.length,
         itemBuilder: (context, index) {
           return Container(
             margin: EdgeInsets.all(
@@ -284,20 +329,24 @@ class _ItemPageState extends State<ItemPage> {
                 backgroundColor: chipsTheme.disabledColor.withOpacity(0.2),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(100.0),
-                  child: SvgPicture.asset(choiceTypeAvatar[index]),
+                  child: SvgPicture.asset(avatar[index]),
                 ),
                 radius: setScreenUtill(40.0),
               ),
               label: Text(
-                "${choiceType[index]}",
+                "${choice[index]}",
                 style: chipsTheme.labelStyle.copyWith(
                   fontSize: setScreenUtill(28.0),
                 ),
               ),
-              selected: choiceIndex == index,
+              selected: isMode ? modeIndex == index : choiceIndex == index,
               onSelected: (selected) {
                 setState(() {
-                  choiceIndex = selected ? index : null;
+                  if (isMode) {
+                    modeIndex = selected ? index : null;
+                  } else {
+                    choiceIndex = selected ? index : null;
+                  }
                 });
               },
             ),

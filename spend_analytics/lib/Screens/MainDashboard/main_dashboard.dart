@@ -144,6 +144,26 @@ class _MainDashboardState extends State<MainDashboard> {
                                     ),
                                   ),
                                   PopupMenuItem<String>(
+                                    value: "previous",
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          'Previous Month',
+                                        ),
+                                        selected == "previous"
+                                            ? Icon(
+                                                Icons.done,
+                                                color: Theme.of(context)
+                                                    .iconTheme
+                                                    .color,
+                                              )
+                                            : Container(),
+                                      ],
+                                    ),
+                                  ),
+                                  PopupMenuItem<String>(
                                     value: "current",
                                     child: Row(
                                       mainAxisAlignment:
@@ -165,7 +185,11 @@ class _MainDashboardState extends State<MainDashboard> {
                                   ),
                                 ],
                             onSelected: (val) {
-                              val == "all" ? getDbValuesAll() : getDbValues();
+                              val == "all"
+                                  ? getDbValuesAll()
+                                  : val == "previous"
+                                      ? getDbValuesPrev()
+                                      : getDbValues();
                               setState(() {
                                 selected = val;
                               });
@@ -236,16 +260,50 @@ class _MainDashboardState extends State<MainDashboard> {
                                                           CrossAxisAlignment
                                                               .start,
                                                       children: [
-                                                        Text(
-                                                          spm[index]
-                                                              .amount
-                                                              .toString(),
-                                                          style: textTheme
-                                                              .headline4
-                                                              .copyWith(
-                                                            color: UiColors
-                                                                .background,
-                                                          ),
+                                                        Row(
+                                                          children: [
+                                                            Text(
+                                                              spm[index]
+                                                                  .amount
+                                                                  .toString(),
+                                                              style: textTheme
+                                                                  .headline4
+                                                                  .copyWith(
+                                                                color: UiColors
+                                                                    .background,
+                                                              ),
+                                                            ),
+                                                            Container(
+                                                              margin: EdgeInsets.only(
+                                                                  left:
+                                                                      setScreenUtill(
+                                                                          10)),
+                                                              width:
+                                                                  setScreenUtill(
+                                                                      50.0),
+                                                              height:
+                                                                  setScreenUtill(
+                                                                      50.0),
+                                                              padding:
+                                                                  EdgeInsets
+                                                                      .all(
+                                                                setScreenUtill(
+                                                                    2.0),
+                                                              ),
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                color: UiColors
+                                                                    .lightRed,
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            50.0),
+                                                              ),
+                                                              child: SvgPicture
+                                                                  .asset(
+                                                                      "assets/images/${spm[index].mode.toLowerCase()}.svg"),
+                                                            ),
+                                                          ],
                                                         ),
                                                         SizedBox(
                                                           height:
@@ -346,7 +404,11 @@ class _MainDashboardState extends State<MainDashboard> {
                         .push(
                       MaterialPageRoute(
                         builder: (context) => ItemPage(
-                          onSaveCallback: getDbValues,
+                          onSaveCallback: selected == "all"
+                              ? getDbValuesAll
+                              : selected == "current"
+                                  ? getDbValues
+                                  : getDbValuesPrev,
                         ),
                       ),
                     )
@@ -394,6 +456,28 @@ class _MainDashboardState extends State<MainDashboard> {
     }
   }
 
+  void getDbValuesPrev() async {
+    spm.clear();
+    var data = await _dbHelper.querySelected(
+      (DateTime.now().month - 1).toString(),
+      year: (DateTime.now().month - 1 == 12
+              ? DateTime.now().year - 1
+              : DateTime.now().year)
+          .toString(),
+    );
+    if (data.isNotEmpty)
+      data.forEach(
+        (e) => spm.add(
+          SpendingModel.fromJson(e),
+        ),
+      );
+    if (data != null) {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   void getDbValues() async {
     spm.clear();
     var data = await _dbHelper.querySelected(
@@ -427,10 +511,43 @@ class _MainDashboardState extends State<MainDashboard> {
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     spm.amount.toString(),
                     style: texts.headline4,
+                  ),
+                  Column(
+                    children: [
+                      Container(
+                        width: setScreenUtill(45.0),
+                        height: setScreenUtill(45.0),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(50.0),
+                          border: Border.all(
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        ),
+                        child: SvgPicture.asset(
+                            "assets/images/${spm.mode.toLowerCase()}.svg"),
+                      ),
+                      SizedBox(
+                        height: setScreenUtill(10.0),
+                      ),
+                      Text(
+                        "Payment Type:",
+                        style: texts.caption.copyWith(
+                          fontSize: setScreenUtill(14),
+                        ),
+                      ),
+                      Text(
+                        spm.mode,
+                        style: texts.caption.copyWith(
+                          fontSize: setScreenUtill(15),
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                    ],
                   ),
                   Text(
                     spm.datetime,
