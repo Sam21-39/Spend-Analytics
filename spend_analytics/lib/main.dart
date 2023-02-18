@@ -89,7 +89,6 @@ class _MyAppState extends State<MyApp> {
       ),
       buttonColor: UiColors.primary,
       disabledColor: Colors.white.withOpacity(0.5),
-      cursorColor: UiColors.primary,
       dividerColor: Colors.white.withOpacity(0.7),
       canvasColor: UiColors.black,
       textTheme: TextTheme(
@@ -203,7 +202,6 @@ class _MyAppState extends State<MyApp> {
       ),
       buttonColor: UiColors.primary,
       disabledColor: UiColors.darkGrey.withOpacity(0.5),
-      cursorColor: UiColors.primary,
       dividerColor: UiColors.darkGrey,
       canvasColor: UiColors.background,
       textTheme: TextTheme(
