@@ -10,7 +10,7 @@ class Amount extends StatefulWidget {
   final isChanging;
 
   const Amount({
-    Key key,
+    Key? key,
     this.isChanging = false,
   }) : super(key: key);
 
@@ -27,7 +27,7 @@ class _AmountState extends State<Amount> {
     super.initState();
     SharedPreferences.getInstance().then((sp) {
       amountController.text =
-          sp.getInt(AMOUNT) == null ? "" : sp.getInt(AMOUNT).toString();
+          sp.getDouble(AMOUNT) == null ? "" : sp.getDouble(AMOUNT).toString();
       setState(() {});
     });
   }
@@ -48,7 +48,7 @@ class _AmountState extends State<Amount> {
             onPressed: () => Navigator.pop(context),
           ),
         ),
-        backgroundColor: Theme.of(context).backgroundColor,
+        backgroundColor: Theme.of(context).colorScheme.background,
         body: Form(
           key: _amountKey,
           child: ListView(
@@ -60,7 +60,7 @@ class _AmountState extends State<Amount> {
                 children: [
                   Text(
                     'Your Monthly Budget (Only Amount)',
-                    style: Theme.of(context).textTheme.headline4.copyWith(
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           fontSize: setScreenUtill(36.0),
                         ),
                     textAlign: TextAlign.center,
@@ -72,7 +72,7 @@ class _AmountState extends State<Amount> {
                     controller: amountController,
                     cursorRadius: Radius.circular(20.0),
                     cursorWidth: 5.w,
-                    style: Theme.of(context).textTheme.bodyText1.copyWith(
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           fontSize: setScreenUtill(18.0),
                         ),
                     decoration: InputDecoration(
@@ -92,19 +92,20 @@ class _AmountState extends State<Amount> {
                         left: setScreenUtill(15.0),
                       ),
                       hintText: 'Amount (Max. 8 Character)',
-                      hintStyle: Theme.of(context).textTheme.caption.copyWith(
-                            fontSize: setScreenUtill(18.0),
-                          ),
+                      hintStyle:
+                          Theme.of(context).textTheme.bodySmall?.copyWith(
+                                fontSize: setScreenUtill(18.0),
+                              ),
                     ),
                     maxLength: 8,
                     keyboardType: TextInputType.number,
                     onEditingComplete: () => TextInputAction.done,
                     onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
-                    validator: (val) => val.isEmpty
+                    validator: (String? val) => val!.isEmpty
                         ? "Required"
-                        : int.tryParse(val) == null
+                        : double.tryParse(val) == null
                             ? "Invalid Charecters"
-                            : int.parse(val) < 1000
+                            : double.parse(val) < 1000
                                 ? "Amount should be alteast 1000"
                                 : null,
                   ),
@@ -118,16 +119,16 @@ class _AmountState extends State<Amount> {
                       onPressed: () async {
                         SharedPreferences sp =
                             await SharedPreferences.getInstance();
-                        if (_amountKey.currentState.validate()) {
+                        if (_amountKey.currentState?.validate() ?? false) {
                           Navigator.of(context).pushAndRemoveUntil(
                             MaterialPageRoute(
                               builder: (context) => MainDashboard(),
                             ),
                             (route) => false,
                           );
-                          sp.setInt(
+                          sp.setDouble(
                             AMOUNT,
-                            int.parse(
+                            double.parse(
                               amountController.text.trim(),
                             ),
                           );
@@ -144,16 +145,16 @@ class _AmountState extends State<Amount> {
             : FloatingActionButton(
                 onPressed: () async {
                   SharedPreferences sp = await SharedPreferences.getInstance();
-                  if (_amountKey.currentState.validate()) {
+                  if (_amountKey.currentState?.validate() ?? false) {
                     Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(
                         builder: (context) => MainDashboard(),
                       ),
                       (_) => false,
                     );
-                    sp.setInt(
+                    sp.setDouble(
                       AMOUNT,
-                      int.parse(
+                      double.parse(
                         amountController.text.trim(),
                       ),
                     );

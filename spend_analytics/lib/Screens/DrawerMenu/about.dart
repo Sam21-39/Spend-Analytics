@@ -22,7 +22,7 @@ class _AboutState extends State<About> {
           onPressed: () => Navigator.pop(context, false),
         ),
       ),
-      backgroundColor: Theme.of(context).backgroundColor,
+      backgroundColor: Theme.of(context).colorScheme.background,
       body: ListView(
         padding: EdgeInsets.all(
           setScreenUtill(20.0),
@@ -39,7 +39,7 @@ class _AboutState extends State<About> {
               ),
               Text(
                 "About The App",
-                style: textTheme.headline4.copyWith(
+                style: textTheme.headlineMedium?.copyWith(
                   fontSize: setScreenUtill(30.0),
                 ),
               ),
@@ -48,7 +48,7 @@ class _AboutState extends State<About> {
               ),
               Text(
                 "\"Spend Analytics\" is an app to help visualize your day-to-day spending.\n\n It keeps track of your overall and monthly expenditure and gives it a chart form to visualize. It neither affiliated with any website nor any organization. \n\nThe app does not require any special permissions to run. The app does not save your data to any server or website. It stores the data in its in-built database. Once, uninstalled the data will be lost. \n\n*(Now the data can be stored in CSV files, But it requires Storage access)",
-                style: textTheme.bodyText1.copyWith(
+                style: textTheme.bodyLarge?.copyWith(
                   fontSize: setScreenUtill(24.0),
                 ),
                 textAlign: TextAlign.justify,
@@ -58,7 +58,7 @@ class _AboutState extends State<About> {
               ),
               Text(
                 "© Appamania",
-                style: textTheme.bodyText1.copyWith(
+                style: textTheme.bodyLarge?.copyWith(
                   fontSize: setScreenUtill(15.0),
                 ),
               )

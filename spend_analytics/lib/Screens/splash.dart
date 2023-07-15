@@ -19,7 +19,7 @@ class _SplashState extends State<Splash> {
     SharedPreferences.getInstance().then((sp) {
       setState(() {
         isOnboardingDone =
-            sp.getInt(AMOUNT) != null && sp.getString(NAME) != null
+            sp.getDouble(AMOUNT) != null && sp.getString(NAME) != null
                 ? true
                 : false;
       });
@@ -43,7 +43,7 @@ class _SplashState extends State<Splash> {
     return Container(
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.height,
-      color: Theme.of(context).backgroundColor,
+      color: Theme.of(context).colorScheme.background,
       child: Center(
         child: Hero(
           tag: "logo",

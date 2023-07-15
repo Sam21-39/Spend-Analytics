@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:csv/csv.dart';
-import 'package:downloads_path_provider/downloads_path_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -15,7 +14,7 @@ import 'package:spend_analytics/Utils/display_utils.dart';
 import 'package:toast/toast.dart';
 
 class Settings extends StatefulWidget {
-  const Settings({Key key}) : super(key: key);
+  const Settings({Key? key}) : super(key: key);
 
   @override
   _SettingsState createState() => _SettingsState();
@@ -47,7 +46,7 @@ class _SettingsState extends State<Settings> {
         shadowColor: null,
         title: Text(
           "Settings",
-          style: textTheme.headline4.copyWith(
+          style: textTheme.headlineMedium?.copyWith(
             fontSize: setScreenUtill(24.0),
           ),
         ),
@@ -59,7 +58,7 @@ class _SettingsState extends State<Settings> {
           onPressed: () => Navigator.pop(context, false),
         ),
       ),
-      backgroundColor: Theme.of(context).backgroundColor,
+      backgroundColor: Theme.of(context).colorScheme.background,
       body: ListView(
           padding: EdgeInsets.all(
             setScreenUtill(20.0),
@@ -166,14 +165,14 @@ class _SettingsState extends State<Settings> {
                   }
                   final String csv = const ListToCsvConverter().convert(rows);
                   final directory =
-                      (await DownloadsPathProvider.downloadsDirectory);
+                      await Directory('Storage/emulated/0/Download');
 
                   final String dir = directory.path;
 
                   File f = File(dir + "/Spendings.csv");
 
                   f.writeAsString(csv).whenComplete(() {
-                    Toast.show("File saved in $dir", context, duration: 5);
+                    Toast.show("File saved in $dir", duration: 5);
                     // print(dir);
                   });
                 }
@@ -207,7 +206,7 @@ class _SettingsState extends State<Settings> {
     spm.clear();
 
     var data = await _dbHelper.queryAll();
-    if (data.isNotEmpty) {
+    if (data != null && data.isNotEmpty) {
       data.forEach(
         (e) => spm.add(
           SpendingModel.fromJson(e),

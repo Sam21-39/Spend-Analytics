@@ -18,7 +18,7 @@ class _OnboardingState extends State<Onboarding> {
       type: MaterialType.canvas,
       child: SafeArea(
         child: Scaffold(
-          backgroundColor: Theme.of(context).backgroundColor,
+          backgroundColor: Theme.of(context).colorScheme.background,
           body: Container(
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.height,
@@ -48,7 +48,7 @@ class _OnboardingState extends State<Onboarding> {
                     ),
                     Text(
                       'Hi There!',
-                      style: textTheme.headline4.copyWith(
+                      style: textTheme.headlineMedium?.copyWith(
                         fontSize: setScreenUtill(36.0),
                       ),
                     ),
@@ -57,7 +57,7 @@ class _OnboardingState extends State<Onboarding> {
                     ),
                     Text(
                       'Welcome To',
-                      style: textTheme.subtitle1.copyWith(
+                      style: textTheme.titleMedium?.copyWith(
                         fontSize: setScreenUtill(24.0),
                       ),
                     ),
@@ -66,7 +66,7 @@ class _OnboardingState extends State<Onboarding> {
                     ),
                     Text(
                       'Spend Analytics',
-                      style: textTheme.headline4.copyWith(
+                      style: textTheme.headlineMedium?.copyWith(
                         fontSize: setScreenUtill(30.0),
                         fontWeight: FontWeight.w600,
                       ),

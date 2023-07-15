@@ -7,8 +7,6 @@ import 'package:spend_analytics/UI/uicolors.dart';
 import 'package:spend_analytics/Utils/display_utils.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../UI/uicolors.dart';
-
 class Analysis extends StatefulWidget {
   @override
   _AnalysisState createState() => _AnalysisState();
@@ -38,7 +36,7 @@ class _AnalysisState extends State<Analysis> {
       children: [
         Text(
           "*This chart represents what percentage of spending is done and in which category. \n\nIt does not represent the exact amount of spending.",
-          style: textTheme.bodyText1.copyWith(
+          style: textTheme.bodyLarge?.copyWith(
             fontSize: setScreenUtill(18.0),
             color: UiColors.red,
           ),
@@ -48,7 +46,7 @@ class _AnalysisState extends State<Analysis> {
         ),
         Text(
           "Current Month's Spendings:",
-          style: textTheme.headline4.copyWith(
+          style: textTheme.headlineMedium?.copyWith(
             fontSize: setScreenUtill(26.0),
           ),
         ),
@@ -58,7 +56,7 @@ class _AnalysisState extends State<Analysis> {
         pieChartData.isEmpty
             ? Text(
                 "Nothing added",
-                style: textTheme.bodyText1.copyWith(),
+                style: textTheme.bodyLarge?.copyWith(),
                 textAlign: TextAlign.center,
               )
             : Container(
@@ -71,9 +69,6 @@ class _AnalysisState extends State<Analysis> {
                     PieChartData(
                       pieTouchData: PieTouchData(
                         enabled: true,
-                        touchCallback: (pieTouchResponse) {
-                          setState(() {});
-                        },
                       ),
                       borderData: FlBorderData(
                         show: false,
@@ -94,7 +89,7 @@ class _AnalysisState extends State<Analysis> {
         ),
         Text(
           "Overall Spendings:",
-          style: textTheme.headline4.copyWith(
+          style: textTheme.headlineMedium?.copyWith(
             fontSize: setScreenUtill(26.0),
           ),
         ),
@@ -104,7 +99,7 @@ class _AnalysisState extends State<Analysis> {
         pieChartDataAll.isEmpty
             ? Text(
                 "Nothing added",
-                style: textTheme.bodyText1.copyWith(),
+                style: textTheme.bodyLarge?.copyWith(),
                 textAlign: TextAlign.center,
               )
             : Container(
@@ -117,9 +112,6 @@ class _AnalysisState extends State<Analysis> {
                     PieChartData(
                       pieTouchData: PieTouchData(
                         enabled: true,
-                        touchCallback: (pieTouchResponse) {
-                          setState(() {});
-                        },
                       ),
                       borderData: FlBorderData(
                         show: false,
@@ -139,7 +131,7 @@ class _AnalysisState extends State<Analysis> {
     );
   }
 
-  List getChartValues(Map map, int index, spm) {
+  List<PieChartSectionData> getChartValues(Map map, int index, spm) {
     List holder = map.keys.toList();
 
     //index is there for future use purpose.. can be removed in future...
@@ -183,7 +175,7 @@ class _AnalysisState extends State<Analysis> {
     spm1.clear();
     pieChartDataAll.clear();
     var data = await _dbHelper.queryAll();
-    if (data.isNotEmpty) {
+    if (data != null && data.isNotEmpty) {
       data.forEach(
         (e) => spm1.add(
           SpendingModel.fromJson(e),
@@ -203,7 +195,7 @@ class _AnalysisState extends State<Analysis> {
       year: DateTime.now().year.toString(),
     );
 
-    if (data.isNotEmpty) {
+    if (data != null && data.isNotEmpty) {
       data.forEach(
         (e) => spm.add(
           SpendingModel.fromJson(e),

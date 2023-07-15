@@ -4,17 +4,17 @@ publish_to: 'none'
 version: 2.0.0+11
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: ">=2.16.0 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
   
   # device related
-  package_info_plus: ^1.3.0
+  package_info_plus: any
 
   # UI related
-  cupertino_icons: ^0.1.3
+  cupertino_icons: any
   flutter_svg: any
   flutter_screenutil: any
   flutter_launcher_icons: any
@@ -24,7 +24,7 @@ dependencies:
  
 
   # DB related
-  downloads_path_provider: any
+  # downloads_path_provider: any
   permission_handler: any
   path_provider: any
   shared_preferences: any

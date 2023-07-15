@@ -27,7 +27,7 @@ class _EstimateState extends State<Estimate> {
     getDbValues();
     SharedPreferences.getInstance().then(
       (sp) {
-        income = sp.getInt(AMOUNT).toDouble();
+        income = (sp.getDouble(AMOUNT) ?? 0).toDouble();
         setState(() {});
       },
     );
@@ -43,7 +43,7 @@ class _EstimateState extends State<Estimate> {
       children: [
         Text(
           "*This Chart shows the estimation of total Monthly Spendings, Monthly Income And Savings/Overdraft",
-          style: textTheme.headline4.copyWith(
+          style: textTheme.headlineMedium?.copyWith(
             fontSize: setScreenUtill(18.0),
             color: UiColors.red,
           ),
@@ -53,7 +53,7 @@ class _EstimateState extends State<Estimate> {
         ),
         Text(
           "Monthly Estimations: (in the scale of 1000 )",
-          style: textTheme.headline4.copyWith(
+          style: textTheme.headlineMedium?.copyWith(
             fontSize: setScreenUtill(26.0),
           ),
         ),
@@ -94,7 +94,7 @@ class _EstimateState extends State<Estimate> {
                       getTooltipItem: (group, groupIndex, rod, rodIndex) {
                         // print(rod.y * 1000);
                         BarTooltipItem bti = BarTooltipItem(
-                          (rod.y * 1000).floor().toString(),
+                          (rod.fromY * 1000).floor().toString(),
                           UiText.normalText.copyWith(
                             fontSize: setScreenUtill(15.0),
                           ),
@@ -114,8 +114,8 @@ class _EstimateState extends State<Estimate> {
                           x: e.id,
                           barRods: [
                             BarChartRodData(
-                              y: e.y / 1000,
-                              colors: [e.color],
+                              toY: e.y / 1000,
+                              color: e.color,
                               borderRadius: BorderRadius.circular(4.0),
                             ),
                           ],
@@ -127,16 +127,20 @@ class _EstimateState extends State<Estimate> {
                   ),
                   titlesData: FlTitlesData(
                     show: true,
-                    bottomTitles: SideTitles(
-                      margin: setScreenUtill(10.0),
-                      getTitles: (value) => BarData.barData(income, expense)
-                          .firstWhere((element) => element.id == value)
-                          .name,
-                      getTextStyles: (value) => UiText.normalText.copyWith(
-                        fontSize: setScreenUtill(15.0),
+                    bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                      reservedSize: setScreenUtill(10.0),
+                      getTitlesWidget: (double? value, TitleMeta? titleMeta) =>
+                          Text(
+                        BarData.barData(income, expense)
+                            .firstWhere((element) => element.id == value)
+                            .name,
+                        style: UiText.normalText.copyWith(
+                          fontSize: setScreenUtill(15.0),
+                        ),
                       ),
                       showTitles: true,
-                    ),
+                    )),
                   ),
                 ),
               ),
@@ -155,7 +159,7 @@ class _EstimateState extends State<Estimate> {
       year: DateTime.now().year.toString(),
     );
 
-    if (data.isNotEmpty) {
+    if (data != null && data.isNotEmpty) {
       data.forEach(
         (e) => spm.add(
           SpendingModel.fromJson(e),
@@ -163,7 +167,7 @@ class _EstimateState extends State<Estimate> {
       );
     }
     spm.forEach((element) {
-      expense += element.amount.toDouble();
+      expense += element.amount!.toDouble();
     });
     setState(() {});
   }

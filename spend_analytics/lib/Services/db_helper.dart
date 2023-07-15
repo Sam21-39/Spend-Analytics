@@ -20,12 +20,10 @@ class DbHelper {
   DbHelper._();
   static final DbHelper dbInstance = DbHelper._();
 
-  static Database _database;
+  static Database? _database;
 
   // GETTING THE DATABASE
-  Future<Database> get databse async {
-    if (_database != null) return _database;
-
+  Future<Database?> get databse async {
     _database = await initiateDb();
     return _database;
   }
@@ -58,25 +56,25 @@ class DbHelper {
   }
 
   // DATABASE INSERT ROW
-  Future<int> insert(Map<String, dynamic> row) async {
-    Database db = await dbInstance.databse;
-    return await db.insert(_tableName, row);
+  Future<int?> insert(Map<String, dynamic> row) async {
+    Database? db = await dbInstance.databse;
+    return await db?.insert(_tableName, row);
   }
 
   // DATABASE QUERY FETCH ALL ROW
-  Future<List<Map<String, dynamic>>> queryAll() async {
-    Database db = await dbInstance.databse;
-    return await db.query(
+  Future<List<Map<String, dynamic>>?> queryAll() async {
+    Database? db = await dbInstance.databse;
+    return await db?.query(
       _tableName,
       orderBy: "$_columnId DESC",
     );
   }
 
   // DATABASE QUERY FETCH SELECTED ROW
-  Future<List<Map<String, dynamic>>> querySelected(String month,
-      {String year}) async {
-    Database db = await dbInstance.databse;
-    return await db.query(
+  Future<List<Map<String, dynamic>>?> querySelected(String month,
+      {String? year}) async {
+    Database? db = await dbInstance.databse;
+    return await db?.query(
       _tableName,
       where: "$_columnDateTime LIKE ? ORDER BY $_columnId DESC",
       whereArgs: ["%/$month/$year"],
@@ -84,10 +82,10 @@ class DbHelper {
   }
 
   // DATABASE UPDATE ROW
-  Future<int> update(Map<String, dynamic> row) async {
-    Database db = await dbInstance.databse;
-    int id = row[_columnId];
-    return await db.update(
+  Future<int?> update(Map<String, dynamic> row) async {
+    Database? db = await dbInstance.databse;
+    int? id = row[_columnId];
+    return await db?.update(
       _tableName,
       row,
       where: "$_columnId = ?",
@@ -96,9 +94,9 @@ class DbHelper {
   }
 
   // DATABASE DELETE ROW
-  Future<int> delete(int id) async {
-    Database db = await dbInstance.databse;
-    return await db.delete(
+  Future<int?> delete(int? id) async {
+    Database? db = await dbInstance.databse;
+    return await db?.delete(
       _tableName,
       where: "$_columnId = ?",
       whereArgs: [id],

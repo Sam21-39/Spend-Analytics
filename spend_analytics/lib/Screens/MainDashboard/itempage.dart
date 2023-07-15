@@ -9,10 +9,10 @@ import 'package:spend_analytics/Widgets/button.dart';
 class ItemPage extends StatefulWidget {
   final onSaveCallback;
   final bool isUpdating;
-  final SpendingModel spendingModel;
+  final SpendingModel? spendingModel;
 
   const ItemPage({
-    Key key,
+    Key? key,
     this.onSaveCallback,
     this.isUpdating = false,
     this.spendingModel,
@@ -24,8 +24,8 @@ class ItemPage extends StatefulWidget {
 class _ItemPageState extends State<ItemPage> {
   var amountController = TextEditingController();
   var descriptionController = TextEditingController(text: "");
-  int choiceIndex;
-  int modeIndex;
+  int? choiceIndex;
+  int? modeIndex;
 
   String date = DateTime.now().day.toString() +
       "/" +
@@ -40,11 +40,11 @@ class _ItemPageState extends State<ItemPage> {
     super.initState();
     if (widget.isUpdating) {
       setState(() {
-        amountController.text = widget.spendingModel.amount.toString();
-        descriptionController.text = widget.spendingModel.description;
-        choiceIndex = choiceType.indexOf(widget.spendingModel.type);
-        date = widget.spendingModel.datetime;
-        modeIndex = modeType.indexOf(widget.spendingModel.mode);
+        amountController.text = widget.spendingModel?.amount.toString() ?? "--";
+        descriptionController.text = widget.spendingModel?.description ?? "";
+        choiceIndex = choiceType.indexOf(widget.spendingModel?.type ?? "");
+        date = widget.spendingModel?.datetime ?? "";
+        modeIndex = modeType.indexOf(widget.spendingModel?.mode ?? "");
       });
     }
   }
@@ -70,7 +70,7 @@ class _ItemPageState extends State<ItemPage> {
               onPressed: () => Navigator.pop(context, false),
             ),
           ),
-          backgroundColor: Theme.of(context).backgroundColor,
+          backgroundColor: Theme.of(context).colorScheme.background,
           body: Form(
             key: _amountKey,
             child: ListView(
@@ -82,7 +82,7 @@ class _ItemPageState extends State<ItemPage> {
                   children: [
                     Text(
                       "Enter Amount you've spent",
-                      style: textTheme.headline4.copyWith(
+                      style: textTheme.headlineMedium?.copyWith(
                         fontSize: setScreenUtill(30.0),
                       ),
                       textAlign: TextAlign.center,
@@ -93,13 +93,13 @@ class _ItemPageState extends State<ItemPage> {
                     TextFormField(
                       controller: amountController,
                       validator: (val) =>
-                          int.tryParse(val) != null ? null : "Incorrect input",
+                          int.tryParse(val!) != null ? null : "Incorrect input",
                       cursorRadius: Radius.circular(20.0),
                       cursorWidth: 5.w,
                       keyboardType: TextInputType.number,
                       onEditingComplete: () => TextInputAction.done,
                       onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
-                      style: textTheme.bodyText1.copyWith(
+                      style: textTheme.bodyLarge?.copyWith(
                         fontSize: setScreenUtill(18.0),
                       ),
                       decoration: InputDecoration(
@@ -119,7 +119,7 @@ class _ItemPageState extends State<ItemPage> {
                           left: setScreenUtill(15.0),
                         ),
                         hintText: 'Amount',
-                        hintStyle: textTheme.caption.copyWith(
+                        hintStyle: textTheme.bodySmall?.copyWith(
                           fontSize: setScreenUtill(18.0),
                         ),
                       ),
@@ -129,7 +129,7 @@ class _ItemPageState extends State<ItemPage> {
                     ),
                     Text(
                       "Choose type of spending",
-                      style: textTheme.headline4.copyWith(
+                      style: textTheme.headlineMedium?.copyWith(
                         fontSize: setScreenUtill(30.0),
                       ),
                       textAlign: TextAlign.center,
@@ -149,8 +149,8 @@ class _ItemPageState extends State<ItemPage> {
                       height: 20.h,
                     ),
                     Text(
-                      "Selected: ${choiceIndex != null ? choiceType[choiceIndex] : ''}",
-                      style: textTheme.caption.copyWith(
+                      "Selected: ${choiceIndex != null ? choiceType[choiceIndex!] : ''}",
+                      style: textTheme.bodySmall?.copyWith(
                         fontSize: setScreenUtill(18.0),
                       ),
                       textAlign: TextAlign.center,
@@ -185,7 +185,7 @@ class _ItemPageState extends State<ItemPage> {
                     ),
                     Text(
                       "Selected date: $date",
-                      style: textTheme.caption.copyWith(
+                      style: textTheme.bodySmall?.copyWith(
                         fontSize: setScreenUtill(18.0),
                       ),
                       textAlign: TextAlign.center,
@@ -195,7 +195,7 @@ class _ItemPageState extends State<ItemPage> {
                     ),
                     Text(
                       "Choose Payment Mode",
-                      style: textTheme.headline4.copyWith(
+                      style: textTheme.headlineMedium?.copyWith(
                         fontSize: setScreenUtill(30.0),
                       ),
                       textAlign: TextAlign.center,
@@ -215,8 +215,8 @@ class _ItemPageState extends State<ItemPage> {
                       height: 20.h,
                     ),
                     Text(
-                      "Selected: ${modeIndex != null ? modeType[modeIndex] : ''}",
-                      style: textTheme.caption.copyWith(
+                      "Selected: ${modeIndex != null ? modeType[modeIndex!] : ''}",
+                      style: textTheme.bodySmall?.copyWith(
                         fontSize: setScreenUtill(18.0),
                       ),
                       textAlign: TextAlign.center,
@@ -231,7 +231,7 @@ class _ItemPageState extends State<ItemPage> {
                       keyboardType: TextInputType.text,
                       onEditingComplete: () => TextInputAction.done,
                       onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
-                      style: textTheme.bodyText1.copyWith(
+                      style: textTheme.bodyLarge?.copyWith(
                         fontSize: setScreenUtill(18.0),
                       ),
                       decoration: InputDecoration(
@@ -251,7 +251,7 @@ class _ItemPageState extends State<ItemPage> {
                           left: setScreenUtill(15.0),
                         ),
                         hintText: 'Short Description(Optional)',
-                        hintStyle: textTheme.caption.copyWith(
+                        hintStyle: textTheme.bodySmall?.copyWith(
                           fontSize: setScreenUtill(18.0),
                         ),
                       ),
@@ -260,19 +260,18 @@ class _ItemPageState extends State<ItemPage> {
                       height: 50.h,
                     ),
                     Button(
-                      onPressed: choiceIndex != null &&
-                              modeIndex != null &&
-                              amountController.text.length > 0
+                      onPressed: amountController.text.length > 0
                           ? () async {
-                              if (_amountKey.currentState.validate()) {
+                              if (_amountKey.currentState?.validate() ??
+                                  false) {
                                 if (widget.isUpdating) {
                                   SpendingModel spm = SpendingModel(
-                                    id: widget.spendingModel.id,
-                                    type: choiceType[choiceIndex],
-                                    amount: int.parse(
+                                    id: widget.spendingModel!.id,
+                                    type: choiceType[choiceIndex!],
+                                    amount: double.parse(
                                       amountController.text.trim(),
                                     ),
-                                    mode: modeType[modeIndex],
+                                    mode: modeType[modeIndex!],
                                     datetime: date,
                                     description: descriptionController.text,
                                   );
@@ -281,11 +280,11 @@ class _ItemPageState extends State<ItemPage> {
                                   print(dbH);
                                 } else {
                                   SpendingModel spm = SpendingModel(
-                                    type: choiceType[choiceIndex],
-                                    amount: int.parse(
+                                    type: choiceType[choiceIndex!],
+                                    amount: double.parse(
                                       amountController.text.trim(),
                                     ),
-                                    mode: modeType[modeIndex],
+                                    mode: modeType[modeIndex!],
                                     datetime: date,
                                     description: descriptionController.text,
                                   );
@@ -326,7 +325,7 @@ class _ItemPageState extends State<ItemPage> {
             ),
             child: ChoiceChip(
               avatar: CircleAvatar(
-                backgroundColor: chipsTheme.disabledColor.withOpacity(0.2),
+                backgroundColor: chipsTheme.disabledColor?.withOpacity(0.2),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(100.0),
                   child: SvgPicture.asset(avatar[index]),
@@ -335,7 +334,7 @@ class _ItemPageState extends State<ItemPage> {
               ),
               label: Text(
                 "${choice[index]}",
-                style: chipsTheme.labelStyle.copyWith(
+                style: chipsTheme.labelStyle?.copyWith(
                   fontSize: setScreenUtill(28.0),
                 ),
               ),

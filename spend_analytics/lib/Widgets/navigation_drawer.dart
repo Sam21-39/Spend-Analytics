@@ -4,10 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spend_analytics/Model/spending_model.dart';
-import 'package:spend_analytics/Screens/DrawerMenu/about.dart';
 import 'package:spend_analytics/Screens/DrawerMenu/settings.dart';
-import 'package:spend_analytics/Screens/Onboarding/amount.dart';
-import 'package:spend_analytics/Screens/Onboarding/name.dart';
 import 'package:spend_analytics/Services/db_helper.dart';
 import 'package:spend_analytics/Utils/display_utils.dart';
 import 'package:spend_analytics/Utils/sp_constants.dart';
@@ -20,7 +17,7 @@ class NavigationDrawer extends StatefulWidget {
   final bool isEstimate;
   final bool isSpendingsAdded;
   const NavigationDrawer({
-    Key key,
+    Key? key,
     this.tabChangeCallback,
     this.isEstimate = false,
     this.isAnalysis = false,
@@ -45,7 +42,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
     SharedPreferences.getInstance().then((sp) {
       if (sp.getBool(THEME) != null)
         setState(() {
-          isDarkTheme = sp.getBool(THEME);
+          isDarkTheme = sp.getBool(THEME) ?? true;
         });
     });
     version();
@@ -62,7 +59,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
         children: [
           DrawerHeader(
             decoration: BoxDecoration(
-              color: Theme.of(context).backgroundColor,
+              color: Theme.of(context).colorScheme.background,
               border: Border(
                 bottom: BorderSide(
                   color: Theme.of(context).dividerColor,
@@ -96,8 +93,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
                 ? null
                 : () => Toast.show(
                       "Add spendings to unlock",
-                      context,
-                      duration: Toast.LENGTH_LONG,
+                      duration: Toast.lengthLong,
                     ),
             child: ListTile(
               enabled: widget.isSpendingsAdded ? true : false,
@@ -127,8 +123,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
                 ? null
                 : () => Toast.show(
                       "Add spendings to unlock",
-                      context,
-                      duration: Toast.LENGTH_LONG,
+                      duration: Toast.lengthLong,
                     ),
             child: ListTile(
               enabled: widget.isSpendingsAdded ? true : false,
@@ -171,7 +166,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
             selected: true,
             trailing: Text(
               isDarkTheme ? "Dark Mode" : "Light Mode",
-              style: textTheme.caption,
+              style: textTheme.bodySmall,
             ),
             onTap: () async {
               SharedPreferences sp = await SharedPreferences.getInstance();
@@ -179,7 +174,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
               setState(() {
                 isDarkTheme = !isDarkTheme;
                 sp.setBool(THEME, isDarkTheme);
-                appKey.currentState.setState(() {
+                appKey.currentState?.setState(() {
                   isDarkMode = isDarkTheme;
                 });
               });
@@ -268,7 +263,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
                     width: setScreenUtill(200.0),
                     child: Text(
                       "Total Expanse on current Month:\n ${spm2.isEmpty ? 'No Data' : expenseNow.floor()}",
-                      style: Theme.of(context).textTheme.bodyText1.copyWith(
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                             fontSize: setScreenUtill(24.0),
                           ),
                       textAlign: TextAlign.center,
@@ -302,7 +297,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
                     width: setScreenUtill(200.0),
                     child: Text(
                       "Total ${savingsNow >= 0 ? 'savings' : 'overdraft'} on previous Month:\n ${spm2.isEmpty ? 'No Data' : savingsNow.abs().floor()}",
-                      style: Theme.of(context).textTheme.bodyText1.copyWith(
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                             fontSize: setScreenUtill(24.0),
                           ),
                       textAlign: TextAlign.center,
@@ -336,7 +331,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
                     width: setScreenUtill(200.0),
                     child: Text(
                       "Total Expanse on previous Month:\n ${spm.isEmpty ? 'No Data' : expense.floor()}",
-                      style: Theme.of(context).textTheme.bodyText1.copyWith(
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                             fontSize: setScreenUtill(24.0),
                           ),
                       textAlign: TextAlign.center,
@@ -370,7 +365,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
                     width: setScreenUtill(200.0),
                     child: Text(
                       "Total ${savings >= 0 ? 'savings' : 'overdraft'} on current Month:\n ${spm.isEmpty ? 'No Data' : savings.abs().floor()}",
-                      style: Theme.of(context).textTheme.bodyText1.copyWith(
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                             fontSize: setScreenUtill(24.0),
                           ),
                       textAlign: TextAlign.center,
@@ -409,9 +404,9 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
 
   void getDbValues() async {
     spm.clear();
-    num amount = 0;
+    double amount = 0;
     SharedPreferences.getInstance().then((sp) {
-      amount = sp.getInt(AMOUNT) == null ? "" : sp.getInt(AMOUNT);
+      amount = (sp.getDouble(AMOUNT) ?? 0).toDouble();
       setState(() {});
     });
     var data = await _dbHelper.querySelected(
@@ -419,7 +414,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
       year: (DateTime.now().year).toString(),
     );
 
-    if (data.isNotEmpty) {
+    if (data != null && data.isNotEmpty) {
       data.forEach(
         (e) => spm.add(
           SpendingModel.fromJson(e),
@@ -427,7 +422,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
       );
     }
     spm.forEach((element) {
-      expense += element.amount.toDouble();
+      expense += element.amount!.toDouble();
     });
     savings = amount - expense;
     setState(() {});
@@ -435,9 +430,9 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
 
   void getDbValuesNow() async {
     spm2.clear();
-    num amount = 0;
+    double amount = 0;
     SharedPreferences.getInstance().then((sp) {
-      amount = sp.getInt(AMOUNT) == null ? "" : sp.getInt(AMOUNT);
+      amount = (sp.getDouble(AMOUNT) ?? 0).toDouble();
       setState(() {});
     });
     var data = await _dbHelper.querySelected(
@@ -445,7 +440,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
       year: (DateTime.now().year).toString(),
     );
 
-    if (data.isNotEmpty) {
+    if (data != null && data.isNotEmpty) {
       data.forEach(
         (e) => spm2.add(
           SpendingModel.fromJson(e),
@@ -453,7 +448,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
       );
     }
     spm2.forEach((element) {
-      expenseNow += element.amount.toDouble();
+      expenseNow += element.amount!.toDouble();
     });
     savingsNow = amount - expenseNow;
     setState(() {});

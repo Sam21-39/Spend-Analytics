@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -10,11 +9,9 @@ import 'package:spend_analytics/Screens/MainDashboard/itempage.dart';
 import 'package:spend_analytics/Services/db_helper.dart';
 import 'package:spend_analytics/UI/uicolors.dart';
 import 'package:spend_analytics/Utils/common_utils.dart';
-
 import 'package:spend_analytics/Utils/display_utils.dart';
-import 'package:spend_analytics/Widgets/navigation_drawer.dart';
+import 'package:spend_analytics/Widgets/navigation_drawer.dart' as sp;
 
-import '../../UI/uicolors.dart';
 import '../../Utils/sp_constants.dart';
 
 class MainDashboard extends StatefulWidget {
@@ -69,7 +66,7 @@ class _MainDashboardState extends State<MainDashboard> {
   void initState() {
     super.initState();
     SharedPreferences.getInstance().then((value) {
-      name = value.getString(NAME) == null ? "User" : value.getString(NAME);
+      name = value.getString(NAME) ?? "User";
       setState(() {});
     });
     getDbValues();
@@ -86,7 +83,7 @@ class _MainDashboardState extends State<MainDashboard> {
           appBar: AppBar(
             title: Text(
               'Hi $name!',
-              style: textTheme.headline4.copyWith(
+              style: textTheme.headlineMedium?.copyWith(
                 fontSize: setScreenUtill(26.0),
               ),
             ),
@@ -97,20 +94,20 @@ class _MainDashboardState extends State<MainDashboard> {
                 ),
                 child: Text(
                   '$today',
-                  style: textTheme.bodyText1.copyWith(
+                  style: textTheme.bodyLarge?.copyWith(
                     color: Theme.of(context).primaryColor,
                   ),
                 ),
               ),
             ],
           ),
-          drawer: NavigationDrawer(
+          drawer: sp.NavigationDrawer(
             isAnalysis: isAnalysis,
             tabChangeCallback: changeTabCallback,
             isSpendingsAdded: spm.isNotEmpty,
             isEstimate: isEstimate,
           ),
-          backgroundColor: Theme.of(context).backgroundColor,
+          backgroundColor: Theme.of(context).colorScheme.background,
           body: isAnalysis
               ? Analysis()
               : isEstimate
@@ -184,14 +181,14 @@ class _MainDashboardState extends State<MainDashboard> {
                                     ),
                                   ),
                                 ],
-                            onSelected: (val) {
+                            onSelected: (String? val) {
                               val == "all"
                                   ? getDbValuesAll()
                                   : val == "previous"
                                       ? getDbValuesPrev()
                                       : getDbValues();
                               setState(() {
-                                selected = val;
+                                selected = val!;
                               });
                             }),
                         Expanded(
@@ -209,7 +206,8 @@ class _MainDashboardState extends State<MainDashboard> {
                                           ),
                                           child: Text(
                                             'Nothing here yet. Let’s add some Spendings by pressing the “+” button....',
-                                            style: textTheme.subtitle1.copyWith(
+                                            style:
+                                                textTheme.titleMedium?.copyWith(
                                               color: Theme.of(context)
                                                   .dividerColor
                                                   .withOpacity(0.7),
@@ -267,8 +265,8 @@ class _MainDashboardState extends State<MainDashboard> {
                                                                   .amount
                                                                   .toString(),
                                                               style: textTheme
-                                                                  .headline4
-                                                                  .copyWith(
+                                                                  .headlineMedium
+                                                                  ?.copyWith(
                                                                 color: UiColors
                                                                     .background,
                                                               ),
@@ -301,7 +299,7 @@ class _MainDashboardState extends State<MainDashboard> {
                                                               ),
                                                               child: SvgPicture
                                                                   .asset(
-                                                                      "assets/images/${spm[index].mode.toLowerCase()}.svg"),
+                                                                      "assets/images/${spm[index].mode?.toLowerCase()}.svg"),
                                                             ),
                                                           ],
                                                         ),
@@ -318,10 +316,10 @@ class _MainDashboardState extends State<MainDashboard> {
                                                             Flexible(
                                                               child: Text(
                                                                 spm[index]
-                                                                    .description,
+                                                                    .description!,
                                                                 style: textTheme
-                                                                    .caption
-                                                                    .copyWith(
+                                                                    .bodySmall
+                                                                    ?.copyWith(
                                                                   color: UiColors
                                                                       .background
                                                                       .withOpacity(
@@ -336,10 +334,10 @@ class _MainDashboardState extends State<MainDashboard> {
                                                             ),
                                                             Text(
                                                               spm[index]
-                                                                  .datetime,
+                                                                  .datetime!,
                                                               style: textTheme
-                                                                  .bodyText1
-                                                                  .copyWith(
+                                                                  .bodyLarge
+                                                                  ?.copyWith(
                                                                 color: Theme.of(
                                                                         context)
                                                                     .focusColor,
@@ -379,7 +377,7 @@ class _MainDashboardState extends State<MainDashboard> {
                                                             22.0),
                                                   ),
                                                   child: SvgPicture.asset(
-                                                      "assets/images/${spm[index].type.toLowerCase()}.svg"),
+                                                      "assets/images/${spm[index].type?.toLowerCase()}.svg"),
                                                 ),
                                               ),
                                             ],
@@ -443,17 +441,15 @@ class _MainDashboardState extends State<MainDashboard> {
   void getDbValuesAll() async {
     spm.clear();
     var data = await _dbHelper.queryAll();
-    if (data.isNotEmpty)
+    if (data != null && data.isNotEmpty)
       data.forEach(
         (e) => spm.add(
           SpendingModel.fromJson(e),
         ),
       );
-    if (data != null) {
-      setState(() {
-        isLoading = false;
-      });
-    }
+    setState(() {
+      isLoading = false;
+    });
   }
 
   void getDbValuesPrev() async {
@@ -465,17 +461,15 @@ class _MainDashboardState extends State<MainDashboard> {
               : DateTime.now().year)
           .toString(),
     );
-    if (data.isNotEmpty)
+    if (data != null && data.isNotEmpty)
       data.forEach(
         (e) => spm.add(
           SpendingModel.fromJson(e),
         ),
       );
-    if (data != null) {
-      setState(() {
-        isLoading = false;
-      });
-    }
+    setState(() {
+      isLoading = false;
+    });
   }
 
   void getDbValues() async {
@@ -484,17 +478,15 @@ class _MainDashboardState extends State<MainDashboard> {
       DateTime.now().month.toString(),
       year: DateTime.now().year.toString(),
     );
-    if (data.isNotEmpty)
+    if (data != null && data.isNotEmpty)
       data.forEach(
         (e) => spm.add(
           SpendingModel.fromJson(e),
         ),
       );
-    if (data != null) {
-      setState(() {
-        isLoading = false;
-      });
-    }
+    setState(() {
+      isLoading = false;
+    });
   }
 
   Widget showEditDialog(SpendingModel spm) {
@@ -515,7 +507,7 @@ class _MainDashboardState extends State<MainDashboard> {
                 children: [
                   Text(
                     spm.amount.toString(),
-                    style: texts.headline4,
+                    style: texts.headlineMedium,
                   ),
                   Column(
                     children: [
@@ -529,20 +521,20 @@ class _MainDashboardState extends State<MainDashboard> {
                           ),
                         ),
                         child: SvgPicture.asset(
-                            "assets/images/${spm.mode.toLowerCase()}.svg"),
+                            "assets/images/${spm.mode?.toLowerCase()}.svg"),
                       ),
                       SizedBox(
                         height: setScreenUtill(10.0),
                       ),
                       Text(
                         "Payment Type:",
-                        style: texts.caption.copyWith(
+                        style: texts.bodySmall?.copyWith(
                           fontSize: setScreenUtill(14),
                         ),
                       ),
                       Text(
-                        spm.mode,
-                        style: texts.caption.copyWith(
+                        spm.mode!,
+                        style: texts.bodySmall?.copyWith(
                           fontSize: setScreenUtill(15),
                           color: Theme.of(context).primaryColor,
                         ),
@@ -550,8 +542,8 @@ class _MainDashboardState extends State<MainDashboard> {
                     ],
                   ),
                   Text(
-                    spm.datetime,
-                    style: texts.bodyText1.copyWith(
+                    spm.datetime!,
+                    style: texts.bodyLarge?.copyWith(
                       color: Theme.of(context).focusColor,
                     ),
                   ),
@@ -565,8 +557,8 @@ class _MainDashboardState extends State<MainDashboard> {
                 children: [
                   Flexible(
                     child: Text(
-                      spm.description,
-                      style: texts.caption,
+                      spm.description!,
+                      style: texts.bodySmall,
                     ),
                   ),
                   Column(
@@ -581,18 +573,18 @@ class _MainDashboardState extends State<MainDashboard> {
                           ),
                         ),
                         child: SvgPicture.asset(
-                            "assets/images/${spm.type.toLowerCase()}.svg"),
+                            "assets/images/${spm.type?.toLowerCase()}.svg"),
                       ),
                       SizedBox(
                         height: setScreenUtill(10.0),
                       ),
                       Text(
                         "Expense Type:",
-                        style: texts.caption,
+                        style: texts.bodySmall,
                       ),
                       Text(
-                        spm.type,
-                        style: texts.caption.copyWith(
+                        spm.type!,
+                        style: texts.bodySmall?.copyWith(
                           color: Theme.of(context).primaryColor,
                         ),
                       ),
@@ -625,7 +617,7 @@ class _MainDashboardState extends State<MainDashboard> {
                   IconButton(
                     icon: Icon(
                       Icons.delete,
-                      color: Theme.of(context).errorColor,
+                      color: Theme.of(context).colorScheme.error,
                     ),
                     onPressed: () async {
                       _dbHelper.delete(spm.id);

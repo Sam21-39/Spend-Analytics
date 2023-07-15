@@ -11,7 +11,7 @@ class Name extends StatefulWidget {
   final bool isChanging;
 
   const Name({
-    Key key,
+    Key? key,
     this.isChanging = false,
   }) : super(key: key);
   @override
@@ -27,8 +27,7 @@ class _NameState extends State<Name> {
   void initState() {
     super.initState();
     SharedPreferences.getInstance().then((sp) => {
-          nameController.text =
-              sp.getString(NAME) == null ? "" : sp.getString(NAME),
+          nameController.text = sp.getString(NAME) ?? "",
           setState(() {}),
         });
   }
@@ -49,7 +48,7 @@ class _NameState extends State<Name> {
             onPressed: () => Navigator.pop(context),
           ),
         ),
-        backgroundColor: Theme.of(context).backgroundColor,
+        backgroundColor: Theme.of(context).colorScheme.background,
         body: Form(
           key: _nameKey,
           child: ListView(
@@ -61,7 +60,7 @@ class _NameState extends State<Name> {
                 children: [
                   Text(
                     'What Should I Call You?',
-                    style: Theme.of(context).textTheme.headline4.copyWith(
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           fontSize: setScreenUtill(36.0),
                         ),
                     textAlign: TextAlign.center,
@@ -74,7 +73,7 @@ class _NameState extends State<Name> {
                     cursorRadius: Radius.circular(20.0),
                     cursorWidth: 5.w,
                     textCapitalization: TextCapitalization.words,
-                    style: Theme.of(context).textTheme.bodyText1.copyWith(
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           fontSize: setScreenUtill(18.0),
                         ),
                     decoration: InputDecoration(
@@ -94,14 +93,15 @@ class _NameState extends State<Name> {
                         left: setScreenUtill(15.0),
                       ),
                       hintText: 'Your Name (max. 6 character)',
-                      hintStyle: Theme.of(context).textTheme.caption.copyWith(
-                            fontSize: setScreenUtill(18.0),
-                          ),
+                      hintStyle:
+                          Theme.of(context).textTheme.bodySmall?.copyWith(
+                                fontSize: setScreenUtill(18.0),
+                              ),
                     ),
                     maxLength: 6,
                     onEditingComplete: () => TextInputAction.done,
                     onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
-                    validator: (val) => val.isEmpty
+                    validator: (String? val) => val!.isEmpty
                         ? "Required"
                         : val.length < 2
                             ? "Name should contain atleast 2 characters"
@@ -117,7 +117,7 @@ class _NameState extends State<Name> {
                       onPressed: () async {
                         SharedPreferences sp =
                             await SharedPreferences.getInstance();
-                        if (_nameKey.currentState.validate()) {
+                        if (_nameKey.currentState?.validate() ?? false) {
                           Navigator.of(context).pushAndRemoveUntil(
                             MaterialPageRoute(
                               builder: (context) => MainDashboard(),
@@ -141,7 +141,7 @@ class _NameState extends State<Name> {
             : FloatingActionButton(
                 onPressed: () async {
                   SharedPreferences sp = await SharedPreferences.getInstance();
-                  if (_nameKey.currentState.validate()) {
+                  if (_nameKey.currentState?.validate() ?? false) {
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) => Amount(),

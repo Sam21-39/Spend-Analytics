@@ -23,7 +23,7 @@ GlobalKey appKey = GlobalKey();
 bool isDarkMode = true;
 
 class MyApp extends StatefulWidget {
-  const MyApp({Key key}) : super(key: key);
+  const MyApp({Key? key}) : super(key: key);
   @override
   _MyAppState createState() => _MyAppState();
 }
@@ -34,7 +34,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     SharedPreferences.getInstance().then((sp) {
       setState(() {
-        isDarkMode = sp.getBool(THEME) == null ? true : sp.getBool(THEME);
+        isDarkMode = sp.getBool(THEME) ?? true;
       });
     });
   }
@@ -60,8 +60,8 @@ class _MyAppState extends State<MyApp> {
     );
     return ScreenUtilInit(
       designSize: Size(480.0, 800.0),
-      allowFontScaling: true,
-      builder: () => MaterialApp(
+      minTextAdapt: true,
+      builder: (context, child) => MaterialApp(
         title: 'Spend Analytics',
         debugShowCheckedModeBanner: false,
         theme: lightTheme(),
@@ -74,33 +74,26 @@ class _MyAppState extends State<MyApp> {
 
   ThemeData darkTheme() {
     return ThemeData(
-      backgroundColor: UiColors.black,
       primaryColor: UiColors.primary,
-      accentColor: UiColors.black,
-      accentIconTheme: IconThemeData(
-        color: Colors.white,
-      ),
       bannerTheme: MaterialBannerThemeData(
         backgroundColor: UiColors.black,
         contentTextStyle: UiText.normalText.copyWith(
           color: Colors.white,
         ),
       ),
-      buttonColor: UiColors.primary,
       disabledColor: Colors.white.withOpacity(0.5),
       dividerColor: Colors.white.withOpacity(0.7),
       canvasColor: UiColors.black,
       textTheme: TextTheme(
-        headline4: UiText.headerText.copyWith(color: Colors.white),
-        bodyText1: UiText.normalText.copyWith(color: Colors.white),
-        subtitle1: UiText.subtitleText.copyWith(color: Colors.white),
-        button: UiText.buttonText.copyWith(color: Colors.white),
-        caption: UiText.normalText.copyWith(
+        headlineMedium: UiText.headerText.copyWith(color: Colors.white),
+        bodyLarge: UiText.normalText.copyWith(color: Colors.white),
+        titleMedium: UiText.subtitleText.copyWith(color: Colors.white),
+        labelLarge: UiText.buttonText.copyWith(color: Colors.white),
+        bodySmall: UiText.normalText.copyWith(
           color: Colors.white.withOpacity(0.7),
         ),
       ),
       focusColor: UiColors.lightBlue,
-      errorColor: UiColors.red,
       cardTheme: CardTheme(
         color: UiColors.lightRed,
         shadowColor: UiColors.lightRed.withOpacity(0.75),
@@ -159,22 +152,24 @@ class _MyAppState extends State<MyApp> {
         ),
         padding: const EdgeInsets.all(5.0),
       ),
-      accentColorBrightness: Brightness.dark,
       appBarTheme: AppBarTheme(
         elevation: 10.0,
-        textTheme: TextTheme(
-          headline1: UiText.headerText.copyWith(color: Colors.white),
-        ),
         color: UiColors.black,
         iconTheme: IconThemeData(
           color: Colors.white,
         ),
+        toolbarTextStyle: TextTheme(
+          displayLarge: UiText.headerText.copyWith(color: Colors.white),
+        ).bodyMedium,
+        titleTextStyle: TextTheme(
+          displayLarge: UiText.headerText.copyWith(color: Colors.white),
+        ).titleLarge,
       ),
       iconTheme: IconThemeData(
         color: Colors.white,
       ),
       popupMenuTheme: PopupMenuThemeData(
-        textStyle: Theme.of(context).textTheme.caption.copyWith(
+        textStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: Colors.white,
             ),
         color: UiColors.lightRed,
@@ -184,36 +179,30 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
       visualDensity: VisualDensity.adaptivePlatformDensity,
+      colorScheme: ColorScheme.fromSwatch().copyWith(secondary: UiColors.black),
     );
   }
 
   ThemeData lightTheme() {
     return ThemeData(
-      backgroundColor: UiColors.background,
       primaryColor: UiColors.primary,
-      accentColor: UiColors.background,
-      accentIconTheme: IconThemeData(
-        color: UiColors.black,
-      ),
       bannerTheme: MaterialBannerThemeData(
         backgroundColor: UiColors.background,
         contentTextStyle: UiText.normalText,
       ),
-      buttonColor: UiColors.primary,
       disabledColor: UiColors.darkGrey.withOpacity(0.5),
       dividerColor: UiColors.darkGrey,
       canvasColor: UiColors.background,
       textTheme: TextTheme(
-        headline4: UiText.headerText.copyWith(color: UiColors.black),
-        bodyText1: UiText.normalText.copyWith(color: UiColors.black),
-        subtitle1: UiText.subtitleText.copyWith(color: UiColors.black),
-        button: UiText.buttonText.copyWith(color: UiColors.black),
-        caption: UiText.normalText.copyWith(
+        headlineMedium: UiText.headerText.copyWith(color: UiColors.black),
+        bodyLarge: UiText.normalText.copyWith(color: UiColors.black),
+        titleMedium: UiText.subtitleText.copyWith(color: UiColors.black),
+        labelLarge: UiText.buttonText.copyWith(color: UiColors.black),
+        bodySmall: UiText.normalText.copyWith(
           color: UiColors.darkGrey.withOpacity(0.8),
         ),
       ),
       focusColor: UiColors.lightBlue,
-      errorColor: UiColors.red,
       cardTheme: CardTheme(
         color: UiColors.lightRed,
         elevation: 8.0,
@@ -270,23 +259,25 @@ class _MyAppState extends State<MyApp> {
         ),
         padding: const EdgeInsets.all(5.0),
       ),
-      accentColorBrightness: Brightness.light,
       shadowColor: UiColors.shadow,
       appBarTheme: AppBarTheme(
         elevation: 10.0,
-        textTheme: TextTheme(
-          headline1: UiText.headerText,
-        ),
         color: UiColors.background,
         iconTheme: IconThemeData(
           color: UiColors.black,
         ),
+        toolbarTextStyle: TextTheme(
+          displayLarge: UiText.headerText,
+        ).bodyMedium,
+        titleTextStyle: TextTheme(
+          displayLarge: UiText.headerText,
+        ).titleLarge,
       ),
       iconTheme: IconThemeData(
         color: UiColors.black,
       ),
       popupMenuTheme: PopupMenuThemeData(
-        textStyle: Theme.of(context).textTheme.bodyText1.copyWith(
+        textStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
               color: Colors.white,
             ),
         color: UiColors.lightRed,
@@ -296,6 +287,8 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
       visualDensity: VisualDensity.adaptivePlatformDensity,
+      colorScheme:
+          ColorScheme.fromSwatch().copyWith(secondary: UiColors.background),
     );
   }
 }

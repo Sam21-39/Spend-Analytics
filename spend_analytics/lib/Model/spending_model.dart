@@ -8,12 +8,12 @@ class SpendingModel {
     this.description,
   });
 
-  int id;
-  int amount;
-  String type;
-  String mode;
-  String datetime;
-  String description;
+  int? id;
+  double? amount;
+  String? type;
+  String? mode;
+  String? datetime;
+  String? description;
 
   factory SpendingModel.fromJson(Map<String, dynamic> json) => SpendingModel(
         id: json["_id"],

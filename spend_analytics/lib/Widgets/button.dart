@@ -8,9 +8,9 @@ class Button extends StatefulWidget {
   final String text;
 
   const Button({
-    Key key,
-    @required this.onPressed,
-    @required this.text,
+    Key? key,
+    required this.onPressed,
+    required this.text,
   }) : super(key: key);
   @override
   _ButtonState createState() => _ButtonState();
@@ -34,10 +34,10 @@ class _ButtonState extends State<Button> {
           borderRadius: BorderRadius.circular(20.0),
         ),
         elevation: 10.0,
-        color: Theme.of(context).buttonColor,
+        color: Theme.of(context).buttonTheme.colorScheme?.background,
         disabledColor: UiColors.lightRed.withOpacity(0.5),
         disabledTextColor: Theme.of(context).disabledColor,
-        textColor: Theme.of(context).textTheme.button.color,
+        textColor: Theme.of(context).textTheme.labelLarge?.color,
       ),
     );
   }
