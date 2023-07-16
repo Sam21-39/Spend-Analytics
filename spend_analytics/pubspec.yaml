@@ -11,7 +11,7 @@ dependencies:
     sdk: flutter
   
   # device related
-  package_info_plus: any
+  package_info_plus: ^4.0.2
 
   # UI related
   cupertino_icons: any
