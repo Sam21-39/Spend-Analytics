@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:spend_analytics/Utils/display_utils.dart';
+import 'package:spend_analytics/Core/Utils/display_utils.dart';
 
 class About extends StatefulWidget {
   @override

@@ -3,13 +3,13 @@ import 'dart:math';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spend_analytics/Model/data_model.dart';
-import 'package:spend_analytics/Model/spending_model.dart';
-import 'package:spend_analytics/Services/db_helper.dart';
-import 'package:spend_analytics/UI/uicolors.dart';
-import 'package:spend_analytics/UI/uitext.dart';
-import 'package:spend_analytics/Utils/display_utils.dart';
-import 'package:spend_analytics/Utils/sp_constants.dart';
+import 'package:spend_analytics/Core/Model/data_model.dart';
+import 'package:spend_analytics/Core/Model/spending_model.dart';
+import 'package:spend_analytics/Core/Services/db_helper.dart';
+import 'package:spend_analytics/Core/UI/uicolors.dart';
+import 'package:spend_analytics/Core/UI/uitext.dart';
+import 'package:spend_analytics/Core/Utils/display_utils.dart';
+import 'package:spend_analytics/Core/Utils/sp_constants.dart';
 
 class Estimate extends StatefulWidget {
   @override

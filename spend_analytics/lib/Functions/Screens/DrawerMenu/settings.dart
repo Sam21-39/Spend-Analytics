@@ -5,12 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import 'package:permission_handler/permission_handler.dart';
-import 'package:spend_analytics/Model/spending_model.dart';
-import 'package:spend_analytics/Screens/DrawerMenu/about.dart';
-import 'package:spend_analytics/Screens/Onboarding/amount.dart';
-import 'package:spend_analytics/Screens/Onboarding/name.dart';
-import 'package:spend_analytics/Services/db_helper.dart';
-import 'package:spend_analytics/Utils/display_utils.dart';
+import 'package:spend_analytics/Core/Model/spending_model.dart';
+import 'package:spend_analytics/Functions/Screens/DrawerMenu/about.dart';
+import 'package:spend_analytics/Functions/Screens/Onboarding/amount.dart';
+import 'package:spend_analytics/Functions/Screens/Onboarding/name.dart';
+import 'package:spend_analytics/Core/Services/db_helper.dart';
+import 'package:spend_analytics/Core/Utils/display_utils.dart';
 import 'package:toast/toast.dart';
 
 class Settings extends StatefulWidget {

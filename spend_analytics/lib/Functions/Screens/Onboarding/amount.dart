@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spend_analytics/Screens/MainDashboard/main_dashboard.dart';
-import 'package:spend_analytics/Utils/display_utils.dart';
+import 'package:spend_analytics/Functions/Screens/MainDashboard/main_dashboard.dart';
+import 'package:spend_analytics/Core/Utils/display_utils.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:spend_analytics/Utils/sp_constants.dart';
-import 'package:spend_analytics/Widgets/button.dart';
+import 'package:spend_analytics/Core/Utils/sp_constants.dart';
+import 'package:spend_analytics/Core/Widgets/button.dart';
 
 class Amount extends StatefulWidget {
   final isChanging;

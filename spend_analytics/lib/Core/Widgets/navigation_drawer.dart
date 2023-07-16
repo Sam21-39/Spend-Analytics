@@ -3,11 +3,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spend_analytics/Model/spending_model.dart';
-import 'package:spend_analytics/Screens/DrawerMenu/settings.dart';
-import 'package:spend_analytics/Services/db_helper.dart';
-import 'package:spend_analytics/Utils/display_utils.dart';
-import 'package:spend_analytics/Utils/sp_constants.dart';
+import 'package:spend_analytics/Core/Model/spending_model.dart';
+import 'package:spend_analytics/Functions/Screens/DrawerMenu/settings.dart';
+import 'package:spend_analytics/Core/Services/db_helper.dart';
+import 'package:spend_analytics/Core/Utils/display_utils.dart';
+import 'package:spend_analytics/Core/Utils/sp_constants.dart';
 import 'package:spend_analytics/main.dart';
 import 'package:toast/toast.dart';
 

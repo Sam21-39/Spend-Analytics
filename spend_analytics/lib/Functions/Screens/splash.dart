@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spend_analytics/Screens/MainDashboard/main_dashboard.dart';
-import 'package:spend_analytics/Screens/Onboarding/onboadring.dart';
-import 'package:spend_analytics/Utils/sp_constants.dart';
+import 'package:spend_analytics/Functions/Screens/MainDashboard/main_dashboard.dart';
+import 'package:spend_analytics/Functions/Screens/Onboarding/onboadring.dart';
+import 'package:spend_analytics/Core/Utils/sp_constants.dart';
 
 class Splash extends StatefulWidget {
   @override

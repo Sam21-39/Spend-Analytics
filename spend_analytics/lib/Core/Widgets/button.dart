@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:spend_analytics/UI/uicolors.dart';
-import 'package:spend_analytics/Utils/display_utils.dart';
+import 'package:spend_analytics/Core/UI/uicolors.dart';
+import 'package:spend_analytics/Core/Utils/display_utils.dart';
 
 class Button extends StatefulWidget {
   final onPressed;

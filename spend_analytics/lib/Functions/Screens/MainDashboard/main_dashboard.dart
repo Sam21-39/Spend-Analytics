@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spend_analytics/Model/spending_model.dart';
-import 'package:spend_analytics/Screens/Charts/analysis.dart';
-import 'package:spend_analytics/Screens/Charts/estimate.dart';
-import 'package:spend_analytics/Screens/MainDashboard/itempage.dart';
-import 'package:spend_analytics/Services/db_helper.dart';
-import 'package:spend_analytics/UI/uicolors.dart';
-import 'package:spend_analytics/Utils/common_utils.dart';
-import 'package:spend_analytics/Utils/display_utils.dart';
-import 'package:spend_analytics/Widgets/navigation_drawer.dart' as sp;
+import 'package:spend_analytics/Core/Model/spending_model.dart';
+import 'package:spend_analytics/Functions/Screens/Charts/analysis.dart';
+import 'package:spend_analytics/Functions/Screens/Charts/estimate.dart';
+import 'package:spend_analytics/Functions/Screens/MainDashboard/itempage.dart';
+import 'package:spend_analytics/Core/Services/db_helper.dart';
+import 'package:spend_analytics/Core/UI/uicolors.dart';
+import 'package:spend_analytics/Core/Utils/common_utils.dart';
+import 'package:spend_analytics/Core/Utils/display_utils.dart';
+import 'package:spend_analytics/Core/Widgets/navigation_drawer.dart' as sp;
 
-import '../../Utils/sp_constants.dart';
+import '../../../Core/Utils/sp_constants.dart';
 
 class MainDashboard extends StatefulWidget {
   @override
