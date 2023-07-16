@@ -5,7 +5,7 @@ class UiColors {
   static final Color primary = Color(0xff09EBB0);
   static final Color lightBlue = Color(0xff36C5F0);
   static final Color red = Color(0xffE01E5A);
-  static final Color black = Color(0xff022020);
+  static final Color black = Color(0xff191929);
   static final Color darkGrey = Color(0xff594D67);
   static final Color shadow = black.withOpacity(0.25);
   static final Color lightRed = red.withOpacity(0.7);

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:spend_analytics/Core/Model/spending_model.dart';
@@ -5,6 +7,9 @@ import 'package:spend_analytics/Core/Services/db_helper.dart';
 import 'package:spend_analytics/Core/Utils/display_utils.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:spend_analytics/Core/Widgets/button.dart';
+import 'package:syncfusion_flutter_datepicker/datepicker.dart';
+
+import '../../../Core/UI/uicolors.dart';
 
 class ItemPage extends StatefulWidget {
   final onSaveCallback;
@@ -52,6 +57,7 @@ class _ItemPageState extends State<ItemPage> {
   @override
   Widget build(BuildContext context) {
     var textTheme = Theme.of(context).textTheme;
+    var appTheme = Theme.of(context);
     return WillPopScope(
       onWillPop: () {
         Navigator.pop(context, false);
@@ -161,21 +167,70 @@ class _ItemPageState extends State<ItemPage> {
                     Container(
                       child: Button(
                         onPressed: () async {
-                          var result = await showDatePicker(
+                          showDialog(
                             context: context,
-                            initialDate: DateTime.now(),
-                            firstDate: DateTime.now().subtract(
-                              Duration(days: 365),
+                            barrierDismissible: true,
+                            builder: (context) => Dialog(
+                              child: SfDateRangePicker(
+                                backgroundColor:
+                                    appTheme.colorScheme.background,
+                                view: DateRangePickerView.month,
+                                confirmText: 'Select',
+                                cancelText: 'Cancel',
+                                initialDisplayDate: DateTime.now(),
+                                maxDate:
+                                    DateTime.now().add(Duration(days: 1825)),
+                                minDate: DateTime.now()
+                                    .subtract(Duration(days: 365)),
+                                allowViewNavigation: true,
+                                initialSelectedDate: DateTime.now(),
+                                onSubmit: (value) {
+                                  log(value.toString());
+                                  if (value is DateTime) {
+                                    final DateTime selectedDate = value;
+
+                                    date = selectedDate.day.toString() +
+                                        "/" +
+                                        selectedDate.month.toString() +
+                                        "/" +
+                                        selectedDate.year.toString();
+
+                                    setState(() {});
+                                    Navigator.pop(context);
+                                  }
+                                },
+                                onCancel: () => Navigator.pop(context),
+                                showNavigationArrow: true,
+                                headerStyle: DateRangePickerHeaderStyle(
+                                  textStyle: textTheme.bodyLarge,
+                                ),
+                                headerHeight: 60.h,
+                                monthCellStyle: DateRangePickerMonthCellStyle(
+                                  weekendTextStyle:
+                                      textTheme.bodySmall?.copyWith(
+                                    color: UiColors.lightRed,
+                                  ),
+                                  textStyle: textTheme.bodySmall,
+                                ),
+                                showActionButtons: true,
+                              ),
                             ),
-                            lastDate: DateTime.now().add(Duration(days: 1825)),
                           );
-                          if (result != null)
-                            date = result.day.toString() +
-                                "/" +
-                                result.month.toString() +
-                                "/" +
-                                result.year.toString();
-                          setState(() {});
+                          // var result = await showDatePicker(
+                          //   context: context,
+                          //   initialDate: DateTime.now(),
+                          //   firstDate: DateTime.now().subtract(
+                          //     Duration(days: 365),
+                          //   ),
+                          //   lastDate: DateTime.now().add(Duration(days: 1825)),
+                          // );
+                          // if (result != null)
+                          //   date = result.day.toString() +
+                          //       "/" +
+                          //       result.month.toString() +
+                          //       "/" +
+                          //       result.year.toString();
+                          // setState(() {});
                         },
                         text: "Select Date",
                       ),

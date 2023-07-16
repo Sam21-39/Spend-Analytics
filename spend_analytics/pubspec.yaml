@@ -20,6 +20,7 @@ dependencies:
   flutter_launcher_icons: any
   fl_chart: any
   fluttertoast: ^8.2.2
+  syncfusion_flutter_datepicker: ^22.1.38
   
  
 
