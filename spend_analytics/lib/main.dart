@@ -179,7 +179,8 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
       visualDensity: VisualDensity.adaptivePlatformDensity,
-      colorScheme: ColorScheme.fromSwatch().copyWith(secondary: UiColors.black),
+      colorScheme: ColorScheme.fromSwatch()
+          .copyWith(secondary: UiColors.black, background: UiColors.black),
     );
   }
 
@@ -287,8 +288,10 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
       visualDensity: VisualDensity.adaptivePlatformDensity,
-      colorScheme:
-          ColorScheme.fromSwatch().copyWith(secondary: UiColors.background),
+      colorScheme: ColorScheme.fromSwatch().copyWith(
+        secondary: UiColors.background,
+        background: UiColors.background,
+      ),
     );
   }
 }

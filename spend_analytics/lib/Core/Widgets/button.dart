@@ -34,7 +34,7 @@ class _ButtonState extends State<Button> {
           borderRadius: BorderRadius.circular(20.0),
         ),
         elevation: 10.0,
-        color: Theme.of(context).buttonTheme.colorScheme?.background,
+        color: Theme.of(context).primaryColor,
         disabledColor: UiColors.lightRed.withOpacity(0.5),
         disabledTextColor: Theme.of(context).disabledColor,
         textColor: Theme.of(context).textTheme.labelLarge?.color,

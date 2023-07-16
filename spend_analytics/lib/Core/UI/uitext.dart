@@ -1,21 +1,22 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class UiText {
   static final TextStyle headerText = TextStyle(
-    fontSize: 36.0,
+    fontSize: 36.0.sp,
     fontWeight: FontWeight.w600,
   );
 
   static final subtitleText = TextStyle(
-    fontSize: 24.0,
+    fontSize: 24.0.sp,
     height: 1.5,
   );
 
   static final buttonText = TextStyle(
-    fontSize: 18.0,
+    fontSize: 18.0.sp,
   );
 
   static final normalText = TextStyle(
-    fontSize: 16.0,
+    fontSize: 16.0.sp,
   );
 }

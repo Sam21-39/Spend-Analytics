@@ -19,7 +19,7 @@ dependencies:
   flutter_screenutil: any
   flutter_launcher_icons: any
   fl_chart: any
-  toast: any
+  fluttertoast: ^8.2.2
   
  
 

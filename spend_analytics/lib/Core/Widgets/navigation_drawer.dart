@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spend_analytics/Core/Model/spending_model.dart';
@@ -9,7 +10,6 @@ import 'package:spend_analytics/Core/Services/db_helper.dart';
 import 'package:spend_analytics/Core/Utils/display_utils.dart';
 import 'package:spend_analytics/Core/Utils/sp_constants.dart';
 import 'package:spend_analytics/main.dart';
-import 'package:toast/toast.dart';
 
 class NavigationDrawer extends StatefulWidget {
   final tabChangeCallback;
@@ -91,9 +91,9 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
           InkWell(
             onTap: widget.isSpendingsAdded
                 ? null
-                : () => Toast.show(
-                      "Add spendings to unlock",
-                      duration: Toast.lengthLong,
+                : () => Fluttertoast.showToast(
+                      msg: "Add spendings to unlock",
+                      toastLength: Toast.LENGTH_LONG,
                     ),
             child: ListTile(
               enabled: widget.isSpendingsAdded ? true : false,
@@ -121,9 +121,9 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
           InkWell(
             onTap: widget.isSpendingsAdded
                 ? null
-                : () => Toast.show(
-                      "Add spendings to unlock",
-                      duration: Toast.lengthLong,
+                : () => Fluttertoast.showToast(
+                      msg: "Add spendings to unlock",
+                      toastLength: Toast.LENGTH_LONG,
                     ),
             child: ListTile(
               enabled: widget.isSpendingsAdded ? true : false,

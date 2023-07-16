@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import 'package:permission_handler/permission_handler.dart';
@@ -11,7 +12,6 @@ import 'package:spend_analytics/Functions/Screens/Onboarding/amount.dart';
 import 'package:spend_analytics/Functions/Screens/Onboarding/name.dart';
 import 'package:spend_analytics/Core/Services/db_helper.dart';
 import 'package:spend_analytics/Core/Utils/display_utils.dart';
-import 'package:toast/toast.dart';
 
 class Settings extends StatefulWidget {
   const Settings({Key? key}) : super(key: key);
@@ -172,7 +172,10 @@ class _SettingsState extends State<Settings> {
                   File f = File(dir + "/Spendings.csv");
 
                   f.writeAsString(csv).whenComplete(() {
-                    Toast.show("File saved in $dir", duration: 5);
+                    Fluttertoast.showToast(
+                      msg: "File saved in $dir",
+                      toastLength: Toast.LENGTH_LONG,
+                    );
                     // print(dir);
                   });
                 }
