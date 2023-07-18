@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -28,10 +30,9 @@ class NavigationDrawer extends StatefulWidget {
 }
 
 class _NavigationDrawerState extends State<NavigationDrawer> {
-  bool isDarkTheme = true;
+  // bool isDarkTheme = true;
 
   String versionInfo = "";
-
   double expense = 0.0, expenseNow = 0.0;
   double savings = 0.0, savingsNow = 0.0;
   List<SpendingModel> spm = [], spm2 = [];
@@ -39,12 +40,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
   @override
   void initState() {
     super.initState();
-    SharedPreferences.getInstance().then((sp) {
-      if (sp.getBool(THEME) != null)
-        setState(() {
-          isDarkTheme = sp.getBool(THEME) ?? true;
-        });
-    });
+    appKey.currentState?.themeBloc.init();
     version();
     getDbValues();
     getDbValuesNow();
@@ -152,34 +148,42 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
             thickness: 1.0,
             color: Theme.of(context).dividerColor,
           ),
-          ListTile(
-            leading: isDarkTheme
-                ? Icon(
-                    Icons.brightness_3_rounded,
-                  )
-                : Icon(
-                    Icons.lightbulb,
+          StreamBuilder<ThemeMode>(
+              stream: appKey.currentState?.themeBloc.mainThemeCtrl.stream,
+              initialData: ThemeMode.dark,
+              builder: (context, themeMode) {
+                log(themeMode.data.toString());
+                return ListTile(
+                  leading: themeMode.data == ThemeMode.dark
+                      ? Icon(
+                          Icons.brightness_3_rounded,
+                        )
+                      : Icon(
+                          Icons.lightbulb,
+                        ),
+                  title: Text(
+                    "Change Theme",
                   ),
-            title: Text(
-              "Change Theme",
-            ),
-            selected: true,
-            trailing: Text(
-              isDarkTheme ? "Dark Mode" : "Light Mode",
-              style: textTheme.bodySmall,
-            ),
-            onTap: () async {
-              SharedPreferences sp = await SharedPreferences.getInstance();
+                  selected: true,
+                  trailing: Text(
+                    themeMode.data == ThemeMode.dark
+                        ? "Dark Mode"
+                        : "Light Mode",
+                    style: textTheme.bodySmall,
+                  ),
+                  onTap: () async {
+                    SharedPreferences sp =
+                        await SharedPreferences.getInstance();
 
-              setState(() {
-                isDarkTheme = !isDarkTheme;
-                sp.setBool(THEME, isDarkTheme);
-                appKey.currentState?.setState(() {
-                  isDarkMode = isDarkTheme;
-                });
-              });
-            },
-          ),
+                    sp.setBool(THEME, themeMode.data == ThemeMode.light);
+                    appKey.currentState?.themeBloc.mainThemeCtrl.sink.add(
+                        themeMode.data == ThemeMode.dark
+                            ? ThemeMode.light
+                            : ThemeMode.dark);
+                    // });
+                  },
+                );
+              }),
           // ListTile(
           //   selected: true,
           //   leading: Icon(Icons.perm_device_info_rounded),

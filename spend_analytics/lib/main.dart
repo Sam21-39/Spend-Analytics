@@ -1,12 +1,13 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:spend_analytics/Functions/Blocs/common/theme_bloc.dart';
 import 'package:spend_analytics/Functions/Screens/splash.dart';
 import 'package:spend_analytics/Core/UI/uicolors.dart';
 import 'package:spend_analytics/Core/UI/uitext.dart';
-import 'package:spend_analytics/Core/Utils/sp_constants.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,8 +20,8 @@ void main() {
   );
 }
 
-GlobalKey appKey = GlobalKey();
-bool isDarkMode = true;
+GlobalKey<_MyAppState> appKey = GlobalKey<_MyAppState>();
+// bool isDarkMode = true;
 
 class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -29,46 +30,91 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  late final ThemeBloc themeBloc;
+  // bool isDarkMode = true;
   @override
   void initState() {
+    // setDarkModePrefrence();
+    themeBloc = ThemeBloc();
+    themeBloc.init();
     super.initState();
-    SharedPreferences.getInstance().then((sp) {
-      setState(() {
-        isDarkMode = sp.getBool(THEME) ?? true;
-      });
-    });
+    // SharedPreferences.getInstance().then((sp) {
+    //   setState(() {
+    //     isDarkMode = sp.getBool(THEME) ?? true;
+    //   });
+    // });
+  }
+
+  @override
+  void dispose() {
+    themeBloc.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setSystemUIOverlayStyle(
-      isDarkMode
-          ? SystemUiOverlayStyle.dark.copyWith(
-              statusBarBrightness: Brightness.light,
-              statusBarIconBrightness: Brightness.light,
-              systemNavigationBarDividerColor: UiColors.darkGrey,
-              systemNavigationBarColor: UiColors.black,
-              systemNavigationBarIconBrightness: Brightness.light,
-            )
-          : SystemUiOverlayStyle.light.copyWith(
-              statusBarBrightness: Brightness.dark,
-              statusBarIconBrightness: Brightness.dark,
-              systemNavigationBarDividerColor: UiColors.darkGrey,
-              systemNavigationBarColor: UiColors.background,
-              systemNavigationBarIconBrightness: Brightness.dark,
-            ),
-    );
+    // SystemChrome.setSystemUIOverlayStyle(
+    //   isDarkMode
+    //       ? SystemUiOverlayStyle.dark.copyWith(
+    //           statusBarBrightness: Brightness.light,
+    //           statusBarIconBrightness: Brightness.light,
+    //           // systemNavigationBarDividerColor: UiColors.darkGrey,
+    //           systemNavigationBarColor: UiColors.black,
+    //           systemNavigationBarIconBrightness: Brightness.light,
+    //         )
+    //       : SystemUiOverlayStyle.light.copyWith(
+    //           statusBarBrightness: Brightness.dark,
+    //           statusBarIconBrightness: Brightness.dark,
+    //           // systemNavigationBarDividerColor: UiColors.darkGrey,
+    //           systemNavigationBarColor: UiColors.background,
+    //           systemNavigationBarIconBrightness: Brightness.dark,
+    //         ),
+    // );
     return ScreenUtilInit(
       designSize: Size(480.0, 800.0),
       minTextAdapt: true,
-      builder: (context, child) => MaterialApp(
-        title: 'Spend Analytics',
-        debugShowCheckedModeBanner: false,
-        theme: lightTheme(),
-        darkTheme: darkTheme(),
-        themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
-        home: Splash(),
-      ),
+      builder: (context, child) => StreamBuilder<ThemeMode>(
+          stream: themeBloc.mainThemeCtrl.stream,
+          initialData: ThemeMode.dark,
+          builder: (context, themeMode) {
+            // if (themeMode.hasData) {
+            log("Main Theme: " + themeMode.data.toString());
+            SystemChrome.setSystemUIOverlayStyle(
+              themeMode.data == ThemeMode.dark
+                  ? SystemUiOverlayStyle.dark.copyWith(
+                      statusBarBrightness: Brightness.light,
+                      statusBarIconBrightness: Brightness.light,
+                      // systemNavigationBarDividerColor: UiColors.darkGrey,
+                      systemNavigationBarColor: UiColors.black,
+                      systemNavigationBarIconBrightness: Brightness.light,
+                    )
+                  : SystemUiOverlayStyle.light.copyWith(
+                      statusBarBrightness: Brightness.dark,
+                      statusBarIconBrightness: Brightness.dark,
+                      // systemNavigationBarDividerColor: UiColors.darkGrey,
+                      systemNavigationBarColor: UiColors.background,
+                      systemNavigationBarIconBrightness: Brightness.dark,
+                    ),
+            );
+            return MaterialApp(
+              title: 'Spend Analytics',
+              debugShowCheckedModeBanner: false,
+              theme: lightTheme(),
+              darkTheme: darkTheme(),
+              themeMode: themeMode.data,
+              home: Splash(),
+            );
+            // }
+            // return Container();
+            // return MaterialApp(
+            //   title: 'Spend Analytics',
+            //   debugShowCheckedModeBanner: false,
+            //   theme: lightTheme(),
+            //   darkTheme: darkTheme(),
+            //   themeMode: ThemeMode.system,
+            //   home: Splash(),
+            // );
+          }),
     );
   }
 
