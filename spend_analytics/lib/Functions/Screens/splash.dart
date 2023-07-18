@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spend_analytics/Functions/Screens/MainDashboard/main_dashboard.dart';
-import 'package:spend_analytics/Functions/Screens/Onboarding/onboadring.dart';
-import 'package:spend_analytics/Core/Utils/sp_constants.dart';
+import 'package:spend_analytics/Functions/Blocs/splash/splash_bloc.dart';
 
 class Splash extends StatefulWidget {
   @override
@@ -12,30 +9,12 @@ class Splash extends StatefulWidget {
 }
 
 class _SplashState extends State<Splash> {
-  bool isOnboardingDone = false;
+  late SpalshBloc spalshBloc;
   @override
   void initState() {
     super.initState();
-    SharedPreferences.getInstance().then((sp) {
-      setState(() {
-        isOnboardingDone =
-            sp.getDouble(AMOUNT) != null && sp.getString(NAME) != null
-                ? true
-                : false;
-      });
-    });
-    Future.delayed(
-      Duration(
-        seconds: 2,
-      ),
-    ).then(
-      (_) => Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) =>
-              isOnboardingDone ? MainDashboard() : Onboarding(),
-        ),
-      ),
-    );
+    spalshBloc = SpalshBloc();
+    spalshBloc.init(context);
   }
 
   @override
