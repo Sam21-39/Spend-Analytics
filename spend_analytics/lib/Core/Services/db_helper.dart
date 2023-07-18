@@ -45,7 +45,7 @@ class DbHelper {
       '''
       CREATE TABLE $_tableName(
         $_columnId INTEGER PRIMARY KEY AUTOINCREMENT,
-        $_columnAmount INTEGER NOT NULL,
+        $_columnAmount FLOAT NOT NULL,
         $_columnType TEXT NOT NULL,
         $_columnDateTime TEXT NOT NULL,
         $_columnMode TEXT NOT NULL,

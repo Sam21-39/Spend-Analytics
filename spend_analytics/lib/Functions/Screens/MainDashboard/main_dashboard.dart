@@ -262,8 +262,9 @@ class _MainDashboardState extends State<MainDashboard> {
                                                           children: [
                                                             Text(
                                                               spm[index]
-                                                                  .amount
-                                                                  .toString(),
+                                                                  .amount!
+                                                                  .toStringAsFixed(
+                                                                      2),
                                                               style: textTheme
                                                                   .headlineMedium
                                                                   ?.copyWith(
@@ -391,8 +392,7 @@ class _MainDashboardState extends State<MainDashboard> {
                       ],
                     ),
           bottomNavigationBar: adContainer(),
-          floatingActionButtonLocation:
-              FloatingActionButtonLocation.centerFloat,
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           floatingActionButton: isAnalysis || isEstimate
               ? null
               : FloatingActionButton(
@@ -506,7 +506,7 @@ class _MainDashboardState extends State<MainDashboard> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    spm.amount.toString(),
+                    spm.amount!.toStringAsFixed(2),
                     style: texts.headlineMedium,
                   ),
                   Column(
