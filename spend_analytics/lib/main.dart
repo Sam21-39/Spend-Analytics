@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 // import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 // import 'package:google_mobile_ads/google_mobile_ads.dart';
 // import 'package:spend_analytics/Core/UI/uicolors.dart';
@@ -8,12 +9,14 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'View/Screens/splash.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   // Initialize without device test ids.
   // MobileAds.instance.initialize();
   runApp(
     MyApp(),
   );
+  FlutterNativeSplash.remove();
 }
 
 class MyApp extends StatefulWidget {
