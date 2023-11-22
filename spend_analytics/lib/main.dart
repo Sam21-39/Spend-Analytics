@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:spend_analytics/Core/UI/uicolors.dart';
 // import 'package:google_mobile_ads/google_mobile_ads.dart';
 // import 'package:spend_analytics/Core/UI/uicolors.dart';
 
-import 'View/Screens/splash.dart';
+import 'View/Screens/Splash/splash.dart';
 
 void main() {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -76,10 +77,42 @@ class _MyAppState extends State<MyApp> {
   }
 
   ThemeData darkTheme() {
-    return ThemeData();
+    return ThemeData(
+      fontFamily: 'Roboto',
+      appBarTheme: AppBarTheme(
+        backgroundColor: UiColors.backgroundDark,
+      ),
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: UiColors.primary,
+        background: UiColors.backgroundDark,
+        error: UiColors.red,
+      ),
+      textTheme: TextTheme(
+        bodyMedium: TextStyle(
+          color: UiColors.backgroundLight,
+          fontFamily: 'Roboto',
+        ),
+      ),
+    );
   }
 
   ThemeData lightTheme() {
-    return ThemeData();
+    return ThemeData(
+      fontFamily: 'Roboto',
+      appBarTheme: AppBarTheme(
+        backgroundColor: UiColors.backgroundLight,
+      ),
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: UiColors.primary,
+        background: UiColors.backgroundLight,
+        error: UiColors.red,
+      ),
+      textTheme: TextTheme(
+        bodyMedium: TextStyle(
+          color: UiColors.black,
+          fontFamily: 'Roboto',
+        ),
+      ),
+    );
   }
 }
