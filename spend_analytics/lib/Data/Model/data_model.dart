@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:spend_analytics/UI/uicolors.dart';
+import 'package:spend_analytics/Core/UI/uicolors.dart';
 
 class DataModel {
   final int id;
@@ -8,10 +8,10 @@ class DataModel {
   final Color color;
 
   DataModel({
-    @required this.id,
-    @required this.name,
-    @required this.y,
-    @required this.color,
+    required this.id,
+    required this.name,
+    required this.y,
+    required this.color,
   });
 }
 
