@@ -60,7 +60,7 @@ class Setup extends StatelessWidget {
                           'We have different categories for your expenses.',
                           textAlign: TextAlign.center,
                           style: theme.textTheme.bodyMedium!.copyWith(
-                            fontSize: 36.sp,
+                            fontSize: 30.sp,
                             fontWeight: FontWeight.w400,
                           ),
                         ),
@@ -92,10 +92,10 @@ class Setup extends StatelessWidget {
                       Expanded(
                         flex: 3,
                         child: Text(
-                          'Visualize them easily with us.',
+                          'Visualize your expenses easily with us.',
                           textAlign: TextAlign.center,
                           style: theme.textTheme.bodyMedium!.copyWith(
-                            fontSize: 36.sp,
+                            fontSize: 30.sp,
                             fontWeight: FontWeight.w400,
                           ),
                         ),
