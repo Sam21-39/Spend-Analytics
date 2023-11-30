@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:spend_analytics/Core/Widget/base_scaffold.dart';
+import 'package:spend_analytics/Core/Widget/base_widgets.dart';
 
 class Info extends StatelessWidget {
   const Info({super.key});
@@ -12,7 +14,13 @@ class Info extends StatelessWidget {
       appBarColor: theme.colorScheme.background,
       backgroundColor: theme.colorScheme.background,
       body: Column(
-        children: [],
+        children: [
+          BaseWidgets.customTextField(TextEditingController(), 'Name'),
+          SizedBox(
+            height: 16.sp,
+          ),
+          BaseWidgets.customTextField(TextEditingController(), 'Amount'),
+        ],
       ),
     );
   }

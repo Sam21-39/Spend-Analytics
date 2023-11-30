@@ -8,6 +8,7 @@ import 'package:spend_analytics/Core/UI/uicolors.dart';
 import 'package:spend_analytics/Core/Utils/app_constatns.dart';
 import 'package:spend_analytics/Core/Widget/base_scaffold.dart';
 import 'package:spend_analytics/Core/Widget/base_widgets.dart';
+import 'package:spend_analytics/View/Screens/Setup/info.dart';
 
 class Setup extends StatelessWidget {
   const Setup({super.key});
@@ -119,7 +120,10 @@ class Setup extends StatelessWidget {
                     icon: Icon(Icons.arrow_forward_rounded),
                     text: 'Let\'s Get Started',
                     btnColor: UiColors.primary,
-                    onClick: () {},
+                    onClick: () {
+                      Navigator.of(context).push(
+                          MaterialPageRoute(builder: (context) => Info()));
+                    },
                   ),
                 );
               },
