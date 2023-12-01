@@ -120,10 +120,12 @@ class Setup extends StatelessWidget {
                     icon: Icon(Icons.arrow_forward_rounded),
                     text: 'Let\'s Get Started',
                     btnColor: UiColors.primary,
-                    onClick: () {
-                      Navigator.of(context).push(
-                          MaterialPageRoute(builder: (context) => Info()));
-                    },
+                    onClick: snapshot.data != null && snapshot.data!
+                        ? () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => Info()));
+                          }
+                        : () {},
                   ),
                 );
               },
