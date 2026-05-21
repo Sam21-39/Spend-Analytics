@@ -32,7 +32,6 @@
 .pub/
 /build/
 
-
 # Web related
 lib/generated_plugin_registrant.dart
 
@@ -46,3 +45,19 @@ app.*.map.json
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 .DS_Store
 .DS_Store
+
+# Environment files (local only)
+.env
+.env.*
+assets/env/.env.*
+
+# Keep shareable templates
+!.env.secrets.*.example
+!assets/env/*.example
+
+# Firebase per-env service files (local only)
+firebase/**/google-services.json
+firebase/**/GoogleService-Info.plist
+
+# FVM Version Cache
+.fvm/

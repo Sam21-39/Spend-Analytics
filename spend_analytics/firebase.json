@@ -1,0 +1,67 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "spendsense-dc76d",
+          "appId": "1:1007408505156:android:539ebd0ba83651ba217711",
+          "fileOutput": "android/app/google-services.json"
+        },
+        "buildConfigurations": {
+          "Debug": {
+            "projectId": "spendsense-dc76d",
+            "appId": "1:1007408505156:android:539ebd0ba83651ba217711",
+            "fileOutput": "android/app/google-services.json"
+          },
+          "Profile": {
+            "projectId": "spendsense-dc76d",
+            "appId": "1:1007408505156:android:539ebd0ba83651ba217711",
+            "fileOutput": "android/app/google-services.json"
+          },
+          "Release": {
+            "projectId": "spendsense-dc76d",
+            "appId": "1:1007408505156:android:539ebd0ba83651ba217711",
+            "fileOutput": "android/app/google-services.json"
+          }
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "spendsense-dc76d",
+          "appId": "1:1007408505156:ios:54805e9249fbe5ae217711",
+          "uploadDebugSymbols": true,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        },
+        "buildConfigurations": {
+          "Debug": {
+            "projectId": "spendsense-dc76d",
+            "appId": "1:1007408505156:ios:54805e9249fbe5ae217711",
+            "uploadDebugSymbols": true,
+            "fileOutput": "ios/Runner/GoogleService-Info.plist"
+          },
+          "Profile": {
+            "projectId": "spendsense-dc76d",
+            "appId": "1:1007408505156:ios:54805e9249fbe5ae217711",
+            "uploadDebugSymbols": true,
+            "fileOutput": "ios/Runner/GoogleService-Info.plist"
+          },
+          "Release": {
+            "projectId": "spendsense-dc76d",
+            "appId": "1:1007408505156:ios:54805e9249fbe5ae217711",
+            "uploadDebugSymbols": true,
+            "fileOutput": "ios/Runner/GoogleService-Info.plist"
+          }
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "spendsense-dc76d",
+          "configurations": {
+            "android": "1:1007408505156:android:539ebd0ba83651ba217711",
+            "ios": "1:1007408505156:ios:54805e9249fbe5ae217711"
+          }
+        }
+      }
+    }
+  }
+}
