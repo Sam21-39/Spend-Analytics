@@ -1,3 +1,5 @@
 
 .DS_Store
 **/key.properties
+skills-lock.json
+.agents/

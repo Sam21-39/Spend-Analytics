@@ -9,15 +9,20 @@ import 'package:spend_analytics/features/categories/category_controller.dart';
 import 'package:spend_analytics/features/categories/category_screen.dart';
 import 'package:spend_analytics/features/dashboard/dashboard_controller.dart';
 import 'package:spend_analytics/features/dashboard/dashboard_screen.dart';
+import 'package:spend_analytics/features/legal/privacy_policy_screen.dart';
+import 'package:spend_analytics/features/legal/terms_of_service_screen.dart';
+import 'package:spend_analytics/features/notifications/notification_center_screen.dart';
 import 'package:spend_analytics/features/recurring/recurring_controller.dart';
 import 'package:spend_analytics/features/recurring/recurring_screen.dart';
 import 'package:spend_analytics/features/rules/rules_controller.dart';
 import 'package:spend_analytics/features/rules/rules_screen.dart';
 import 'package:spend_analytics/features/settings/settings_controller.dart';
 import 'package:spend_analytics/features/settings/settings_screen.dart';
+import 'package:spend_analytics/features/subscription/subscription_plans_screen.dart';
 import 'package:spend_analytics/features/transactions/add_transaction_screen.dart';
 import 'package:spend_analytics/features/transactions/transaction_controller.dart';
 import 'package:spend_analytics/features/transactions/transaction_list_screen.dart';
+import 'package:spend_analytics/features/voice/voice_auto_review_screen.dart';
 
 class AppRoutes {
   static const login = '/login';
@@ -30,6 +35,11 @@ class AppRoutes {
   static const rules = '/rules';
   static const categories = '/categories';
   static const settings = '/settings';
+  static const notifications = '/notifications';
+  static const subscription = '/subscription';
+  static const privacyPolicy = '/legal/privacy';
+  static const terms = '/legal/terms';
+  static const voiceReview = '/voice/review';
 
   static final pages = <GetPage<dynamic>>[
     GetPage(
@@ -53,10 +63,7 @@ class AppRoutes {
         () => Get.lazyPut<TransactionController>(() => TransactionController()),
       ),
     ),
-    GetPage(
-      name: txns,
-      page: () => const TransactionListScreen(),
-    ),
+    GetPage(name: txns, page: () => const TransactionListScreen()),
     GetPage(
       name: analytics,
       page: () => const AnalyticsScreen(),
@@ -99,5 +106,10 @@ class AppRoutes {
         () => Get.lazyPut<SettingsController>(() => SettingsController()),
       ),
     ),
+    GetPage(name: notifications, page: () => const NotificationCenterScreen()),
+    GetPage(name: subscription, page: () => const SubscriptionPlansScreen()),
+    GetPage(name: privacyPolicy, page: () => const PrivacyPolicyScreen()),
+    GetPage(name: terms, page: () => const TermsOfServiceScreen()),
+    GetPage(name: voiceReview, page: () => const VoiceAutoReviewScreen()),
   ];
 }

@@ -1,29 +1,36 @@
 import 'package:flutter/material.dart';
-
-class AppColors {
-  static const primary = Color(0xFF1A73E8);
-  static const accent = Color(0xFF00C48C);
-  static const warning = Color(0xFFFF6B35);
-  static const lightSurface = Color(0xFFF8F9FE);
-  static const darkSurface = Color(0xFF0F1117);
-}
+import 'package:spend_analytics/core/theme/liquid_glass_tokens.dart';
 
 ColorScheme lightColorScheme() {
-  return ColorScheme.fromSeed(
-    seedColor: AppColors.primary,
+  return const ColorScheme(
     brightness: Brightness.light,
-    surface: AppColors.lightSurface,
-    secondary: AppColors.accent,
-    error: AppColors.warning,
+    primary: LiquidGlassColors.primary,
+    onPrimary: Color(0xFF002E69),
+    secondary: LiquidGlassColors.secondary,
+    onSecondary: Color(0xFF680019),
+    error: LiquidGlassColors.error,
+    onError: Color(0xFF690005),
+    surface: LiquidGlassColors.surface,
+    onSurface: LiquidGlassColors.onSurface,
+    surfaceContainerHighest: LiquidGlassColors.surfaceContainerHighest,
+    onSurfaceVariant: LiquidGlassColors.onSurfaceVariant,
+    outline: LiquidGlassColors.outline,
   );
 }
 
 ColorScheme darkColorScheme() {
-  return ColorScheme.fromSeed(
-    seedColor: AppColors.primary,
+  return const ColorScheme(
     brightness: Brightness.dark,
-    surface: AppColors.darkSurface,
-    secondary: AppColors.accent,
-    error: AppColors.warning,
+    primary: LiquidGlassColors.primary,
+    onPrimary: Color(0xFF002E69),
+    secondary: LiquidGlassColors.secondary,
+    onSecondary: Color(0xFF680019),
+    error: LiquidGlassColors.error,
+    onError: Color(0xFF690005),
+    surface: LiquidGlassColors.surface,
+    onSurface: LiquidGlassColors.onSurface,
+    surfaceContainerHighest: LiquidGlassColors.surfaceContainerHighest,
+    onSurfaceVariant: LiquidGlassColors.onSurfaceVariant,
+    outline: LiquidGlassColors.outline,
   );
 }
