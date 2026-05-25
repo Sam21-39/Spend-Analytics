@@ -1,0 +1,7 @@
+# Supabase local CLI temp/runtime artifacts
+.temp/
+.branches/
+
+# Local overrides / ad-hoc dumps
+*.local.sql
+*.dump
