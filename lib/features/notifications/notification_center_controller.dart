@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:get/get.dart';
 import 'package:spend_analytics/core/local_db/app_database.dart';
 import 'package:spend_analytics/core/supabase/supabase_service.dart';
@@ -26,10 +25,6 @@ class NotificationCenterController extends GetxController {
   String _resolveActiveUserId() {
     if (_supabase.isAuthenticated) {
       return _supabase.currentUserId!;
-    }
-    final firebaseUser = fb.FirebaseAuth.instance.currentUser;
-    if (firebaseUser != null) {
-      return firebaseUser.uid;
     }
     return 'guest';
   }

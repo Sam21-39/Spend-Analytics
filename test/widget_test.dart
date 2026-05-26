@@ -15,7 +15,7 @@ void main() {
   testWidgets('SpendSense app renders', (WidgetTester tester) async {
     await AppConfig.init();
     await DependencyInjection.init();
-    await tester.pumpWidget(const SpendSenseApp());
+    await tester.pumpWidget(const SpendAnalyticsApp());
     expect(find.textContaining('SpendSense'), findsWidgets);
   });
 }

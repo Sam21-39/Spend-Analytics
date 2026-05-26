@@ -50,3 +50,24 @@ skills-lock.json
 
 # Flutter test fixture exception
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
+windows/
+web/
+macos/
+linux/
+
+
+#android 
+android/app/caches/
+android/caches/
+android/wrapper/
+android/native/
+android/daemon/
+android/.tmp/
+
+# Android signing secrets
+*.jks
+*.keystore
+android/key.properties
+android/app/keys/
+upload_certificate.pem
+secrets.g.dart

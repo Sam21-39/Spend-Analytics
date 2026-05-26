@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:get/get.dart';
 import 'package:spend_analytics/core/local_db/app_database.dart';
 import 'package:spend_analytics/core/supabase/supabase_service.dart';
@@ -9,7 +8,6 @@ import 'package:spend_analytics/shared/models/transaction_model.dart';
 class DashboardController extends GetxController {
   final AppDatabase _db = Get.find<AppDatabase>();
   final SupabaseService _supabase = Get.find<SupabaseService>();
-  final fb.FirebaseAuth _firebaseAuth = fb.FirebaseAuth.instance;
   StreamSubscription<List<TransactionModel>>? _transactionsSub;
 
   final transactions = <TransactionModel>[].obs;
@@ -19,8 +17,7 @@ class DashboardController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    isGuestMode.value =
-        !_supabase.isAuthenticated && _firebaseAuth.currentUser == null;
+    isGuestMode.value = !_supabase.isAuthenticated;
     _transactionsSub = _db.watchAllTransactions().listen((rows) {
       transactions.assignAll(rows);
       monthlySpend.value = rows

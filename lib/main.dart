@@ -9,16 +9,16 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppConfig.init();
   await DependencyInjection.init();
-  runApp(const SpendSenseApp());
+  runApp(const SpendAnalyticsApp());
 }
 
-class SpendSenseApp extends StatelessWidget {
-  const SpendSenseApp({super.key});
+class SpendAnalyticsApp extends StatelessWidget {
+  const SpendAnalyticsApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'SpendSense',
+      title: AppConfig.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,

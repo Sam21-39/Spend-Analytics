@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:get/get.dart';
 import 'package:spend_analytics/core/firebase/crashlytics_service.dart';
 import 'package:spend_analytics/core/local_db/app_database.dart';
@@ -39,22 +38,23 @@ class BudgetController extends GetxController {
     _budgetSub = _db
         .watchBudgetsForMonth(userId: _userId, month: _month, year: _year)
         .listen((rows) {
-      categoryBudgets.assignAll(
-        <String, double>{for (final row in rows) row.category: row.limitAmount},
-      );
-    });
+          categoryBudgets.assignAll(<String, double>{
+            for (final row in rows) row.category: row.limitAmount,
+          });
+        });
 
     _spendSub = _db
         .watchCategorySpendByMonth(userId: _userId, month: _month, year: _year)
         .listen((totals) {
-      categorySpend.assignAll(totals);
-    });
+          categorySpend.assignAll(totals);
+        });
   }
 
   Future<void> _seedDefaultBudgetsIfNeeded() async {
-    final existing = await _db
-        .watchBudgetsForMonth(userId: _userId, month: _month, year: _year)
-        .first;
+    final existing =
+        await _db
+            .watchBudgetsForMonth(userId: _userId, month: _month, year: _year)
+            .first;
     if (existing.isNotEmpty) {
       return;
     }
@@ -107,9 +107,10 @@ class BudgetController extends GetxController {
         );
       }
 
-      final localBudgets = await _db
-          .watchBudgetsForMonth(userId: _userId, month: _month, year: _year)
-          .first;
+      final localBudgets =
+          await _db
+              .watchBudgetsForMonth(userId: _userId, month: _month, year: _year)
+              .first;
       for (final local in localBudgets) {
         await _supabase.upsertBudget(
           category: local.category,
@@ -148,10 +149,6 @@ class BudgetController extends GetxController {
   String _resolveActiveUserId() {
     if (_supabase.isAuthenticated) {
       return _supabase.currentUserId!;
-    }
-    final firebaseUser = fb.FirebaseAuth.instance.currentUser;
-    if (firebaseUser != null) {
-      return firebaseUser.uid;
     }
     return 'guest';
   }

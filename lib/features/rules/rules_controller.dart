@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:get/get.dart';
 import 'package:spend_analytics/core/firebase/crashlytics_service.dart';
 import 'package:spend_analytics/core/local_db/app_database.dart';
@@ -27,8 +26,8 @@ class RuleViewModel {
             .toStringAsFixed(0);
         return 'Budget alert at $pct%';
       case 'daily_limit':
-        final limit =
-            (parameters['limit_amount'] as num? ?? 1500).toStringAsFixed(0);
+        final limit = (parameters['limit_amount'] as num? ?? 1500)
+            .toStringAsFixed(0);
         return 'Daily spend limit ₹$limit';
       case 'no_entry_reminder':
         final time = parameters['time']?.toString() ?? '21:00';
@@ -39,8 +38,9 @@ class RuleViewModel {
       case 'weekend_overspend':
         return 'Weekend overspend insight';
       case 'recurring_due':
-        final days =
-            (parameters['days_before'] as num? ?? 2).toStringAsFixed(0);
+        final days = (parameters['days_before'] as num? ?? 2).toStringAsFixed(
+          0,
+        );
         return 'Recurring due in $days day(s)';
       default:
         return ruleType;
@@ -151,9 +151,9 @@ class RulesController extends GetxController {
 
   Future<void> toggleRule(String id, bool value) async {
     await _db.setRuleActive(id: id, isActive: value);
-    final local = (await _db.getRules(_userId))
-        .where((rule) => rule.id == id)
-        .toList(growable: false);
+    final local = (await _db.getRules(
+      _userId,
+    )).where((rule) => rule.id == id).toList(growable: false);
     if (local.isEmpty) {
       return;
     }
@@ -189,10 +189,6 @@ class RulesController extends GetxController {
   String _resolveActiveUserId() {
     if (_supabase.isAuthenticated) {
       return _supabase.currentUserId!;
-    }
-    final firebaseUser = fb.FirebaseAuth.instance.currentUser;
-    if (firebaseUser != null) {
-      return firebaseUser.uid;
     }
     return 'guest';
   }

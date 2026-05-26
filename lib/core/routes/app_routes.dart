@@ -1,7 +1,6 @@
 import 'package:get/get.dart';
 import 'package:spend_analytics/features/analytics/analytics_controller.dart';
 import 'package:spend_analytics/features/analytics/analytics_screen.dart';
-import 'package:spend_analytics/features/auth/auth_controller.dart';
 import 'package:spend_analytics/features/auth/login_screen.dart';
 import 'package:spend_analytics/features/budgets/budget_controller.dart';
 import 'package:spend_analytics/features/budgets/budget_screen.dart';
@@ -47,9 +46,6 @@ class AppRoutes {
     GetPage(
       name: login,
       page: () => const LoginScreen(),
-      binding: BindingsBuilder(
-        () => Get.lazyPut<AuthController>(() => AuthController()),
-      ),
     ),
     GetPage(
       name: dashboard,

@@ -8,6 +8,7 @@ import 'package:spend_analytics/core/rules/rule_engine.dart';
 import 'package:spend_analytics/core/supabase/realtime_service.dart';
 import 'package:spend_analytics/core/supabase/supabase_service.dart';
 import 'package:spend_analytics/core/sync/sync_manager.dart';
+import 'package:spend_analytics/features/auth/auth_controller.dart';
 
 class DependencyInjection {
   static Future<void> init() async {
@@ -38,6 +39,8 @@ class DependencyInjection {
 
     final rulesEngine = Get.put(RuleEngine(), permanent: true);
     await rulesEngine.init();
+
+    Get.put(AuthController(), permanent: true);
 
   }
 }

@@ -1,8 +1,9 @@
-import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:spend_analytics/core/config/app_config.dart';
 import 'package:spend_analytics/core/firebase/analytics_service.dart';
 import 'package:spend_analytics/core/firebase/crashlytics_service.dart';
 import 'package:spend_analytics/core/routes/app_routes.dart';
@@ -14,7 +15,13 @@ class AuthController extends GetxController {
   final SupabaseService _supabase = Get.find<SupabaseService>();
   final AnalyticsService _analytics = Get.find<AnalyticsService>();
   final CrashlyticsService _crashlytics = Get.find<CrashlyticsService>();
-  final fb.FirebaseAuth _firebaseAuth = fb.FirebaseAuth.instance;
+  late final GoogleSignIn _googleSignIn =
+      AppConfig.googleWebClientId.isEmpty
+          ? GoogleSignIn()
+          : GoogleSignIn(
+            serverClientId: AppConfig.googleWebClientId,
+            scopes: const <String>['email', 'profile'],
+          );
 
   final isLoggedIn = false.obs;
   final isLoading = false.obs;
@@ -22,8 +29,7 @@ class AuthController extends GetxController {
   @override
   void onReady() {
     super.onReady();
-    final hasSession =
-        _firebaseAuth.currentUser != null || _supabase.isAuthenticated;
+    final hasSession = _supabase.isAuthenticated;
     isLoggedIn.value = hasSession;
     if (hasSession && Get.currentRoute == AppRoutes.login) {
       Get.offAllNamed(AppRoutes.dashboard);
@@ -33,33 +39,21 @@ class AuthController extends GetxController {
   Future<void> signInWithGoogle() async {
     isLoading.value = true;
     try {
-      final googleUser = await GoogleSignIn().signIn();
+      if (!_supabase.isEnabled) {
+        throw StateError(
+          'Supabase is not configured. Add SUPABASE_URL and SUPABASE_ANON_KEY in .env.',
+        );
+      }
+
+      final googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
         return;
       }
 
       final auth = await googleUser.authentication;
-      final credential = fb.GoogleAuthProvider.credential(
-        idToken: auth.idToken,
-        accessToken: auth.accessToken,
-      );
-      final firebaseCredential = await _firebaseAuth.signInWithCredential(
-        credential,
-      );
-      final firebaseUser = firebaseCredential.user;
-      if (firebaseUser == null) {
-        throw StateError('Firebase user not available after Google sign-in.');
-      }
-
-      if (_supabase.isEnabled) {
-        await _linkSupabaseUser(
-          googleAuth: auth,
-          firebaseUser: firebaseUser,
-          googleUser: googleUser,
-        );
-        if (Get.isRegistered<RealtimeService>()) {
-          await Get.find<RealtimeService>().refreshSubscription();
-        }
+      await _linkSupabaseUser(googleAuth: auth, googleUser: googleUser);
+      if (Get.isRegistered<RealtimeService>()) {
+        await Get.find<RealtimeService>().refreshSubscription();
       }
 
       isLoggedIn.value = true;
@@ -72,7 +66,23 @@ class AuthController extends GetxController {
         stack,
         customKeys: const <String, Object?>{'action': 'google_sign_in'},
       );
-      Get.snackbar('Sign-in Failed', 'Please try again.');
+      final isApi10 =
+          error is PlatformException &&
+          (error.message?.contains('ApiException: 10') ?? false);
+      if (isApi10) {
+        Get.snackbar(
+          'Google Sign-In Config Error',
+          'Check package name and SHA-1/SHA-256 in Google Cloud OAuth client.',
+        );
+      } else if ('$error'.contains('Unacceptable audience in id_token')) {
+        Get.snackbar(
+          'Google Audience Mismatch',
+          'Set GOOGLE_WEB_CLIENT_ID to the same Web Client ID configured in Supabase Auth > Providers > Google.',
+          duration: const Duration(seconds: 6),
+        );
+      } else {
+        Get.snackbar('Sign-in Failed', 'Please try again.');
+      }
     } finally {
       isLoading.value = false;
     }
@@ -80,13 +90,12 @@ class AuthController extends GetxController {
 
   Future<void> _linkSupabaseUser({
     required GoogleSignInAuthentication googleAuth,
-    required fb.User firebaseUser,
     required GoogleSignInAccount googleUser,
   }) async {
     final idToken = googleAuth.idToken;
     if (idToken == null || idToken.isEmpty) {
       throw StateError(
-        'Google ID token is missing. Configure Google Sign-In client IDs first.',
+        'Google ID token is missing. Set GOOGLE_WEB_CLIENT_ID in .env using your OAuth web client ID.',
       );
     }
 
@@ -103,19 +112,17 @@ class AuthController extends GetxController {
 
     await _supabase.client.from('user_profiles').upsert(<String, dynamic>{
       'id': supabaseUser.id,
-      'firebase_uid': firebaseUser.uid,
-      'display_name': firebaseUser.displayName ?? googleUser.displayName,
-      'avatar_url': firebaseUser.photoURL ?? googleUser.photoUrl,
+      'display_name': googleUser.displayName,
+      'avatar_url': googleUser.photoUrl,
       'updated_at': DateTime.now().toIso8601String(),
     }, onConflict: 'id');
 
     await _supabase.client.auth.updateUser(
       UserAttributes(
         data: <String, dynamic>{
-          'firebase_uid': firebaseUser.uid,
-          'display_name': firebaseUser.displayName ?? googleUser.displayName,
-          'avatar_url': firebaseUser.photoURL ?? googleUser.photoUrl,
-          'email': firebaseUser.email,
+          'display_name': googleUser.displayName,
+          'avatar_url': googleUser.photoUrl,
+          'email': googleUser.email,
         },
       ),
     );
@@ -131,10 +138,6 @@ class AuthController extends GetxController {
   String resolveActiveUserId() {
     if (_supabase.isAuthenticated) {
       return _supabase.currentUserId!;
-    }
-    final firebaseUser = _firebaseAuth.currentUser;
-    if (firebaseUser != null) {
-      return firebaseUser.uid;
     }
     return 'guest';
   }
@@ -183,8 +186,7 @@ class AuthController extends GetxController {
   Future<void> signOut() async {
     isLoading.value = true;
     try {
-      await GoogleSignIn().signOut();
-      await _firebaseAuth.signOut();
+      await _googleSignIn.signOut();
       if (_supabase.isEnabled) {
         await _supabase.client.auth.signOut();
         if (Get.isRegistered<RealtimeService>()) {
