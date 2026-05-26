@@ -12,8 +12,10 @@ import 'package:spend_analytics/features/auth/auth_controller.dart';
 
 class DependencyInjection {
   static Future<void> init() async {
-    final firebaseBootstrap =
-        Get.put(FirebaseBootstrapService(), permanent: true);
+    final firebaseBootstrap = Get.put(
+      FirebaseBootstrapService(),
+      permanent: true,
+    );
     await firebaseBootstrap.init();
 
     final supabase = Get.put(SupabaseService(), permanent: true);
@@ -41,6 +43,5 @@ class DependencyInjection {
     await rulesEngine.init();
 
     Get.put(AuthController(), permanent: true);
-
   }
 }

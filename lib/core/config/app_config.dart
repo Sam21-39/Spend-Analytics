@@ -50,5 +50,6 @@ class AppConfig {
   static String get jwkcEndpoint => AppSecrets.jwksEndpoint;
   static String get oidcEndpoint => AppSecrets.oidcEndpoint;
 
-  static bool get hasSupabaseConfig => supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
+  static bool get hasSupabaseConfig =>
+      supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
 }

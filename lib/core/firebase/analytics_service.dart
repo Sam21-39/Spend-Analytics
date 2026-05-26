@@ -13,7 +13,10 @@ class AnalyticsService extends GetxService {
 
   Future<void> logEvent(String name, {Map<String, Object>? parameters}) async {
     if (!_enabled) return;
-    await FirebaseAnalytics.instance.logEvent(name: name, parameters: parameters);
+    await FirebaseAnalytics.instance.logEvent(
+      name: name,
+      parameters: parameters,
+    );
   }
 
   Future<void> logTransactionAdded(TransactionModel txn) {

@@ -35,7 +35,10 @@ class CrashlyticsService extends GetxService {
     if (!_enabled) return;
 
     for (final entry in customKeys.entries) {
-      await FirebaseCrashlytics.instance.setCustomKey(entry.key, '${entry.value}');
+      await FirebaseCrashlytics.instance.setCustomKey(
+        entry.key,
+        '${entry.value}',
+      );
     }
     await FirebaseCrashlytics.instance.recordError(error, stack);
   }

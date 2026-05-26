@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:spend_analytics/core/config/app_config.dart';
@@ -25,6 +26,8 @@ class SpendAnalyticsApp extends StatelessWidget {
       themeMode: ThemeMode.system,
       initialRoute: AppRoutes.login,
       getPages: AppRoutes.pages,
+      defaultTransition: Transition.fadeIn,
+      enableLog: kDebugMode,
       builder: (context, child) => child ?? const SizedBox.shrink(),
     );
   }

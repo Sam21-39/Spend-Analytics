@@ -44,25 +44,27 @@ class VoiceAutoReviewScreen extends GetView<VoiceController> {
                               ? Icons.graphic_eq_rounded
                               : Icons.mic_rounded,
                           size: 42,
-                          color: controller.isListening.value
-                              ? scheme.tertiary
-                              : const Color(0xFFADC6FF),
+                          color:
+                              controller.isListening.value
+                                  ? scheme.tertiary
+                                  : const Color(0xFFADC6FF),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           controller.isListening.value
                               ? 'Listening...'
                               : controller.isSpeechAvailable.value
-                                  ? 'Tap to start listening'
-                                  : 'Speech unavailable on this device',
+                              ? 'Tap to start listening'
+                              : 'Speech unavailable on this device',
                           style: Theme.of(context).textTheme.titleMedium
                               ?.copyWith(color: scheme.primary),
                         ),
                         const SizedBox(height: 10),
                         FilledButton.icon(
-                          onPressed: !controller.isSpeechAvailable.value
-                              ? null
-                              : controller.isListening.value
+                          onPressed:
+                              !controller.isSpeechAvailable.value
+                                  ? null
+                                  : controller.isListening.value
                                   ? controller.stopListening
                                   : controller.startListening,
                           icon: Icon(
@@ -95,8 +97,9 @@ class VoiceAutoReviewScreen extends GetView<VoiceController> {
                 _EditableField(
                   icon: Icons.currency_rupee_rounded,
                   title: 'Amount',
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   value: controller.amountText,
                 ),
                 const SizedBox(height: 8),

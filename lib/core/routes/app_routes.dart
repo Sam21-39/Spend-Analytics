@@ -43,10 +43,7 @@ class AppRoutes {
   static const voiceReview = '/voice/review';
 
   static final pages = <GetPage<dynamic>>[
-    GetPage(
-      name: login,
-      page: () => const LoginScreen(),
-    ),
+    GetPage(name: login, page: () => const LoginScreen()),
     GetPage(
       name: dashboard,
       page: () => const DashboardScreen(),

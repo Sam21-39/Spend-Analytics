@@ -74,7 +74,9 @@ class VoiceParser {
 
     double? amount;
     if (amountMatch != null) {
-      final raw = (amountMatch.group(1) ?? '').replaceAll(',', '').replaceAll(' ', '');
+      final raw = (amountMatch.group(1) ?? '')
+          .replaceAll(',', '')
+          .replaceAll(' ', '');
       amount = double.tryParse(raw);
     }
 
@@ -89,11 +91,14 @@ class VoiceParser {
     String paymentMode = 'other';
     if (lowered.contains('upi')) {
       paymentMode = 'upi';
-    } else if (lowered.contains('card') || lowered.contains('credit') || lowered.contains('debit')) {
+    } else if (lowered.contains('card') ||
+        lowered.contains('credit') ||
+        lowered.contains('debit')) {
       paymentMode = 'card';
     } else if (lowered.contains('cash')) {
       paymentMode = 'cash';
-    } else if (lowered.contains('netbanking') || lowered.contains('net banking')) {
+    } else if (lowered.contains('netbanking') ||
+        lowered.contains('net banking')) {
       paymentMode = 'netbanking';
     }
 

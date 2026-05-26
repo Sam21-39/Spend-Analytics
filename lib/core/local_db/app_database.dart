@@ -132,10 +132,9 @@ class AppDatabase extends _$AppDatabase {
   Future<List<TransactionModel>> allTransactions() async {
     final rows =
         await (select(transactions)
-              ..orderBy(<OrderClauseGenerator<$TransactionsTable>>[
-                (t) => OrderingTerm.desc(t.transactionDate),
-              ]))
-            .get();
+          ..orderBy(<OrderClauseGenerator<$TransactionsTable>>[
+            (t) => OrderingTerm.desc(t.transactionDate),
+          ])).get();
     return rows.map(_mapTransaction).toList(growable: false);
   }
 
@@ -155,13 +154,12 @@ class AppDatabase extends _$AppDatabase {
     required int year,
   }) {
     final range = _monthRange(month: month, year: year);
-    final query = select(transactions)
-      ..where((t) {
-        return t.userId.equals(userId) &
-            t.type.equals('expense') &
-            t.transactionDate.isBiggerOrEqualValue(range.start) &
-            t.transactionDate.isSmallerThanValue(range.endExclusive);
-      });
+    final query = select(transactions)..where((t) {
+      return t.userId.equals(userId) &
+          t.type.equals('expense') &
+          t.transactionDate.isBiggerOrEqualValue(range.start) &
+          t.transactionDate.isSmallerThanValue(range.endExclusive);
+    });
 
     return query.watch().map((rows) {
       final totals = <String, double>{};
@@ -185,13 +183,12 @@ class AppDatabase extends _$AppDatabase {
     final range = _monthRange(month: month, year: year);
     final rows =
         await (select(transactions)..where((t) {
-              return t.userId.equals(userId) &
-                  t.category.equals(category) &
-                  t.type.equals('expense') &
-                  t.transactionDate.isBiggerOrEqualValue(range.start) &
-                  t.transactionDate.isSmallerThanValue(range.endExclusive);
-            }))
-            .get();
+          return t.userId.equals(userId) &
+              t.category.equals(category) &
+              t.type.equals('expense') &
+              t.transactionDate.isBiggerOrEqualValue(range.start) &
+              t.transactionDate.isSmallerThanValue(range.endExclusive);
+        })).get();
 
     return rows.fold<double>(0, (sum, row) => sum + row.amount);
   }
@@ -203,12 +200,11 @@ class AppDatabase extends _$AppDatabase {
     final range = _dayRange(date);
     final rows =
         await (select(transactions)..where((t) {
-              return t.userId.equals(userId) &
-                  t.type.equals('expense') &
-                  t.transactionDate.isBiggerOrEqualValue(range.start) &
-                  t.transactionDate.isSmallerThanValue(range.endExclusive);
-            }))
-            .get();
+          return t.userId.equals(userId) &
+              t.type.equals('expense') &
+              t.transactionDate.isBiggerOrEqualValue(range.start) &
+              t.transactionDate.isSmallerThanValue(range.endExclusive);
+        })).get();
 
     return rows.fold<double>(0, (sum, row) => sum + row.amount);
   }
@@ -230,9 +226,9 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<TransactionModel?> getTransactionById(String id) async {
-    final row = await (select(
-      transactions,
-    )..where((t) => t.id.equals(id))).getSingleOrNull();
+    final row =
+        await (select(transactions)
+          ..where((t) => t.id.equals(id))).getSingleOrNull();
     if (row == null) return null;
     return _mapTransaction(row);
   }
@@ -245,11 +241,10 @@ class AppDatabase extends _$AppDatabase {
     final now = DateTime.now().toUtc();
     final existing =
         await (select(syncQueueItems)..where((t) {
-              return t.entityType.equals('transaction') &
-                  t.operation.equals('upsert') &
-                  t.entityId.equals(txn.id);
-            }))
-            .getSingleOrNull();
+          return t.entityType.equals('transaction') &
+              t.operation.equals('upsert') &
+              t.entityId.equals(txn.id);
+        })).getSingleOrNull();
 
     final payload = jsonEncode(txn.toJson());
     if (existing == null) {
@@ -269,9 +264,8 @@ class AppDatabase extends _$AppDatabase {
       return;
     }
 
-    await (update(
-      syncQueueItems,
-    )..where((t) => t.id.equals(existing.id))).write(
+    await (update(syncQueueItems)
+      ..where((t) => t.id.equals(existing.id))).write(
       SyncQueueItemsCompanion(
         payloadJson: Value<String>(payload),
         userId: Value<String?>(txn.userId),
@@ -295,9 +289,9 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<void> markSyncQueueFailure(int id, String error) async {
-    final existing = await (select(
-      syncQueueItems,
-    )..where((t) => t.id.equals(id))).getSingleOrNull();
+    final existing =
+        await (select(syncQueueItems)
+          ..where((t) => t.id.equals(id))).getSingleOrNull();
     if (existing == null) {
       return;
     }
@@ -328,12 +322,11 @@ class AppDatabase extends _$AppDatabase {
     final now = DateTime.now().toUtc();
     final existing =
         await (select(budgets)..where((t) {
-              return t.userId.equals(userId) &
-                  t.category.equals(category) &
-                  t.month.equals(month) &
-                  t.year.equals(year);
-            }))
-            .getSingleOrNull();
+          return t.userId.equals(userId) &
+              t.category.equals(category) &
+              t.month.equals(month) &
+              t.year.equals(year);
+        })).getSingleOrNull();
 
     if (existing == null) {
       await into(budgets).insert(
@@ -363,15 +356,16 @@ class AppDatabase extends _$AppDatabase {
     required int month,
     required int year,
   }) {
-    final query = select(budgets)
-      ..where((t) {
-        return t.userId.equals(userId) &
-            t.month.equals(month) &
-            t.year.equals(year);
-      })
-      ..orderBy(<OrderClauseGenerator<$BudgetsTable>>[
-        (t) => OrderingTerm.asc(t.category),
-      ]);
+    final query =
+        select(budgets)
+          ..where((t) {
+            return t.userId.equals(userId) &
+                t.month.equals(month) &
+                t.year.equals(year);
+          })
+          ..orderBy(<OrderClauseGenerator<$BudgetsTable>>[
+            (t) => OrderingTerm.asc(t.category),
+          ]);
     return query.watch();
   }
 
@@ -386,9 +380,8 @@ class AppDatabase extends _$AppDatabase {
 
   Future<List<UserRule>> getActiveRules(String userId) {
     return (select(userRules)..where((t) {
-          return t.userId.equals(userId) & t.isActive.equals(true);
-        }))
-        .get();
+      return t.userId.equals(userId) & t.isActive.equals(true);
+    })).get();
   }
 
   Future<void> upsertRule({
@@ -401,8 +394,9 @@ class AppDatabase extends _$AppDatabase {
     DateTime? updatedAt,
   }) async {
     final now = DateTime.now().toUtc();
-    final existing = await (select(userRules)..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    final existing =
+        await (select(userRules)
+          ..where((t) => t.id.equals(id))).getSingleOrNull();
 
     if (existing == null) {
       await into(userRules).insert(
@@ -429,7 +423,10 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
-  Future<void> setRuleActive({required String id, required bool isActive}) async {
+  Future<void> setRuleActive({
+    required String id,
+    required bool isActive,
+  }) async {
     await (update(userRules)..where((t) => t.id.equals(id))).write(
       UserRulesCompanion(
         isActive: Value<bool>(isActive),
@@ -476,8 +473,8 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> normalizeRuleIdsToUuid(String userId) async {
     final uuid = const Uuid();
-    final rows = await (select(userRules)..where((t) => t.userId.equals(userId)))
-        .get();
+    final rows =
+        await (select(userRules)..where((t) => t.userId.equals(userId))).get();
 
     for (final row in rows) {
       if (Uuid.isValidUUID(fromString: row.id)) {
@@ -538,18 +535,18 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Stream<List<NotificationEvent>> watchNotificationEvents(String userId) {
-    final query = select(notificationEvents)
-      ..where((t) => t.userId.equals(userId) | t.userId.isNull())
-      ..orderBy(<OrderClauseGenerator<$NotificationEventsTable>>[
-        (t) => OrderingTerm.desc(t.createdAt),
-      ]);
+    final query =
+        select(notificationEvents)
+          ..where((t) => t.userId.equals(userId) | t.userId.isNull())
+          ..orderBy(<OrderClauseGenerator<$NotificationEventsTable>>[
+            (t) => OrderingTerm.desc(t.createdAt),
+          ]);
     return query.watch();
   }
 
   Future<void> clearNotificationEvents(String userId) async {
     await (delete(notificationEvents)
-          ..where((t) => t.userId.equals(userId) | t.userId.isNull()))
-        .go();
+      ..where((t) => t.userId.equals(userId) | t.userId.isNull())).go();
   }
 
   TransactionModel _mapTransaction(Transaction row) {
@@ -581,9 +578,8 @@ class AppDatabase extends _$AppDatabase {
 
   _DateRange _monthRange({required int month, required int year}) {
     final start = DateTime(year, month, 1);
-    final endExclusive = month == 12
-        ? DateTime(year + 1, 1, 1)
-        : DateTime(year, month + 1, 1);
+    final endExclusive =
+        month == 12 ? DateTime(year + 1, 1, 1) : DateTime(year, month + 1, 1);
     return _DateRange(start: start, endExclusive: endExclusive);
   }
 

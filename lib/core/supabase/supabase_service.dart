@@ -77,17 +77,14 @@ class SupabaseService extends GetxService {
       return;
     }
 
-    await client.from('budgets').upsert(
-      <String, dynamic>{
-        'user_id': currentUserId,
-        'category_id': null,
-        'category_name': category,
-        'month': month,
-        'year': year,
-        'limit_amount': limitAmount,
-      },
-      onConflict: 'user_id,category_name,month,year',
-    );
+    await client.from('budgets').upsert(<String, dynamic>{
+      'user_id': currentUserId,
+      'category_id': null,
+      'category_name': category,
+      'month': month,
+      'year': year,
+      'limit_amount': limitAmount,
+    }, onConflict: 'user_id,category_name,month,year');
   }
 
   Future<List<CloudBudget>> fetchBudgetsForMonth({
@@ -136,18 +133,15 @@ class SupabaseService extends GetxService {
       return;
     }
 
-    await client.from('user_rules').upsert(
-      <String, dynamic>{
-        'id': id,
-        'user_id': currentUserId,
-        'rule_type': ruleType,
-        'parameters': parameters,
-        'is_active': isActive,
-        if (createdAt != null) 'created_at': createdAt.toUtc().toIso8601String(),
-        'updated_at': (updatedAt ?? DateTime.now()).toUtc().toIso8601String(),
-      },
-      onConflict: 'id',
-    );
+    await client.from('user_rules').upsert(<String, dynamic>{
+      'id': id,
+      'user_id': currentUserId,
+      'rule_type': ruleType,
+      'parameters': parameters,
+      'is_active': isActive,
+      if (createdAt != null) 'created_at': createdAt.toUtc().toIso8601String(),
+      'updated_at': (updatedAt ?? DateTime.now()).toUtc().toIso8601String(),
+    }, onConflict: 'id');
   }
 
   Future<List<CloudRule>> fetchRules() async {

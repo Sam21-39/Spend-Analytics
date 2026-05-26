@@ -122,13 +122,10 @@ class FcmService extends GetxService {
       return;
     }
 
-    await supabase.client.from('user_profiles').upsert(
-      <String, dynamic>{
-        'id': supabase.currentUserId,
-        'fcm_token': token,
-        'updated_at': DateTime.now().toIso8601String(),
-      },
-      onConflict: 'id',
-    );
+    await supabase.client.from('user_profiles').upsert(<String, dynamic>{
+      'id': supabase.currentUserId,
+      'fcm_token': token,
+      'updated_at': DateTime.now().toIso8601String(),
+    }, onConflict: 'id');
   }
 }

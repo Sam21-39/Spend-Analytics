@@ -44,7 +44,9 @@ class RulesScreen extends GetView<RulesController> {
                         child: Row(
                           children: <Widget>[
                             CircleAvatar(
-                              backgroundColor: Colors.white.withValues(alpha: 0.09),
+                              backgroundColor: Colors.white.withValues(
+                                alpha: 0.09,
+                              ),
                               child: Icon(
                                 _iconForRule(rule.ruleType),
                                 color: _accentForRule(rule.ruleType),
@@ -57,25 +59,32 @@ class RulesScreen extends GetView<RulesController> {
                                 children: <Widget>[
                                   Text(
                                     rule.title,
-                                    style: Theme.of(context).textTheme.bodyLarge,
+                                    style:
+                                        Theme.of(context).textTheme.bodyLarge,
                                   ),
                                   const SizedBox(height: 3),
                                   Text(
                                     rule.subtitle,
-                                    style: Theme.of(context).textTheme.bodySmall
-                                        ?.copyWith(color: scheme.onSurfaceVariant),
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodySmall?.copyWith(
+                                      color: scheme.onSurfaceVariant,
+                                    ),
                                   ),
                                 ],
                               ),
                             ),
                             Switch.adaptive(
                               value: rule.isActive,
-                              onChanged: (value) =>
-                                  controller.toggleRule(rule.id, value),
-                              activeTrackColor:
-                                  scheme.primary.withValues(alpha: 0.45),
-                              thumbColor:
-                                  WidgetStatePropertyAll<Color?>(scheme.primary),
+                              onChanged:
+                                  (value) =>
+                                      controller.toggleRule(rule.id, value),
+                              activeTrackColor: scheme.primary.withValues(
+                                alpha: 0.45,
+                              ),
+                              thumbColor: WidgetStatePropertyAll<Color?>(
+                                scheme.primary,
+                              ),
                             ),
                           ],
                         ),

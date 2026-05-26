@@ -52,9 +52,10 @@ class TransactionModel {
       category: '${json['category']}',
       paymentMode: '${json['paymentMode']}',
       transactionDate: transactionDate,
-      updatedAt: updatedAtRaw == null
-          ? transactionDate
-          : DateTime.parse('$updatedAtRaw'),
+      updatedAt:
+          updatedAtRaw == null
+              ? transactionDate
+              : DateTime.parse('$updatedAtRaw'),
       note: json['note'] as String?,
       tags: (json['tags'] as List<dynamic>? ?? const <dynamic>[])
           .map((e) => '$e')

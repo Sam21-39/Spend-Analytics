@@ -163,9 +163,10 @@ class RealtimeService extends GetxService {
       transactionDate: DateTime.parse('$transactionDateRaw'),
       updatedAt: DateTime.parse('$updatedAtRaw'),
       note: record['note'] as String?,
-      tags: (tagsRaw is List)
-          ? tagsRaw.map((e) => '$e').toList(growable: false)
-          : const <String>[],
+      tags:
+          (tagsRaw is List)
+              ? tagsRaw.map((e) => '$e').toList(growable: false)
+              : const <String>[],
     );
   }
 

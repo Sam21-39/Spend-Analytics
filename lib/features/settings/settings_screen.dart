@@ -11,9 +11,10 @@ class SettingsScreen extends GetView<SettingsController> {
 
   @override
   Widget build(BuildContext context) {
-    final authController = Get.isRegistered<AuthController>()
-        ? Get.find<AuthController>()
-        : Get.put(AuthController(), permanent: true);
+    final authController =
+        Get.isRegistered<AuthController>()
+            ? Get.find<AuthController>()
+            : Get.put(AuthController(), permanent: true);
     final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(

@@ -117,10 +117,8 @@ class SyncManager extends GetxService {
       'payment_mode': txn.paymentMode,
       'note': txn.note,
       'tags': txn.tags,
-      'transaction_date': txn.transactionDate
-          .toIso8601String()
-          .split('T')
-          .first,
+      'transaction_date':
+          txn.transactionDate.toIso8601String().split('T').first,
       'updated_at': txn.updatedAt.toUtc().toIso8601String(),
     });
   }

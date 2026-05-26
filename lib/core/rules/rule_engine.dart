@@ -44,11 +44,10 @@ class RuleEngine extends GetxService {
 
     final month = txn.transactionDate.month;
     final year = txn.transactionDate.year;
-    final budgets = await _db.watchBudgetsForMonth(
-      userId: txn.userId,
-      month: month,
-      year: year,
-    ).first;
+    final budgets =
+        await _db
+            .watchBudgetsForMonth(userId: txn.userId, month: month, year: year)
+            .first;
 
     final matched = budgets.where((b) => b.category == txn.category).toList();
     if (matched.isEmpty) {
