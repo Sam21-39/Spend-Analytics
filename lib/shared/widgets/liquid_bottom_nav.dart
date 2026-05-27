@@ -3,19 +3,28 @@ import 'package:get/get.dart';
 import 'package:spend_analytics/core/routes/app_routes.dart';
 import 'package:spend_analytics/shared/widgets/liquid_glass_surface.dart';
 
-/// Floating pill-shaped bottom navigation bar with iOS-style glass treatment
-/// and an animated active-item highlight pill.
+/// Floating pill bottom nav + gradient FAB — matches the design's BottomNav.
+///
+/// Layout: [← tabs pill ─────────────] [FAB]
+/// The entire row sits 28 px above the device bottom (safe area aware).
 class LiquidBottomNav extends StatelessWidget {
-  const LiquidBottomNav({required this.activeRoute, super.key});
+  const LiquidBottomNav({
+    required this.activeRoute,
+    super.key,
+    this.showFab     = true,
+    this.onAddPressed,
+  });
 
-  final String activeRoute;
+  final String        activeRoute;
+  final bool          showFab;
+  final VoidCallback? onAddPressed;
 
   static const _items = <
       ({
-        String route,
+        String   route,
         IconData icon,
         IconData iconActive,
-        String label,
+        String   label,
       })>[
     (
       route:      AppRoutes.dashboard,
@@ -25,9 +34,9 @@ class LiquidBottomNav extends StatelessWidget {
     ),
     (
       route:      AppRoutes.analytics,
-      icon:       Icons.analytics_outlined,
-      iconActive: Icons.analytics_rounded,
-      label:      'Analytics',
+      icon:       Icons.bar_chart_outlined,
+      iconActive: Icons.bar_chart_rounded,
+      label:      'Stats',
     ),
     (
       route:      AppRoutes.budgets,
@@ -45,28 +54,79 @@ class LiquidBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final scheme = Theme.of(context).colorScheme;
+    final isDark  = Theme.of(context).brightness == Brightness.dark;
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
-      child: LiquidGlassSurface(
-        padding:      const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-        borderRadius: const BorderRadius.all(Radius.circular(999)),
-        blur:         32,
-        fillOpacity:  isDark ? 0.13 : 0.70,
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: _items.map((item) {
-            final isActive = item.route == activeRoute;
-            return _NavItem(
-              icon:       isActive ? item.iconActive : item.icon,
-              label:      item.label,
-              isActive:   isActive,
-              onTap: () {
-                if (!isActive) Get.offAllNamed(item.route);
-              },
-            );
-          }).toList(growable: false),
+          children: <Widget>[
+            // ── Tab pill ──────────────────────────────────────────
+            Expanded(
+              child: LiquidGlassSurface(
+                padding:      EdgeInsets.zero,
+                borderRadius: const BorderRadius.all(Radius.circular(999)),
+                blur:         32,
+                fillOpacity:  isDark ? 0.13 : 0.70,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: _items.map((item) {
+                      final isActive = item.route == activeRoute;
+                      return _NavItem(
+                        icon:       isActive ? item.iconActive : item.icon,
+                        label:      item.label,
+                        isActive:   isActive,
+                        onTap: () {
+                          if (!isActive) Get.offAllNamed(item.route);
+                        },
+                      );
+                    }).toList(growable: false),
+                  ),
+                ),
+              ),
+            ),
+
+            // ── FAB ──────────────────────────────────────────────
+            if (showFab) ...<Widget>[
+              const SizedBox(width: 12),
+              GestureDetector(
+                onTap: onAddPressed ?? () => Get.toNamed(AppRoutes.addTxn),
+                child: Container(
+                  width:  60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    shape:    BoxShape.circle,
+                    gradient: LinearGradient(
+                      begin:  Alignment.topLeft,
+                      end:    Alignment.bottomRight,
+                      colors: <Color>[scheme.primary, scheme.secondary],
+                    ),
+                    boxShadow: <BoxShadow>[
+                      BoxShadow(
+                        color:      scheme.primary.withValues(alpha: 0.5),
+                        blurRadius: 24,
+                        offset:     const Offset(0, 8),
+                      ),
+                      const BoxShadow(
+                        color:      Color(0x19FFFFFF),
+                        blurRadius: 0,
+                        spreadRadius: -1,
+                      ),
+                    ],
+                  ),
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.add_rounded,
+                    color: Colors.white,
+                    size:  26,
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );
@@ -81,10 +141,10 @@ class _NavItem extends StatelessWidget {
     required this.onTap,
   });
 
-  final IconData      icon;
-  final String        label;
-  final bool          isActive;
-  final VoidCallback  onTap;
+  final IconData     icon;
+  final String       label;
+  final bool         isActive;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -94,21 +154,33 @@ class _NavItem extends StatelessWidget {
         : scheme.onSurfaceVariant.withValues(alpha: 0.55);
 
     return GestureDetector(
-      onTap:     onTap,
-      behavior:  HitTestBehavior.opaque,
-      child: Tooltip(
-        message: label,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
-          curve:    Curves.easeOutCubic,
-          padding:  const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(999),
-            color: isActive
-                ? scheme.primary.withValues(alpha: 0.14)
-                : Colors.transparent,
-          ),
-          child: Icon(icon, color: color, size: 22),
+      onTap:    onTap,
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        curve:    Curves.easeOutCubic,
+        padding:  const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(999),
+          color: isActive
+              ? scheme.primary.withValues(alpha: 0.14)
+              : Colors.transparent,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(icon, color: color, size: 20),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize:   10,
+                fontWeight: FontWeight.w700,
+                color:      color,
+                letterSpacing: 0.2,
+              ),
+            ),
+          ],
         ),
       ),
     );

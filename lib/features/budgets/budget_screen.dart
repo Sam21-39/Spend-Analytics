@@ -3,219 +3,584 @@ import 'package:get/get.dart';
 import 'package:spend_analytics/core/routes/app_routes.dart';
 import 'package:spend_analytics/features/budgets/budget_controller.dart';
 import 'package:spend_analytics/shared/utils/currency_formatter.dart';
+import 'package:spend_analytics/shared/widgets/icon_box.dart';
 import 'package:spend_analytics/shared/widgets/liquid_glass_surface.dart';
 import 'package:spend_analytics/shared/widgets/liquid_page_scaffold.dart';
+import 'package:spend_analytics/shared/widgets/ring_progress.dart';
+import 'package:spend_analytics/shared/widgets/sa_progress_bar.dart';
 
 class BudgetScreen extends GetView<BudgetController> {
   const BudgetScreen({super.key});
 
+  static IconData _iconFor(String category) {
+    switch (category.toLowerCase()) {
+      case 'food':      return Icons.coffee_rounded;
+      case 'transport': return Icons.directions_car_rounded;
+      case 'shopping':  return Icons.shopping_bag_rounded;
+      case 'health':    return Icons.favorite_rounded;
+      case 'bills':     return Icons.bolt_rounded;
+      default:          return Icons.sell_rounded;
+    }
+  }
+
+  static Color _colorFor(String category) {
+    switch (category.toLowerCase()) {
+      case 'food':      return const Color(0xFFFF9F40);
+      case 'transport': return const Color(0xFF5B9FFF);
+      case 'shopping':  return const Color(0xFFB0A0FF);
+      case 'health':    return const Color(0xFFFF6B6B);
+      case 'bills':     return const Color(0xFFFFB860);
+      default:          return const Color(0xFF3FDDA0);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final isDark  = Theme.of(context).brightness == Brightness.dark;
 
     return LiquidPageScaffold(
-      title: 'Budgets',
+      title:       'Budgets',
       activeRoute: AppRoutes.budgets,
       actions: <Widget>[
-        IconButton(
-          onPressed: () => _showAddBudgetSheet(context),
-          icon: const Icon(Icons.add_rounded),
+        BarActionButton(
+          icon:  Icons.add_rounded,
+          onTap: () => _showAddBudgetSheet(context),
         ),
       ],
-      child: Obx(
-        () => Column(
-          children: controller.categoryBudgets.entries
-              .map((entry) {
-                final spent = controller.categorySpend[entry.key] ?? 0;
-                final limit = entry.value;
-                final usage = limit == 0 ? 0.0 : (spent / limit);
-                final progress = usage.clamp(0.0, 1.0);
+      child: Obx(() {
+        final budgets = controller.categoryBudgets;
+        final spend   = controller.categorySpend;
 
-                Color accent;
-                IconData statusIcon;
-                String status;
+        final totalLimit = budgets.values.fold<double>(0, (s, v) => s + v);
+        final totalSpent = budgets.keys.fold<double>(0, (s, k) => s + (spend[k] ?? 0));
+        final overallPct = totalLimit == 0 ? 0.0 : (totalSpent / totalLimit).clamp(0.0, 1.0);
 
-                if (usage >= 1) {
-                  accent = const Color(0xFFFF6B6B);
-                  statusIcon = Icons.error_rounded;
-                  status = '${formatInr(spent - limit)} over budget';
-                } else if (usage >= 0.8) {
-                  accent = const Color(0xFFFFB74D);
-                  statusIcon = Icons.warning_amber_rounded;
-                  status = '${formatInr(limit - spent)} left';
-                } else {
-                  accent = const Color(0xFF3FDF95);
-                  statusIcon = Icons.check_circle_rounded;
-                  status = '${formatInr(limit - spent)} left';
-                }
+        Color ringColor;
+        if (overallPct >= 1.0)       ringColor = const Color(0xFFFF6B6B);
+        else if (overallPct >= 0.8)  ringColor = const Color(0xFFFFB860);
+        else                         ringColor = const Color(0xFF3FDDA0);
 
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 14),
-                  child: LiquidGlassSurface(
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            // ── Overall summary ring ──────────────────────────────
+            LiquidGlassSurface(
+              padding: const EdgeInsets.all(24),
+              child: Row(
+                children: <Widget>[
+                  RingProgress(
+                    size:   84,
+                    value:  overallPct,
+                    stroke: 9,
+                    color:  ringColor,
+                  ),
+                  const SizedBox(width: 24),
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Row(
-                          children: <Widget>[
-                            CircleAvatar(
-                              backgroundColor: accent.withValues(alpha: 0.2),
-                              child: Icon(
-                                _iconForCategory(entry.key),
-                                color: accent,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                entry.key,
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 14),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Text(
-                              '${formatInr(spent)} of ${formatInr(limit)}',
-                              style: Theme.of(context).textTheme.bodyLarge,
-                            ),
-                            Row(
-                              children: <Widget>[
-                                Icon(statusIcon, size: 16, color: accent),
-                                const SizedBox(width: 4),
-                                Text(
-                                  status,
-                                  style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(color: accent),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(999),
-                          child: LinearProgressIndicator(
-                            value: progress,
-                            minHeight: 10,
-                            backgroundColor: Colors.white.withValues(
-                              alpha: 0.08,
-                            ),
-                            valueColor: AlwaysStoppedAnimation<Color>(accent),
+                        Text(
+                          'Monthly Overview',
+                          style: TextStyle(
+                            fontSize:   12,
+                            fontWeight: FontWeight.w700,
+                            color:      scheme.onSurfaceVariant,
                           ),
                         ),
                         const SizedBox(height: 6),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: Text(
-                            '${(progress * 100).toStringAsFixed(0)}% used',
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(color: scheme.onSurfaceVariant),
+                        Text(
+                          formatInr(totalSpent),
+                          style: TextStyle(
+                            fontSize:   28,
+                            fontWeight: FontWeight.w800,
+                            color:      scheme.onSurface,
+                            letterSpacing: -0.5,
                           ),
                         ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'of ${formatInr(totalLimit)} total budget',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color:    scheme.onSurfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: <Widget>[
+                            _StatusDot(color: ringColor),
+                            const SizedBox(width: 6),
+                            Text(
+                              '${(overallPct * 100).toStringAsFixed(0)}% used · '
+                              '${formatInr(totalLimit - totalSpent)} remaining',
+                              style: TextStyle(
+                                fontSize:   12,
+                                fontWeight: FontWeight.w600,
+                                color:      scheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
-                    ),
-                  ),
-                );
-              })
-              .toList(growable: false),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _showAddBudgetSheet(BuildContext context) async {
-    final categoryCtrl = TextEditingController();
-    final amountCtrl = TextEditingController();
-
-    try {
-      await showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        builder: (bottomSheetContext) {
-          return Padding(
-            padding: EdgeInsets.only(
-              left: 16,
-              right: 16,
-              top: 16,
-              bottom: MediaQuery.of(bottomSheetContext).viewInsets.bottom + 16,
-            ),
-            child: LiquidGlassSurface(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    'Add / Update Budget',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: categoryCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Category',
-                      hintText: 'Food',
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: amountCtrl,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    decoration: const InputDecoration(
-                      labelText: 'Monthly limit',
-                      hintText: '4000',
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: () async {
-                        final category = categoryCtrl.text.trim();
-                        final amount = double.tryParse(amountCtrl.text.trim());
-                        if (category.isEmpty || amount == null || amount <= 0) {
-                          Get.snackbar(
-                            'Invalid Input',
-                            'Enter a valid category and amount.',
-                          );
-                          return;
-                        }
-                        await controller.upsertBudget(category, amount);
-                        if (bottomSheetContext.mounted) {
-                          Navigator.of(bottomSheetContext).pop();
-                        }
-                      },
-                      child: const Text('Save'),
                     ),
                   ),
                 ],
               ),
             ),
+
+            const SizedBox(height: 20),
+
+            // ── Section heading ───────────────────────────────────
+            Text(
+              'CATEGORIES',
+              style: TextStyle(
+                fontSize:      11,
+                fontWeight:    FontWeight.w700,
+                letterSpacing: 0.8,
+                color:         scheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            // ── Per-category cards ────────────────────────────────
+            ...budgets.entries.map((entry) {
+              final cat    = entry.key;
+              final limit  = entry.value;
+              final spent  = spend[cat] ?? 0;
+              final usage  = limit == 0 ? 0.0 : spent / limit;
+              final pct    = usage.clamp(0.0, 1.0);
+
+              Color  barColor;
+              Color  statusColor;
+              IconData statusIcon;
+              String statusText;
+
+              if (usage >= 1.0) {
+                barColor    = const Color(0xFFFF6B6B);
+                statusColor = const Color(0xFFFF6B6B);
+                statusIcon  = Icons.error_rounded;
+                statusText  = '${formatInr(spent - limit)} over';
+              } else if (usage >= 0.8) {
+                barColor    = const Color(0xFFFFB860);
+                statusColor = const Color(0xFFFFB860);
+                statusIcon  = Icons.warning_amber_rounded;
+                statusText  = '${formatInr(limit - spent)} left';
+              } else {
+                barColor    = const Color(0xFF3FDDA0);
+                statusColor = const Color(0xFF3FDDA0);
+                statusIcon  = Icons.check_circle_rounded;
+                statusText  = '${formatInr(limit - spent)} left';
+              }
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: LiquidGlassSurface(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: <Widget>[
+                      Row(
+                        children: <Widget>[
+                          IconBox(
+                            icon:  _iconFor(cat),
+                            color: _colorFor(cat),
+                            size:  40,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  cat,
+                                  style: TextStyle(
+                                    fontSize:   15,
+                                    fontWeight: FontWeight.w700,
+                                    color:      scheme.onSurface,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '${formatInr(spent)} of ${formatInr(limit)}',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color:    scheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Icon(statusIcon, size: 14, color: statusColor),
+                              const SizedBox(width: 4),
+                              Text(
+                                statusText,
+                                style: TextStyle(
+                                  fontSize:   12,
+                                  fontWeight: FontWeight.w700,
+                                  color:      statusColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      SAProgressBar(
+                        value:  pct,
+                        color:  barColor,
+                        height: 7,
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Text(
+                            '${(pct * 100).toStringAsFixed(0)}% used',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color:    scheme.onSurfaceVariant,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () => Get.toNamed(
+                              AppRoutes.budgetDetail,
+                              arguments: <String, dynamic>{
+                                'category': cat,
+                                'limit':    limit,
+                                'spent':    spent,
+                                'color':    _colorFor(cat),
+                                'icon':     _iconFor(cat),
+                              },
+                            ),
+                            child: Text(
+                              'Details →',
+                              style: TextStyle(
+                                fontSize:   11,
+                                fontWeight: FontWeight.w700,
+                                color:      scheme.primary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+
+            const SizedBox(height: 4),
+
+            // ── Add budget dashed button ───────────────────────────
+            GestureDetector(
+              onTap: () => _showAddBudgetSheet(context),
+              child: DashedBorderContainer(
+                isDark: isDark,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(
+                      Icons.add_rounded,
+                      size:  18,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Add a budget',
+                      style: TextStyle(
+                        fontSize:   14,
+                        fontWeight: FontWeight.w600,
+                        color:      scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+          ],
+        );
+      }),
+    );
+  }
+
+  Future<void> _showAddBudgetSheet(BuildContext context) async {
+    String?  selectedCategory;
+    final    amountCtrl = TextEditingController();
+
+    const cats = <_CatOption>[
+      _CatOption('Food',      Icons.coffee_rounded,        Color(0xFFFF9F40)),
+      _CatOption('Transport', Icons.directions_car_rounded, Color(0xFF5B9FFF)),
+      _CatOption('Shopping',  Icons.shopping_bag_rounded,   Color(0xFFB0A0FF)),
+      _CatOption('Health',    Icons.favorite_rounded,       Color(0xFFFF6B6B)),
+      _CatOption('Bills',     Icons.bolt_rounded,           Color(0xFFFFB860)),
+      _CatOption('Others',    Icons.sell_rounded,           Color(0xFF3FDDA0)),
+    ];
+
+    try {
+      await showModalBottomSheet<void>(
+        context:           context,
+        isScrollControlled: true,
+        backgroundColor:   Colors.transparent,
+        builder: (ctx) {
+          return StatefulBuilder(
+            builder: (ctx, setSheetState) {
+              final scheme = Theme.of(ctx).colorScheme;
+              return Padding(
+                padding: EdgeInsets.only(
+                  left:   16,
+                  right:  16,
+                  top:    16,
+                  bottom: MediaQuery.of(ctx).viewInsets.bottom + 32,
+                ),
+                child: LiquidGlassSurface(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisSize:      MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      Center(
+                        child: Container(
+                          width:  36,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color:        scheme.onSurfaceVariant.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      Text(
+                        'Add / Update Budget',
+                        style: TextStyle(
+                          fontSize:   18,
+                          fontWeight: FontWeight.w800,
+                          color:      scheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Category grid
+                      Text(
+                        'CATEGORY',
+                        style: TextStyle(
+                          fontSize:      10,
+                          fontWeight:    FontWeight.w700,
+                          letterSpacing: 1,
+                          color:         scheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing:     8,
+                        runSpacing:  8,
+                        children: cats.map((c) {
+                          final active = selectedCategory == c.name;
+                          return GestureDetector(
+                            onTap: () => setSheetState(() => selectedCategory = c.name),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              padding:  const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(999),
+                                color:  active
+                                    ? scheme.primary.withValues(alpha: 0.14)
+                                    : scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+                                border: Border.all(
+                                  color: active
+                                      ? scheme.primary.withValues(alpha: 0.4)
+                                      : scheme.outline.withValues(alpha: 0.2),
+                                  width: 0.8,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  Icon(c.icon, size: 14, color: active ? scheme.primary : c.color),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    c.name,
+                                    style: TextStyle(
+                                      fontSize:   13,
+                                      fontWeight: FontWeight.w700,
+                                      color:      active ? scheme.primary : scheme.onSurface,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      // Amount field
+                      Text(
+                        'MONTHLY LIMIT',
+                        style: TextStyle(
+                          fontSize:      10,
+                          fontWeight:    FontWeight.w700,
+                          letterSpacing: 1,
+                          color:         scheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller:   amountCtrl,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        style: TextStyle(
+                          fontSize:   20,
+                          fontWeight: FontWeight.w700,
+                          color:      scheme.onSurface,
+                        ),
+                        decoration: InputDecoration(
+                          prefixText:     '₹ ',
+                          prefixStyle:    TextStyle(
+                            fontSize:   20,
+                            fontWeight: FontWeight.w700,
+                            color:      scheme.onSurfaceVariant,
+                          ),
+                          hintText:       '0',
+                          hintStyle:      TextStyle(color: scheme.onSurfaceVariant),
+                          filled:         true,
+                          fillColor:      scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide:   BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      FilledButton(
+                        onPressed: () async {
+                          final cat    = selectedCategory;
+                          final amount = double.tryParse(amountCtrl.text.trim());
+                          if (cat == null) {
+                            Get.snackbar('Select a category', 'Please choose a category.');
+                            return;
+                          }
+                          if (amount == null || amount <= 0) {
+                            Get.snackbar('Invalid amount', 'Please enter a valid amount.');
+                            return;
+                          }
+                          await controller.upsertBudget(cat, amount);
+                          if (ctx.mounted) Navigator.of(ctx).pop();
+                        },
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size.fromHeight(50),
+                          shape: const StadiumBorder(),
+                        ),
+                        child: const Text(
+                          'Save budget',
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           );
         },
       );
     } finally {
-      categoryCtrl.dispose();
       amountCtrl.dispose();
     }
   }
+}
 
-  IconData _iconForCategory(String category) {
-    final value = category.toLowerCase();
-    if (value.contains('food')) {
-      return Icons.restaurant_rounded;
-    }
-    if (value.contains('transport')) {
-      return Icons.directions_car_rounded;
-    }
-    if (value.contains('shop')) {
-      return Icons.shopping_bag_rounded;
-    }
-    return Icons.wallet_rounded;
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+class _CatOption {
+  const _CatOption(this.name, this.icon, this.color);
+  final String   name;
+  final IconData icon;
+  final Color    color;
+}
+
+class _StatusDot extends StatelessWidget {
+  const _StatusDot({required this.color});
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width:  8,
+      height: 8,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color,
+        boxShadow: <BoxShadow>[
+          BoxShadow(color: color.withValues(alpha: 0.5), blurRadius: 4, spreadRadius: 1),
+        ],
+      ),
+    );
   }
+}
+
+class DashedBorderContainer extends StatelessWidget {
+  const DashedBorderContainer({
+    super.key,
+    required this.child,
+    required this.isDark,
+  });
+  final Widget child;
+  final bool   isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.18)
+        : Colors.black.withValues(alpha: 0.14);
+
+    return CustomPaint(
+      painter: _DashedBorderPainter(color: borderColor),
+      child: SizedBox(
+        height: 52,
+        child: Center(child: child),
+      ),
+    );
+  }
+}
+
+class _DashedBorderPainter extends CustomPainter {
+  const _DashedBorderPainter({required this.color});
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const radius  = 14.0;
+    const dash    = 6.0;
+    const gap     = 4.0;
+    final paint   = Paint()
+      ..color       = color
+      ..strokeWidth = 1
+      ..style       = PaintingStyle.stroke;
+
+    final rect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      const Radius.circular(radius),
+    );
+    final path     = Path()..addRRect(rect);
+    final metrics  = path.computeMetrics();
+    for (final m in metrics) {
+      double dist = 0;
+      while (dist < m.length) {
+        canvas.drawPath(m.extractPath(dist, dist + dash), paint);
+        dist += dash + gap;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DashedBorderPainter old) => old.color != color;
 }

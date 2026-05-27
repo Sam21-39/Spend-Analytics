@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:spend_analytics/core/local_db/app_database.dart';
-import 'package:spend_analytics/core/routes/app_routes.dart';
 import 'package:spend_analytics/features/notifications/notification_center_controller.dart';
+import 'package:spend_analytics/shared/widgets/icon_box.dart';
 import 'package:spend_analytics/shared/widgets/liquid_glass_surface.dart';
 import 'package:spend_analytics/shared/widgets/liquid_page_scaffold.dart';
 
@@ -11,62 +11,179 @@ class NotificationCenterScreen extends GetView<NotificationCenterController> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final isDark  = Theme.of(context).brightness == Brightness.dark;
+
     return LiquidPageScaffold(
-      title: 'Notifications',
-      activeRoute: AppRoutes.dashboard,
+      title:         'Notifications',
+      showBottomNav: false,
+      onBack:        () => Get.back<void>(),
       actions: <Widget>[
-        TextButton(
-          onPressed: () async {
+        BarActionButton(
+          icon:  Icons.done_all_rounded,
+          onTap: () async {
             await controller.clearAll();
-            Get.snackbar('Cleared', 'All notifications removed.');
+            Get.snackbar(
+              'Cleared',
+              'All notifications removed.',
+              duration: const Duration(seconds: 2),
+            );
           },
-          child: const Text('Clear All'),
         ),
       ],
       child: Obx(() {
         final items = controller.notifications;
+
         if (items.isEmpty) {
           return LiquidGlassSurface(
-            child: Text(
-              'No notifications yet. Rule alerts and reminders will appear here.',
-              style: Theme.of(context).textTheme.bodyLarge,
+            padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+            child: Center(
+              child: Column(
+                children: <Widget>[
+                  Icon(
+                    Icons.notifications_none_rounded,
+                    size:  48,
+                    color: scheme.onSurfaceVariant.withValues(alpha: 0.35),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'All caught up!',
+                    style: TextStyle(
+                      fontSize:   16,
+                      fontWeight: FontWeight.w700,
+                      color:      scheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Rule alerts and reminders will appear here.',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color:    scheme.onSurfaceVariant,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
             ),
           );
         }
 
+        // Group into Today / Yesterday / Earlier
+        final now       = DateTime.now();
+        final today     = DateTime(now.year, now.month, now.day);
+        final yesterday = today.subtract(const Duration(days: 1));
+
+        final todayItems     = items.where((n) => !n.createdAt.isBefore(today)).toList();
+        final yesterdayItems = items.where((n) =>
+          !n.createdAt.isBefore(yesterday) && n.createdAt.isBefore(today)
+        ).toList();
+        final earlierItems   = items.where((n) => n.createdAt.isBefore(yesterday)).toList();
+
         return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: items
-              .map(
-                (item) => Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: _NoticeCard(item: item),
-                ),
-              )
-              .toList(growable: false),
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            if (todayItems.isNotEmpty) ...<Widget>[
+              _GroupLabel(label: 'TODAY'),
+              const SizedBox(height: 10),
+              _NotifGroup(items: todayItems, isDark: isDark),
+              const SizedBox(height: 16),
+            ],
+            if (yesterdayItems.isNotEmpty) ...<Widget>[
+              _GroupLabel(label: 'YESTERDAY'),
+              const SizedBox(height: 10),
+              _NotifGroup(items: yesterdayItems, isDark: isDark),
+              const SizedBox(height: 16),
+            ],
+            if (earlierItems.isNotEmpty) ...<Widget>[
+              _GroupLabel(label: 'EARLIER'),
+              const SizedBox(height: 10),
+              _NotifGroup(items: earlierItems, isDark: isDark),
+              const SizedBox(height: 16),
+            ],
+          ],
         );
       }),
     );
   }
 }
 
-class _NoticeCard extends StatelessWidget {
-  const _NoticeCard({required this.item});
+// ── Sub-widgets ────────────────────────────────────────────────────────────
 
+class _GroupLabel extends StatelessWidget {
+  const _GroupLabel({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: TextStyle(
+        fontSize:      11,
+        fontWeight:    FontWeight.w700,
+        letterSpacing: 0.8,
+        color:         Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+    );
+  }
+}
+
+class _NotifGroup extends StatelessWidget {
+  const _NotifGroup({required this.items, required this.isDark});
+  final List<NotificationEvent> items;
+  final bool                    isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return LiquidGlassSurface(
+      padding: EdgeInsets.zero,
+      child: Column(
+        children: List<Widget>.generate(items.length, (i) {
+          final item   = items[i];
+          final isLast = i == items.length - 1;
+          return _NotifRow(item: item, showDivider: !isLast, isDark: isDark);
+        }),
+      ),
+    );
+  }
+}
+
+class _NotifRow extends StatelessWidget {
+  const _NotifRow({
+    required this.item,
+    required this.showDivider,
+    required this.isDark,
+  });
   final NotificationEvent item;
+  final bool              showDivider;
+  final bool              isDark;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final color = _accent(item.source, scheme);
+    final color  = _accentFor(item.source, scheme);
 
-    return LiquidGlassSurface(
+    return Container(
+      decoration: showDivider
+          ? BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.08)
+                      : Colors.black.withValues(alpha: 0.06),
+                  width: 0.5,
+                ),
+              ),
+            )
+          : null,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          CircleAvatar(
-            backgroundColor: color.withValues(alpha: 0.16),
-            child: Icon(_icon(item.source), color: color),
+          IconBox(
+            icon:  _iconFor(item.source),
+            color: color,
+            size:  38,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -74,17 +191,24 @@ class _NoticeCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Expanded(
                       child: Text(
                         item.title,
-                        style: Theme.of(context).textTheme.titleSmall,
+                        style: TextStyle(
+                          fontSize:   14,
+                          fontWeight: item.isRead ? FontWeight.w500 : FontWeight.w700,
+                          color:      scheme.onSurface,
+                        ),
                       ),
                     ),
+                    const SizedBox(width: 8),
                     Text(
                       _timeAgo(item.createdAt),
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: scheme.onSurfaceVariant,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color:    scheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -92,10 +216,30 @@ class _NoticeCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   item.body,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: scheme.onSurfaceVariant,
+                  style: TextStyle(
+                    fontSize: 13,
+                    height:   1.4,
+                    color:    scheme.onSurfaceVariant,
                   ),
                 ),
+                if (!item.isRead) ...<Widget>[
+                  const SizedBox(height: 6),
+                  Container(
+                    width:  6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: color,
+                      boxShadow: <BoxShadow>[
+                        BoxShadow(
+                          color:      color.withValues(alpha: 0.5),
+                          blurRadius: 4,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -104,37 +248,31 @@ class _NoticeCard extends StatelessWidget {
     );
   }
 
-  IconData _icon(String source) {
+  static IconData _iconFor(String source) {
     switch (source) {
-      case 'rule':
-        return Icons.rule_rounded;
-      case 'security':
-        return Icons.security_rounded;
-      case 'sync':
-        return Icons.sync_rounded;
-      default:
-        return Icons.notifications_rounded;
+      case 'rule':     return Icons.auto_awesome_rounded;
+      case 'security': return Icons.security_rounded;
+      case 'sync':     return Icons.cloud_sync_rounded;
+      case 'budget':   return Icons.account_balance_wallet_rounded;
+      default:         return Icons.notifications_rounded;
     }
   }
 
-  Color _accent(String source, ColorScheme scheme) {
+  static Color _accentFor(String source, ColorScheme scheme) {
     switch (source) {
-      case 'rule':
-        return scheme.primary;
-      case 'security':
-        return const Color(0xFFC2C1FF);
-      case 'sync':
-        return const Color(0xFF3FDF95);
-      default:
-        return const Color(0xFFFFB4AB);
+      case 'rule':     return scheme.primary;
+      case 'security': return const Color(0xFFB0A0FF);
+      case 'sync':     return const Color(0xFF3FDDA0);
+      case 'budget':   return const Color(0xFFFF9F40);
+      default:         return const Color(0xFF5B9FFF);
     }
   }
 
-  String _timeAgo(DateTime time) {
+  static String _timeAgo(DateTime time) {
     final diff = DateTime.now().difference(time);
-    if (diff.inMinutes < 1) return 'just now';
-    if (diff.inHours < 1) return '${diff.inMinutes}m ago';
-    if (diff.inDays < 1) return '${diff.inHours}h ago';
+    if (diff.inMinutes < 1)  return 'just now';
+    if (diff.inHours   < 1)  return '${diff.inMinutes}m ago';
+    if (diff.inDays    < 1)  return '${diff.inHours}h ago';
     return '${diff.inDays}d ago';
   }
 }

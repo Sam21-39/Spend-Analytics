@@ -1,141 +1,285 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:spend_analytics/core/local_db/app_database.dart';
+import 'package:spend_analytics/core/routes/app_routes.dart';
 import 'package:spend_analytics/shared/models/transaction_model.dart';
 import 'package:spend_analytics/shared/utils/currency_formatter.dart';
-import 'package:spend_analytics/shared/widgets/liquid_glass_background.dart';
 import 'package:spend_analytics/shared/widgets/liquid_glass_surface.dart';
+import 'package:spend_analytics/shared/widgets/liquid_page_scaffold.dart';
+import 'package:spend_analytics/shared/widgets/sa_chip.dart';
+import 'package:spend_analytics/shared/widgets/txn_row.dart';
 
-class TransactionListScreen extends StatelessWidget {
+class TransactionListScreen extends StatefulWidget {
   const TransactionListScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final db = Get.find<AppDatabase>();
-    final scheme = Theme.of(context).colorScheme;
+  State<TransactionListScreen> createState() => _TransactionListScreenState();
+}
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Stack(
-        children: <Widget>[
-          const LiquidGlassBackground(),
-          SafeArea(
-            child: StreamBuilder<List<TransactionModel>>(
-              stream: db.watchAllTransactions(),
-              builder: (context, snapshot) {
-                final txns = snapshot.data ?? const <TransactionModel>[];
-                return ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 30),
+class _TransactionListScreenState extends State<TransactionListScreen> {
+  String _filter = 'All';
+
+  static const _filters = <String>['All', 'Expense', 'Income', 'Food', 'Transport', 'Shopping'];
+
+  static IconData _iconFor(String category) {
+    switch (category.toLowerCase()) {
+      case 'food':      return Icons.coffee_rounded;
+      case 'transport': return Icons.directions_car_rounded;
+      case 'shopping':  return Icons.shopping_bag_rounded;
+      case 'health':    return Icons.favorite_rounded;
+      case 'bills':     return Icons.bolt_rounded;
+      case 'income':    return Icons.arrow_downward_rounded;
+      default:          return Icons.paid_rounded;
+    }
+  }
+
+  static Color _colorFor(String category) {
+    switch (category.toLowerCase()) {
+      case 'food':      return const Color(0xFFFF9F40);
+      case 'transport': return const Color(0xFF5B9FFF);
+      case 'shopping':  return const Color(0xFFB0A0FF);
+      case 'health':    return const Color(0xFFFF6B6B);
+      case 'bills':     return const Color(0xFFFFB860);
+      case 'income':    return const Color(0xFF3FDDA0);
+      default:          return const Color(0xFF5B9FFF);
+    }
+  }
+
+  static String _formatTime(DateTime d) {
+    final h  = d.hour % 12 == 0 ? 12 : d.hour % 12;
+    final m  = d.minute.toString().padLeft(2, '0');
+    final ap = d.hour < 12 ? 'AM' : 'PM';
+    return '$h:$m $ap';
+  }
+
+  static String _dayLabel(DateTime d) {
+    final now   = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final date  = DateTime(d.year, d.month, d.day);
+    final diff  = today.difference(date).inDays;
+    if (diff == 0) return 'Today';
+    if (diff == 1) return 'Yesterday';
+    return '${d.day} ${_months[d.month - 1]}';
+  }
+
+  static const _months = <String>[
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  ];
+
+  List<TransactionModel> _applyFilter(List<TransactionModel> all) {
+    if (_filter == 'All') return all;
+    if (_filter == 'Expense') return all.where((t) => t.type == 'expense').toList();
+    if (_filter == 'Income')  return all.where((t) => t.type == 'income').toList();
+    return all.where((t) => t.category == _filter).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final db     = Get.find<AppDatabase>();
+    final scheme = Theme.of(context).colorScheme;
+    final isDark  = Theme.of(context).brightness == Brightness.dark;
+
+    return LiquidPageScaffold(
+      title:         'Transactions',
+      activeRoute:   AppRoutes.txns,
+      showFab:       true,
+      onBack:        () => Get.back<void>(),
+      actions: <Widget>[
+        BarActionButton(icon: Icons.search_rounded, onTap: () {}),
+        const SizedBox(width: 4),
+        BarActionButton(icon: Icons.filter_list_rounded, onTap: () {}),
+      ],
+      child: StreamBuilder<List<TransactionModel>>(
+        stream: db.watchAllTransactions(),
+        builder: (context, snapshot) {
+          final all      = snapshot.data ?? const <TransactionModel>[];
+          final filtered = _applyFilter(all);
+
+          // Totals
+          double spent    = 0;
+          double received = 0;
+          for (final t in all) {
+            if (t.type == 'expense') spent    += t.amount;
+            else                     received += t.amount;
+          }
+          final net = received - spent;
+
+          // Group by day
+          final grouped = <String, List<TransactionModel>>{};
+          for (final t in filtered) {
+            final label = _dayLabel(t.transactionDate);
+            (grouped[label] ??= <TransactionModel>[]).add(t);
+          }
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              // ── Filter chips ─────────────────────────────────
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: Row(
+                  children: _filters.map((f) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: SAChip(
+                        label:  f,
+                        active: f == _filter,
+                        onTap:  () => setState(() => _filter = f),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+
+              const SizedBox(height: 14),
+
+              // ── Summary card ─────────────────────────────────
+              LiquidGlassSurface(
+                padding: const EdgeInsets.all(16),
+                child: Row(
                   children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        IconButton(
-                          onPressed: () => Get.back<void>(),
-                          icon: const Icon(Icons.arrow_back_rounded),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Transactions',
-                          style: Theme.of(context).textTheme.headlineSmall
-                              ?.copyWith(fontWeight: FontWeight.w800),
-                        ),
-                      ],
+                    _SumCol(label: 'SPENT',    value: formatInr(spent),    color: scheme.onSurface),
+                    _Divider(isDark: isDark),
+                    _SumCol(label: 'RECEIVED', value: '+${formatInr(received)}', color: scheme.tertiary),
+                    _Divider(isDark: isDark),
+                    _SumCol(label: 'NET',      value: formatInr(net.abs()), color: scheme.onSurface),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // ── Grouped transaction lists ─────────────────────
+              if (filtered.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 32),
+                  child: Center(
+                    child: Text(
+                      'No transactions match this filter.',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
                     ),
-                    const SizedBox(height: 10),
-                    if (txns.isEmpty)
-                      LiquidGlassSurface(
-                        child: Text(
-                          'No transactions yet. Add one from the dashboard to get started.',
-                          style: Theme.of(context).textTheme.bodyLarge
-                              ?.copyWith(color: scheme.onSurfaceVariant),
-                        ),
-                      )
-                    else
-                      ...txns.map(
-                        (txn) => Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: LiquidGlassSurface(
-                            child: Row(
-                              children: <Widget>[
-                                CircleAvatar(
-                                  backgroundColor: Colors.white.withValues(
-                                    alpha: 0.08,
-                                  ),
-                                  child: Icon(
-                                    _iconForCategory(txn.category),
-                                    color: scheme.primary,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      Text(
-                                        txn.category,
-                                        style:
-                                            Theme.of(
-                                              context,
-                                            ).textTheme.titleSmall,
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        DateFormat(
-                                          'dd MMM yyyy, hh:mm a',
-                                        ).format(txn.transactionDate),
-                                        style: Theme.of(
-                                          context,
-                                        ).textTheme.bodySmall?.copyWith(
-                                          color: scheme.onSurfaceVariant,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Text(
-                                  txn.type == 'income'
-                                      ? '+${formatInr(txn.amount)}'
-                                      : '-${formatInr(txn.amount)}',
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.titleSmall?.copyWith(
-                                    color:
-                                        txn.type == 'income'
-                                            ? const Color(0xFF3FDF95)
-                                            : scheme.onSurface,
-                                  ),
-                                ),
-                              ],
+                  ),
+                )
+              else
+                ...grouped.entries.map((entry) {
+                  final label = entry.key;
+                  final txns  = entry.value;
+                  final dayTotal = txns.fold<double>(
+                    0,
+                    (sum, t) => sum + (t.type == 'expense' ? -t.amount : t.amount),
+                  );
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Text(
+                              label.toUpperCase(),
+                              style: TextStyle(
+                                fontSize:      12,
+                                fontWeight:    FontWeight.w700,
+                                letterSpacing: 1.1,
+                                color:         scheme.onSurfaceVariant,
+                              ),
                             ),
-                          ),
+                            Text(
+                              '${dayTotal >= 0 ? '+' : '−'}${formatInr(dayTotal.abs())}',
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: scheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                  ],
-                );
-              },
+                      LiquidGlassSurface(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Column(
+                          children: List<Widget>.generate(txns.length, (i) {
+                            final t      = txns[i];
+                            final isLast = i == txns.length - 1;
+                            return TxnRow(
+                              data: TransactionRowData(
+                                merchant:  t.category,
+                                category:  t.category,
+                                icon:      _iconFor(t.category),
+                                iconColor: _colorFor(t.category),
+                                amount:    t.amount,
+                                time:      _formatTime(t.transactionDate),
+                                isIncome:  t.type == 'income',
+                                mode:      t.paymentMode,
+                              ),
+                              showDivider: !isLast,
+                              onTap: () => Get.toNamed(
+                                AppRoutes.txnDetail,
+                                arguments: t,
+                              ),
+                            );
+                          }),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                    ],
+                  );
+                }),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _SumCol extends StatelessWidget {
+  const _SumCol({required this.label, required this.value, required this.color});
+  final String label;
+  final String value;
+  final Color  color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Column(
+        children: <Widget>[
+          Text(
+            label,
+            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize:   16,
+              fontWeight: FontWeight.w800,
+              color:      color,
+              fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],
             ),
           ),
         ],
       ),
     );
   }
+}
 
-  IconData _iconForCategory(String category) {
-    final normalized = category.toLowerCase();
-    if (normalized.contains('food')) {
-      return Icons.restaurant_rounded;
-    }
-    if (normalized.contains('transport')) {
-      return Icons.directions_car_rounded;
-    }
-    if (normalized.contains('shop')) {
-      return Icons.shopping_bag_rounded;
-    }
-    if (normalized.contains('bill') || normalized.contains('rent')) {
-      return Icons.receipt_long_rounded;
-    }
-    return Icons.account_balance_wallet_rounded;
+class _Divider extends StatelessWidget {
+  const _Divider({required this.isDark});
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width:  1,
+      height: 40,
+      color:  isDark
+          ? Colors.white.withValues(alpha: 0.12)
+          : Colors.black.withValues(alpha: 0.08),
+    );
   }
 }

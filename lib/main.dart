@@ -24,7 +24,7 @@ class SpendAnalyticsApp extends StatelessWidget {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.system,
-      initialRoute: AppRoutes.login,
+      initialRoute: AppRoutes.splash,
       getPages: AppRoutes.pages,
       defaultTransition: Transition.fadeIn,
       enableLog: kDebugMode,
