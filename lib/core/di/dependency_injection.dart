@@ -8,6 +8,7 @@ import 'package:spend_analytics/core/rules/rule_engine.dart';
 import 'package:spend_analytics/core/supabase/realtime_service.dart';
 import 'package:spend_analytics/core/supabase/supabase_service.dart';
 import 'package:spend_analytics/core/sync/sync_manager.dart';
+import 'package:spend_analytics/core/theme/theme_service.dart';
 import 'package:spend_analytics/features/auth/auth_controller.dart';
 
 class DependencyInjection {
@@ -32,6 +33,9 @@ class DependencyInjection {
 
     final database = Get.put(AppDatabase(), permanent: true);
     await database.init();
+
+    final theme = Get.put(ThemeService(), permanent: true);
+    await theme.init();
 
     final syncManager = Get.put(SyncManager(), permanent: true);
     await syncManager.init();

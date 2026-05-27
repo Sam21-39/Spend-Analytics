@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -6,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spend_analytics/core/config/app_config.dart';
 import 'package:spend_analytics/core/firebase/analytics_service.dart';
 import 'package:spend_analytics/core/firebase/crashlytics_service.dart';
+import 'package:spend_analytics/core/local_db/app_database.dart';
 import 'package:spend_analytics/core/routes/app_routes.dart';
 import 'package:spend_analytics/core/supabase/realtime_service.dart';
 import 'package:spend_analytics/core/supabase/supabase_service.dart';
@@ -15,6 +18,7 @@ class AuthController extends GetxController {
   final SupabaseService _supabase = Get.find<SupabaseService>();
   final AnalyticsService _analytics = Get.find<AnalyticsService>();
   final CrashlyticsService _crashlytics = Get.find<CrashlyticsService>();
+  final AppDatabase _db = Get.find<AppDatabase>();
   late final GoogleSignIn _googleSignIn =
       AppConfig.googleWebClientId.isEmpty
           ? GoogleSignIn()
@@ -25,13 +29,29 @@ class AuthController extends GetxController {
 
   final isLoggedIn = false.obs;
   final isLoading = false.obs;
+  StreamSubscription<AuthState>? _authSub;
+
+  bool get hasActiveSession => _supabase.isAuthenticated;
+
+  @override
+  void onInit() {
+    super.onInit();
+    if (_supabase.isEnabled) {
+      _authSub = _supabase.client.auth.onAuthStateChange.listen((state) {
+        isLoggedIn.value = state.session != null;
+      });
+    }
+  }
 
   @override
   void onReady() {
     super.onReady();
     final hasSession = _supabase.isAuthenticated;
     isLoggedIn.value = hasSession;
-    if (hasSession && Get.currentRoute == AppRoutes.login) {
+    if (hasSession &&
+        (Get.currentRoute == AppRoutes.login ||
+            Get.currentRoute == AppRoutes.splash ||
+            Get.currentRoute == AppRoutes.onboarding)) {
       Get.offAllNamed(AppRoutes.dashboard);
     }
   }
@@ -57,7 +77,7 @@ class AuthController extends GetxController {
       }
 
       isLoggedIn.value = true;
-      await _analytics.logEvent('google_login_success');
+      await _analytics.logEvent('login_success_google');
       await _ensurePrivacyGateAcknowledged(resolveActiveUserId());
       Get.offAllNamed(AppRoutes.dashboard);
     } catch (error, stack) {
@@ -183,9 +203,13 @@ class AuthController extends GetxController {
     await _analytics.logEvent('onboarding_privacy_gate_completed');
   }
 
-  Future<void> signOut() async {
+  Future<void> signOut({bool clearLocalData = false}) async {
     isLoading.value = true;
     try {
+      final activeUserId = resolveActiveUserId();
+      if (clearLocalData) {
+        await _db.clearUserData(activeUserId);
+      }
       await _googleSignIn.signOut();
       if (_supabase.isEnabled) {
         await _supabase.client.auth.signOut();
@@ -205,5 +229,11 @@ class AuthController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  @override
+  void onClose() {
+    _authSub?.cancel();
+    super.onClose();
   }
 }

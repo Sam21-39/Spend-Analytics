@@ -77,14 +77,42 @@ class SupabaseService extends GetxService {
       return;
     }
 
-    await client.from('budgets').upsert(<String, dynamic>{
-      'user_id': currentUserId,
-      'category_id': null,
-      'category_name': category,
-      'month': month,
-      'year': year,
-      'limit_amount': limitAmount,
-    }, onConflict: 'user_id,category_name,month,year');
+    final userId = currentUserId!;
+    final normalizedCategory = category.trim();
+
+    final existing = await client
+        .from('budgets')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('category_name', normalizedCategory)
+        .eq('month', month)
+        .eq('year', year)
+        .limit(1);
+
+    final existingRows =
+        (existing as List<dynamic>).whereType<Map<String, dynamic>>().toList();
+
+    if (existingRows.isEmpty) {
+      await client.from('budgets').insert(<String, dynamic>{
+        'user_id': userId,
+        'category_id': null,
+        'category_name': normalizedCategory,
+        'month': month,
+        'year': year,
+        'limit_amount': limitAmount,
+      });
+      return;
+    }
+
+    final id = existingRows.first['id'];
+    await client
+        .from('budgets')
+        .update(<String, dynamic>{
+          'limit_amount': limitAmount,
+          'updated_at': DateTime.now().toUtc().toIso8601String(),
+        })
+        .eq('id', '$id')
+        .eq('user_id', userId);
   }
 
   Future<List<CloudBudget>> fetchBudgetsForMonth({

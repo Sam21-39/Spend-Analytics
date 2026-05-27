@@ -30,6 +30,8 @@
 	<string>Spend Analytics uses the microphone for voice transaction entry.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Spend Analytics converts your speech into transaction text on device.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Spend Analytics uses Face ID/Touch ID to protect sensitive financial data.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

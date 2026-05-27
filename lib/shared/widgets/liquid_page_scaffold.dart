@@ -38,45 +38,31 @@ class LiquidPageScaffold extends StatelessWidget {
     super.key,
     this.activeRoute,
     this.actions,
-    this.showBottomNav        = true,
-    this.showFab              = true,
+    this.showBottomNav = true,
+    this.showFab = true,
     this.onAddPressed,
+
     /// When non-null a back-chevron is shown instead of the logo.
     this.onBack,
-    this.contentPadding       = const EdgeInsets.fromLTRB(16, 16, 16, 0),
-    this.scrollable           = true,
+    this.contentPadding = const EdgeInsets.fromLTRB(16, 16, 16, 0),
+    this.scrollable = true,
   });
 
-  final String        title;
-  final Widget        child;
-  final String?       activeRoute;
+  final String title;
+  final Widget child;
+  final String? activeRoute;
   final List<Widget>? actions;
-  final bool          showBottomNav;
-  final bool          showFab;
+  final bool showBottomNav;
+  final bool showFab;
   final VoidCallback? onAddPressed;
   final VoidCallback? onBack;
-  final EdgeInsets    contentPadding;
-  final bool          scrollable;
+  final EdgeInsets contentPadding;
+  final bool scrollable;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final isDark  = Theme.of(context).brightness == Brightness.dark;
-
-    Widget content = Padding(
-      padding: contentPadding.copyWith(
-        bottom: showBottomNav ? 120 : 24,
-      ),
-      child: child,
-    );
-
-    if (scrollable) {
-      content = SingleChildScrollView(
-        padding: EdgeInsets.zero,
-        physics: const BouncingScrollPhysics(),
-        child: content,
-      );
-    }
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -93,23 +79,23 @@ class LiquidPageScaffold extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
                   child: LiquidGlassSurface(
-                    padding:      EdgeInsets.zero,
+                    padding: EdgeInsets.zero,
                     borderRadius: const BorderRadius.all(Radius.circular(999)),
-                    blur:         32,
-                    fillOpacity:  isDark ? 0.11 : 0.68,
+                    blur: 32,
+                    fillOpacity: isDark ? 0.11 : 0.68,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,
-                        vertical:   8,
+                        vertical: 8,
                       ),
                       child: Row(
                         children: <Widget>[
                           // Leading — back OR logo
                           if (onBack != null)
                             _BarIconBtn(
-                              icon:    Icons.chevron_left_rounded,
-                              onTap:   onBack,
-                              isDark:  isDark,
+                              icon: Icons.chevron_left_rounded,
+                              onTap: onBack,
+                              isDark: isDark,
                             )
                           else
                             Padding(
@@ -123,10 +109,12 @@ class LiquidPageScaffold extends StatelessWidget {
                           Expanded(
                             child: Text(
                               title,
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color:       scheme.onSurface,
-                                fontWeight:  FontWeight.w800,
-                                fontSize:    16,
+                              style: Theme.of(
+                                context,
+                              ).textTheme.titleMedium?.copyWith(
+                                color: scheme.onSurface,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 16,
                                 letterSpacing: -0.2,
                               ),
                               overflow: TextOverflow.ellipsis,
@@ -135,9 +123,7 @@ class LiquidPageScaffold extends StatelessWidget {
 
                           // Trailing actions
                           if (actions != null)
-                            ...actions!.map(
-                              (a) => _wrapAction(a, isDark),
-                            ),
+                            ...actions!.map((a) => _wrapAction(a, isDark)),
 
                           const SizedBox(width: 4),
                         ],
@@ -147,7 +133,38 @@ class LiquidPageScaffold extends StatelessWidget {
                 ),
 
                 // ── Scrollable content ──────────────────────────────
-                Expanded(child: content),
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final width = constraints.maxWidth;
+                      final maxContentWidth =
+                          width >= 1200
+                              ? 980.0
+                              : width >= 900
+                              ? 780.0
+                              : width;
+                      final sideInset = (width - maxContentWidth) / 2;
+
+                      Widget content = Padding(
+                        padding: contentPadding.copyWith(
+                          left: contentPadding.left + sideInset,
+                          right: contentPadding.right + sideInset,
+                          bottom: showBottomNav ? 120 : 24,
+                        ),
+                        child: child,
+                      );
+
+                      if (scrollable) {
+                        content = SingleChildScrollView(
+                          padding: EdgeInsets.zero,
+                          physics: const BouncingScrollPhysics(),
+                          child: content,
+                        );
+                      }
+                      return content;
+                    },
+                  ),
+                ),
               ],
             ),
           ),
@@ -155,13 +172,13 @@ class LiquidPageScaffold extends StatelessWidget {
           // ── Floating bottom nav ─────────────────────────────────
           if (showBottomNav && activeRoute != null)
             Positioned(
-              left:   0,
-              right:  0,
+              left: 0,
+              right: 0,
               bottom: 0,
               child: LiquidBottomNav(
-                activeRoute:   activeRoute!,
-                showFab:       showFab,
-                onAddPressed:  onAddPressed,
+                activeRoute: activeRoute!,
+                showFab: showFab,
+                onAddPressed: onAddPressed,
               ),
             ),
         ],
@@ -187,11 +204,11 @@ class _BarIconBtn extends StatelessWidget {
     this.iconColor,
   });
 
-  final IconData  icon;
-  final bool      isDark;
+  final IconData icon;
+  final bool isDark;
   final VoidCallback? onTap;
-  final String?   badge;
-  final Color?    iconColor;
+  final String? badge;
+  final Color? iconColor;
 
   @override
   Widget build(BuildContext context) {
@@ -199,17 +216,19 @@ class _BarIconBtn extends StatelessWidget {
     return GestureDetector(
       onTap: onTap ?? () => Get.back<void>(),
       child: Container(
-        width:  36,
+        width: 36,
         height: 36,
         decoration: BoxDecoration(
-          color:  isDark
-              ? Colors.white.withValues(alpha: 0.06)
-              : Colors.black.withValues(alpha: 0.04),
-          shape:  BoxShape.circle,
+          color:
+              isDark
+                  ? Colors.white.withValues(alpha: 0.06)
+                  : Colors.black.withValues(alpha: 0.04),
+          shape: BoxShape.circle,
           border: Border.all(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.10)
-                : Colors.black.withValues(alpha: 0.06),
+            color:
+                isDark
+                    ? Colors.white.withValues(alpha: 0.10)
+                    : Colors.black.withValues(alpha: 0.06),
             width: 0.5,
           ),
         ),
@@ -220,21 +239,26 @@ class _BarIconBtn extends StatelessWidget {
             Icon(icon, size: 18, color: iconColor ?? scheme.onSurface),
             if (badge != null)
               Positioned(
-                top:   -4,
+                top: -4,
                 right: -4,
                 child: Container(
-                  constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
+                  constraints: const BoxConstraints(
+                    minWidth: 14,
+                    minHeight: 14,
+                  ),
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   decoration: BoxDecoration(
-                    color:        scheme.error,
+                    color: scheme.error,
                     borderRadius: BorderRadius.circular(999),
-                    border:       Border.all(color: scheme.surface, width: 1.5),
+                    border: Border.all(color: scheme.surface, width: 1.5),
                   ),
                   alignment: Alignment.center,
                   child: Text(
                     badge!,
                     style: const TextStyle(
-                      color: Colors.white, fontSize: 9, fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
                 ),
@@ -255,25 +279,29 @@ class _LogoMark extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width:  size,
+      width: size,
       height: size,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
-          end:   Alignment.bottomRight,
+          end: Alignment.bottomRight,
           colors: <Color>[scheme.primary, scheme.secondary],
         ),
         borderRadius: BorderRadius.circular(size * 0.28),
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color:      scheme.primary.withValues(alpha: 0.4),
+            color: scheme.primary.withValues(alpha: 0.4),
             blurRadius: 8,
-            offset:     const Offset(0, 3),
+            offset: const Offset(0, 3),
           ),
         ],
       ),
       alignment: Alignment.center,
-      child: Icon(Icons.bar_chart_rounded, size: size * 0.6, color: Colors.white),
+      child: Icon(
+        Icons.bar_chart_rounded,
+        size: size * 0.6,
+        color: Colors.white,
+      ),
     );
   }
 }
@@ -292,20 +320,20 @@ class BarActionButton extends StatelessWidget {
     this.iconColor,
   });
 
-  final IconData  icon;
+  final IconData icon;
   final VoidCallback? onTap;
-  final String?   badge;
-  final Color?    iconColor;
+  final String? badge;
+  final Color? iconColor;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return _BarIconBtn(
-      icon:       icon,
-      isDark:     isDark,
-      onTap:      onTap,
-      badge:      badge,
-      iconColor:  iconColor,
+      icon: icon,
+      isDark: isDark,
+      onTap: onTap,
+      badge: badge,
+      iconColor: iconColor,
     );
   }
 }

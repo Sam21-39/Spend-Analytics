@@ -5,6 +5,7 @@ import 'package:spend_analytics/core/config/app_config.dart';
 import 'package:spend_analytics/core/di/dependency_injection.dart';
 import 'package:spend_analytics/core/routes/app_routes.dart';
 import 'package:spend_analytics/core/theme/app_theme.dart';
+import 'package:spend_analytics/core/theme/theme_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,12 +19,13 @@ class SpendAnalyticsApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeService = Get.find<ThemeService>();
     return GetMaterialApp(
       title: AppConfig.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.system,
+      themeMode: themeService.themeMode.value,
       initialRoute: AppRoutes.splash,
       getPages: AppRoutes.pages,
       defaultTransition: Transition.fadeIn,

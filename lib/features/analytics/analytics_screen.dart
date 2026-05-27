@@ -10,108 +10,446 @@ import 'package:spend_analytics/shared/widgets/liquid_glass_surface.dart';
 import 'package:spend_analytics/shared/widgets/liquid_page_scaffold.dart';
 import 'package:spend_analytics/shared/widgets/sa_chip.dart';
 import 'package:spend_analytics/shared/widgets/sa_pill.dart';
+import 'package:spend_analytics/shared/widgets/sa_shimmer.dart';
 
 class AnalyticsScreen extends GetView<AnalyticsController> {
   const AnalyticsScreen({super.key});
-
-  static const _ranges = <String>['Week', 'Month', '3 Months', 'Year', 'All'];
-
-  static const _catData = <_CatSlice>[
-    _CatSlice('Food',      Color(0xFFFF9F40), 0.254),
-    _CatSlice('Transport', Color(0xFF5B9FFF), 0.170),
-    _CatSlice('Shopping',  Color(0xFFB0A0FF), 0.240),
-    _CatSlice('Bills',     Color(0xFFFFB860), 0.171),
-    _CatSlice('Others',    Color(0xFF3FDDA0), 0.165),
-  ];
-
-  static const _merchants = <_MerchantRow>[
-    _MerchantRow('Amazon',  'Shopping', 8,  4280, Icons.shopping_bag_rounded,      Color(0xFFB0A0FF)),
-    _MerchantRow('Swiggy',  'Food',     12, 2860, Icons.coffee_rounded,            Color(0xFFFF9F40)),
-    _MerchantRow('Uber',    'Transport', 9, 1840, Icons.directions_car_rounded,    Color(0xFF5B9FFF)),
-    _MerchantRow('Apollo',  'Health',    3, 1620, Icons.favorite_rounded,          Color(0xFFFF6B6B)),
-  ];
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
 
     return LiquidPageScaffold(
-      title:       'Analytics',
+      title: 'Analytics',
       activeRoute: AppRoutes.analytics,
       actions: <Widget>[
         BarActionButton(icon: Icons.calendar_today_outlined, onTap: () {}),
         const SizedBox(width: 4),
         BarActionButton(icon: Icons.more_horiz_rounded, onTap: () {}),
       ],
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          // ── Range chips ───────────────────────────────────────
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            child: Row(
-              children: _ranges.map((r) {
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: SAChip(label: r, active: r == 'Month'),
-                );
-              }).toList(),
+      child: Obx(() {
+        if (controller.isLoading.value) {
+          return const _AnalyticsLoadingSkeleton();
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            // ── Range chips ───────────────────────────────────────
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Obx(
+                () => Row(
+                  children:
+                      AnalyticsController.ranges.map((r) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: SAChip(
+                            label: r,
+                            active: controller.selectedRange.value == r,
+                            onTap: () => controller.setRange(r),
+                          ),
+                        );
+                      }).toList(),
+                ),
+              ),
             ),
-          ),
 
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-          // ── Headline metric + sparkline ────────────────────────
-          LiquidGlassSurface(
-            padding:      const EdgeInsets.all(20),
-            borderRadius: const BorderRadius.all(Radius.circular(24)),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            // ── Headline metric + sparkline ────────────────────────
+            LiquidGlassSurface(
+              padding: const EdgeInsets.all(20),
+              borderRadius: const BorderRadius.all(Radius.circular(24)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              'NET FLOW · ${controller.selectedRange.value.toUpperCase()}',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 1.1,
+                                color: scheme.onSurfaceVariant,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Obx(() {
+                              final net = controller.netFlow.value;
+                              return FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  '${net >= 0 ? '+' : '-'}${formatInr(net.abs())}',
+                                  style: TextStyle(
+                                    fontSize: 38,
+                                    fontWeight: FontWeight.w800,
+                                    color: scheme.onSurface,
+                                    letterSpacing: -1.2,
+                                    fontFeatures: const <FontFeature>[
+                                      FontFeature.tabularFigures(),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: <Widget>[
+                                SAPill(
+                                  label:
+                                      '${controller.deltaPct.value.toStringAsFixed(0)}%',
+                                  color:
+                                      controller.deltaIsUp.value
+                                          ? scheme.tertiary
+                                          : scheme.error,
+                                  icon:
+                                      controller.deltaIsUp.value
+                                          ? Icons.arrow_upward_rounded
+                                          : Icons.arrow_downward_rounded,
+                                ),
+                                const SizedBox(width: 8),
+                                Flexible(
+                                  child: Text(
+                                    'vs previous period',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium?.copyWith(
+                                      color: scheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Icon(
+                        Icons.trending_up_rounded,
+                        size: 32,
+                        color: scheme.tertiary.withValues(alpha: 0.5),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  // Sparkline area chart
+                  Obx(() {
+                    final data = controller.trendValues;
+                    if (data.isEmpty) return const SizedBox(height: 120);
+                    return SizedBox(
+                      height: 120,
+                      child: CustomPaint(
+                        painter: _SparkAreaPainter(
+                          data: data,
+                          color: scheme.primary,
+                        ),
+                        size: const Size(double.infinity, 120),
+                      ),
+                    );
+                  }),
+
+                  const SizedBox(height: 6),
+                  Obx(
+                    () => Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children:
+                          controller.trendLabels.map((d) {
+                            return Text(
+                              d,
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: scheme.onSurfaceVariant.withValues(
+                                  alpha: 0.6,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // ── Category donut ────────────────────────────────────
+            _SectionTitle('Spending breakdown'),
+            const SizedBox(height: 10),
+            Obx(() {
+              final slices = controller.categorySlices;
+              if (slices.isEmpty) {
+                return LiquidGlassSurface(
+                  padding: const EdgeInsets.all(20),
+                  child: Text(
+                    'No spending data for this range yet.',
+                    style: TextStyle(
+                      color: scheme.onSurfaceVariant,
+                      fontSize: 13,
+                    ),
+                  ),
+                );
+              }
+              return LiquidGlassSurface(
+                padding: const EdgeInsets.all(20),
+                child: Row(
                   children: <Widget>[
-                    Column(
+                    _DonutChart(
+                      slices: slices,
+                      centerLabel: formatInr(controller.totalSpent.value),
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Column(
+                        children:
+                            slices.map((c) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 6,
+                                ),
+                                child: Row(
+                                  children: <Widget>[
+                                    Container(
+                                      width: 8,
+                                      height: 8,
+                                      decoration: BoxDecoration(
+                                        color: c.color,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        c.name,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(color: scheme.onSurface),
+                                      ),
+                                    ),
+                                    Text(
+                                      '${(c.pct * 100).toStringAsFixed(1)}%',
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.titleSmall?.copyWith(
+                                        color: scheme.onSurfaceVariant,
+                                        fontFeatures: const <FontFeature>[
+                                          FontFeature.tabularFigures(),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+
+            const SizedBox(height: 20),
+
+            // ── Top merchants ─────────────────────────────────────
+            _SectionTitle(
+              'Top merchants',
+              action: 'All',
+              onAction: () => Get.toNamed(AppRoutes.txns),
+            ),
+            const SizedBox(height: 10),
+            Obx(() {
+              final merchants = controller.topMerchants;
+              if (merchants.isEmpty) {
+                return LiquidGlassSurface(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    'No merchant insights yet.',
+                    style: TextStyle(
+                      color: scheme.onSurfaceVariant,
+                      fontSize: 13,
+                    ),
+                  ),
+                );
+              }
+              return LiquidGlassSurface(
+                padding: EdgeInsets.zero,
+                child: Column(
+                  children: List<Widget>.generate(merchants.length, (i) {
+                    final m = merchants[i];
+                    final isLast = i == merchants.length - 1;
+                    final isDark =
+                        Theme.of(context).brightness == Brightness.dark;
+                    return Container(
+                      decoration:
+                          isLast
+                              ? null
+                              : BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color:
+                                        isDark
+                                            ? Colors.white.withValues(
+                                              alpha: 0.08,
+                                            )
+                                            : Colors.black.withValues(
+                                              alpha: 0.06,
+                                            ),
+                                    width: 0.5,
+                                  ),
+                                ),
+                              ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
+                      child: Row(
+                        children: <Widget>[
+                          IconBox(icon: m.icon, color: m.color, size: 36),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  m.name,
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.titleSmall?.copyWith(
+                                    color: scheme.onSurface,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                Text(
+                                  '${m.txns} txns · ${m.category}',
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.bodySmall?.copyWith(
+                                    color: scheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Text(
+                            formatInr(m.amount),
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                              color: scheme.onSurface,
+                              fontFeatures: const <FontFeature>[
+                                FontFeature.tabularFigures(),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                ),
+              );
+            }),
+
+            const SizedBox(height: 20),
+
+            // ── AI Insight ────────────────────────────────────────
+            LiquidGlassSurface(
+              padding: const EdgeInsets.all(18),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: <Color>[scheme.secondary, scheme.primary],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: <BoxShadow>[
+                        BoxShadow(
+                          color: scheme.secondary.withValues(alpha: 0.4),
+                          blurRadius: 18,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    alignment: Alignment.center,
+                    child: const Icon(
+                      Icons.auto_awesome_rounded,
+                      size: 20,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Text(
-                          'NET FLOW · MAY',
-                          style: TextStyle(
-                            fontSize:      10,
-                            fontWeight:    FontWeight.w700,
-                            letterSpacing: 1.1,
-                            color:         scheme.onSurfaceVariant,
+                          'Insight',
+                          style: Theme.of(
+                            context,
+                          ).textTheme.titleSmall?.copyWith(
+                            color: scheme.onSurface,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
-                        const SizedBox(height: 6),
-                        Obx(() {
-                          final total = controller.monthlyTrend
-                              .fold<double>(0, (s, v) => s + v);
-                          return Text(
-                            '+${formatInr(total.abs())}',
-                            style: TextStyle(
-                              fontSize:   38,
-                              fontWeight: FontWeight.w800,
-                              color:      scheme.onSurface,
-                              letterSpacing: -1.2,
-                              fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],
-                            ),
-                          );
-                        }),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 4),
+                        Obx(
+                          () => Text(
+                            controller.insightText.value,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: scheme.onSurfaceVariant),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
                         Row(
                           children: <Widget>[
-                            SAPill(
-                              label: '18%',
-                              color: scheme.tertiary,
-                              icon:  Icons.arrow_upward_rounded,
+                            GestureDetector(
+                              onTap: () => Get.toNamed(AppRoutes.budgets),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 7,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: scheme.primary.withValues(alpha: 0.18),
+                                  borderRadius: BorderRadius.circular(999),
+                                  border: Border.all(
+                                    color: scheme.primary.withValues(
+                                      alpha: 0.3,
+                                    ),
+                                    width: 0.5,
+                                  ),
+                                ),
+                                child: Text(
+                                  'Set budget',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: scheme.primary,
+                                  ),
+                                ),
+                              ),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: 12),
                             Text(
-                              'vs April',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              'Dismiss',
+                              style: TextStyle(
+                                fontSize: 12,
                                 color: scheme.onSurfaceVariant,
                               ),
                             ),
@@ -119,260 +457,49 @@ class AnalyticsScreen extends GetView<AnalyticsController> {
                         ),
                       ],
                     ),
-                    Icon(
-                      Icons.trending_up_rounded,
-                      size:  32,
-                      color: scheme.tertiary.withValues(alpha: 0.5),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 18),
-
-                // Sparkline area chart
-                Obx(() {
-                  final data = controller.monthlyTrend;
-                  if (data.isEmpty) return const SizedBox(height: 120);
-                  return SizedBox(
-                    height: 120,
-                    child: CustomPaint(
-                      painter: _SparkAreaPainter(data: data, color: scheme.primary),
-                      size: const Size(double.infinity, 120),
-                    ),
-                  );
-                }),
-
-                const SizedBox(height: 6),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <String>['1', '7', '14', '21', '28'].map((d) {
-                    return Text(
-                      d,
-                      style: TextStyle(
-                        fontSize: 10,
-                        color:    scheme.onSurfaceVariant.withValues(alpha: 0.6),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-          // ── Category donut ────────────────────────────────────
-          _SectionTitle('Spending breakdown'),
-          const SizedBox(height: 10),
-          LiquidGlassSurface(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: <Widget>[
-                _DonutChart(slices: _catData, centerLabel: '₹24.5k'),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: Column(
-                    children: _catData.map((c) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        child: Row(
-                          children: <Widget>[
-                            Container(
-                              width:  8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color:  c.color,
-                                shape:  BoxShape.circle,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                c.name,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: scheme.onSurface,
-                                ),
-                              ),
-                            ),
-                            Text(
-                              '${(c.pct * 100).toStringAsFixed(1)}%',
-                              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                color: scheme.onSurfaceVariant,
-                                fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-
-          const SizedBox(height: 20),
-
-          // ── Top merchants ─────────────────────────────────────
-          _SectionTitle('Top merchants', action: 'All', onAction: () => Get.toNamed(AppRoutes.txns)),
-          const SizedBox(height: 10),
-          LiquidGlassSurface(
-            padding: EdgeInsets.zero,
-            child: Column(
-              children: List<Widget>.generate(_merchants.length, (i) {
-                final m      = _merchants[i];
-                final isLast = i == _merchants.length - 1;
-                final isDark  = Theme.of(context).brightness == Brightness.dark;
-                return Container(
-                  decoration: isLast
-                      ? null
-                      : BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: isDark
-                                  ? Colors.white.withValues(alpha: 0.08)
-                                  : Colors.black.withValues(alpha: 0.06),
-                              width: 0.5,
-                            ),
-                          ),
-                        ),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  child: Row(
-                    children: <Widget>[
-                      IconBox(icon: m.icon, color: m.color, size: 36),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(
-                              m.name,
-                              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                color: scheme.onSurface, fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            Text(
-                              '${m.txns} txns · ${m.cat}',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: scheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Text(
-                        formatInr(m.amount.toDouble()),
-                        style: TextStyle(
-                          fontSize:   14,
-                          fontWeight: FontWeight.w800,
-                          color:      scheme.onSurface,
-                          fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }),
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-          // ── AI Insight ────────────────────────────────────────
-          LiquidGlassSurface(
-            padding: const EdgeInsets.all(18),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Container(
-                  width:  40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: <Color>[scheme.secondary, scheme.primary],
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: <BoxShadow>[
-                      BoxShadow(
-                        color:      scheme.secondary.withValues(alpha: 0.4),
-                        blurRadius: 18,
-                        offset:     const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  alignment: Alignment.center,
-                  child: const Icon(Icons.auto_awesome_rounded, size: 20, color: Colors.white),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        'Insight',
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: scheme.onSurface, fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      RichText(
-                        text: TextSpan(
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: scheme.onSurfaceVariant,
-                          ),
-                          children: <InlineSpan>[
-                            const TextSpan(text: "You're spending "),
-                            TextSpan(
-                              text: '32% more on coffee',
-                              style: TextStyle(color: scheme.onSurface, fontWeight: FontWeight.w700),
-                            ),
-                            const TextSpan(text: ' than last month. That\'s about ₹1,800 — would you like to set a sub-budget?'),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: <Widget>[
-                          GestureDetector(
-                            onTap: () => Get.toNamed(AppRoutes.budgets),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                              decoration: BoxDecoration(
-                                color:        scheme.primary.withValues(alpha: 0.18),
-                                borderRadius: BorderRadius.circular(999),
-                                border: Border.all(color: scheme.primary.withValues(alpha: 0.3), width: 0.5),
-                              ),
-                              child: Text(
-                                'Set budget',
-                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: scheme.primary),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            'Dismiss',
-                            style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+          ],
+        );
+      }),
     );
   }
 }
 
 // ── Sub-widgets & helpers ─────────────────────────────────────────────────────
 
+class _AnalyticsLoadingSkeleton extends StatelessWidget {
+  const _AnalyticsLoadingSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return SAShimmer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: const <Widget>[
+          SAShimmerBox(height: 36, radius: 16),
+          SizedBox(height: 16),
+          SAShimmerBox(height: 250, radius: 24),
+          SizedBox(height: 20),
+          SAShimmerBox(height: 16, width: 160, radius: 8),
+          SizedBox(height: 10),
+          SAShimmerBox(height: 180, radius: 22),
+          SizedBox(height: 20),
+          SAShimmerBox(height: 16, width: 150, radius: 8),
+          SizedBox(height: 10),
+          SAShimmerBox(height: 220, radius: 22),
+        ],
+      ),
+    );
+  }
+}
+
 class _SectionTitle extends StatelessWidget {
   const _SectionTitle(this.title, {this.action, this.onAction});
-  final String   title;
-  final String?  action;
+  final String title;
+  final String? action;
   final VoidCallback? onAction;
 
   @override
@@ -383,10 +510,10 @@ class _SectionTitle extends StatelessWidget {
         Text(
           title.toUpperCase(),
           style: TextStyle(
-            fontSize:      12,
-            fontWeight:    FontWeight.w700,
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
             letterSpacing: 0.8,
-            color:         scheme.onSurfaceVariant,
+            color: scheme.onSurfaceVariant,
           ),
         ),
         const Spacer(),
@@ -395,8 +522,19 @@ class _SectionTitle extends StatelessWidget {
             onTap: onAction,
             child: Row(
               children: <Widget>[
-                Text(action!, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: scheme.primary)),
-                Icon(Icons.chevron_right_rounded, size: 14, color: scheme.primary),
+                Text(
+                  action!,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: scheme.primary,
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 14,
+                  color: scheme.primary,
+                ),
               ],
             ),
           ),
@@ -405,33 +543,16 @@ class _SectionTitle extends StatelessWidget {
   }
 }
 
-class _CatSlice {
-  const _CatSlice(this.name, this.color, this.pct);
-  final String name;
-  final Color  color;
-  final double pct;
-}
-
-class _MerchantRow {
-  const _MerchantRow(this.name, this.cat, this.txns, this.amount, this.icon, this.color);
-  final String   name;
-  final String   cat;
-  final int      txns;
-  final int      amount;
-  final IconData icon;
-  final Color    color;
-}
-
 class _DonutChart extends StatelessWidget {
   const _DonutChart({required this.slices, required this.centerLabel});
-  final List<_CatSlice> slices;
-  final String          centerLabel;
+  final List<AnalyticsCategorySlice> slices;
+  final String centerLabel;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return SizedBox(
-      width:  112,
+      width: 112,
       height: 112,
       child: CustomPaint(
         painter: _DonutPainter(slices: slices, scheme: scheme),
@@ -439,8 +560,22 @@ class _DonutChart extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Text('SPENT', style: TextStyle(fontSize: 8, fontWeight: FontWeight.w700, color: scheme.onSurfaceVariant)),
-              Text(centerLabel, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: scheme.onSurface)),
+              Text(
+                'SPENT',
+                style: TextStyle(
+                  fontSize: 8,
+                  fontWeight: FontWeight.w700,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+              Text(
+                centerLabel,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: scheme.onSurface,
+                ),
+              ),
             ],
           ),
         ),
@@ -451,14 +586,14 @@ class _DonutChart extends StatelessWidget {
 
 class _DonutPainter extends CustomPainter {
   const _DonutPainter({required this.slices, required this.scheme});
-  final List<_CatSlice> slices;
-  final ColorScheme     scheme;
+  final List<AnalyticsCategorySlice> slices;
+  final ColorScheme scheme;
 
   @override
   void paint(Canvas canvas, Size size) {
     final cx = size.width / 2;
     final cy = size.height / 2;
-    final r  = size.width * 0.42;
+    final r = size.width * 0.42;
     const stroke = 14.0;
 
     // Track
@@ -466,9 +601,9 @@ class _DonutPainter extends CustomPainter {
       Offset(cx, cy),
       r,
       Paint()
-        ..color       = Colors.white.withValues(alpha: 0.1)
+        ..color = Colors.white.withValues(alpha: 0.1)
         ..strokeWidth = stroke
-        ..style       = PaintingStyle.stroke,
+        ..style = PaintingStyle.stroke,
     );
 
     double offset = -math.pi / 2;
@@ -477,23 +612,27 @@ class _DonutPainter extends CustomPainter {
       // Glow
       canvas.drawArc(
         Rect.fromCircle(center: Offset(cx, cy), radius: r),
-        offset, sweep, false,
+        offset,
+        sweep,
+        false,
         Paint()
-          ..color       = s.color.withValues(alpha: 0.4)
+          ..color = s.color.withValues(alpha: 0.4)
           ..strokeWidth = stroke + 4
-          ..style       = PaintingStyle.stroke
-          ..strokeCap   = StrokeCap.butt
-          ..maskFilter  = const MaskFilter.blur(BlurStyle.normal, 4),
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.butt
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
       );
       // Solid
       canvas.drawArc(
         Rect.fromCircle(center: Offset(cx, cy), radius: r),
-        offset, sweep, false,
+        offset,
+        sweep,
+        false,
         Paint()
-          ..color       = s.color
+          ..color = s.color
           ..strokeWidth = stroke
-          ..style       = PaintingStyle.stroke
-          ..strokeCap   = StrokeCap.butt,
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.butt,
       );
       offset += sweep;
     }
@@ -506,7 +645,7 @@ class _DonutPainter extends CustomPainter {
 class _SparkAreaPainter extends CustomPainter {
   const _SparkAreaPainter({required this.data, required this.color});
   final List<double> data;
-  final Color        color;
+  final Color color;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -525,19 +664,23 @@ class _SparkAreaPainter extends CustomPainter {
       linePath.lineTo(pts[i].dx, pts[i].dy);
     }
 
-    final areaPath = Path()
-      ..addPath(linePath, Offset.zero)
-      ..lineTo(size.width, size.height)
-      ..lineTo(0, size.height)
-      ..close();
+    final areaPath =
+        Path()
+          ..addPath(linePath, Offset.zero)
+          ..lineTo(size.width, size.height)
+          ..lineTo(0, size.height)
+          ..close();
 
     canvas.drawPath(
       areaPath,
       Paint()
         ..shader = LinearGradient(
           begin: Alignment.topCenter,
-          end:   Alignment.bottomCenter,
-          colors: <Color>[color.withValues(alpha: 0.4), color.withValues(alpha: 0)],
+          end: Alignment.bottomCenter,
+          colors: <Color>[
+            color.withValues(alpha: 0.4),
+            color.withValues(alpha: 0),
+          ],
         ).createShader(Rect.fromLTWH(0, 0, size.width, size.height)),
     );
 
@@ -545,11 +688,12 @@ class _SparkAreaPainter extends CustomPainter {
     for (final frac in <double>[0.25, 0.5, 0.75]) {
       final y = size.height * frac;
       canvas.drawLine(
-        Offset(0, y), Offset(size.width, y),
+        Offset(0, y),
+        Offset(size.width, y),
         Paint()
-          ..color     = Colors.white.withValues(alpha: 0.12)
+          ..color = Colors.white.withValues(alpha: 0.12)
           ..strokeWidth = 0.5
-          ..style     = PaintingStyle.stroke,
+          ..style = PaintingStyle.stroke,
       );
     }
 
@@ -557,20 +701,20 @@ class _SparkAreaPainter extends CustomPainter {
     canvas.drawPath(
       linePath,
       Paint()
-        ..color       = color.withValues(alpha: 0.5)
+        ..color = color.withValues(alpha: 0.5)
         ..strokeWidth = 6
-        ..style       = PaintingStyle.stroke
-        ..strokeCap   = StrokeCap.round
-        ..maskFilter  = const MaskFilter.blur(BlurStyle.normal, 4),
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
     );
     canvas.drawPath(
       linePath,
       Paint()
-        ..color       = color
+        ..color = color
         ..strokeWidth = 2
-        ..style       = PaintingStyle.stroke
-        ..strokeCap   = StrokeCap.round
-        ..strokeJoin  = StrokeJoin.round,
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
     );
 
     // Highlight dot

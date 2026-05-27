@@ -8,36 +8,64 @@ import 'package:spend_analytics/shared/widgets/liquid_glass_surface.dart';
 import 'package:spend_analytics/shared/widgets/liquid_page_scaffold.dart';
 import 'package:spend_analytics/shared/widgets/sa_pill.dart';
 import 'package:spend_analytics/shared/widgets/sa_progress_bar.dart';
+import 'package:spend_analytics/shared/widgets/sa_shimmer.dart';
 import 'package:spend_analytics/shared/widgets/txn_row.dart';
 
 class DashboardScreen extends GetView<DashboardController> {
   const DashboardScreen({super.key});
-
-  static const double _budget = 40000;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
 
     return LiquidPageScaffold(
-      title:        'Spend Analytics',
-      activeRoute:  AppRoutes.dashboard,
+      title: 'Spend Analytics',
+      activeRoute: AppRoutes.dashboard,
       actions: <Widget>[
         BarActionButton(
-          icon:  Icons.notifications_outlined,
+          icon: Icons.notifications_outlined,
           onTap: () => Get.toNamed(AppRoutes.notifications),
         ),
         const SizedBox(width: 4),
         BarActionButton(
-          icon:  Icons.settings_outlined,
+          icon: Icons.settings_outlined,
           onTap: () => Get.toNamed(AppRoutes.settings),
         ),
       ],
       child: Obx(() {
-        final spend     = controller.monthlySpend.value;
-        final remaining = (_budget - spend).clamp(0.0, _budget);
-        final usage     = (_budget == 0 ? 0.0 : spend / _budget).clamp(0.0, 1.0);
-        final txns      = controller.transactions;
+        if (controller.isLoading.value) {
+          return const _DashboardLoadingSkeleton();
+        }
+        final now = DateTime.now();
+        final txns = controller.transactions;
+        final monthTxns = txns
+            .where(
+              (t) =>
+                  t.transactionDate.month == now.month &&
+                  t.transactionDate.year == now.year,
+            )
+            .toList(growable: false);
+        final spend = monthTxns
+            .where((t) => t.type == 'expense')
+            .fold<double>(0, (sum, t) => sum + t.amount);
+        final income = monthTxns
+            .where((t) => t.type == 'income')
+            .fold<double>(0, (sum, t) => sum + t.amount);
+        final budgetBase = income > 0 ? income : (spend > 0 ? spend : 1);
+        final remaining = (budgetBase - spend);
+        final usage = (spend / budgetBase).clamp(0.0, 1.0);
+        final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
+        final avgPerDay = now.day == 0 ? 0.0 : spend / now.day;
+        final byCategory = <String, double>{};
+        for (final txn in monthTxns.where((t) => t.type == 'expense')) {
+          byCategory.update(
+            txn.category,
+            (value) => value + txn.amount,
+            ifAbsent: () => txn.amount,
+          );
+        }
+        final topCategories = byCategory.entries.toList(growable: false)
+          ..sort((a, b) => b.value.compareTo(a.value));
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -49,21 +77,23 @@ class DashboardScreen extends GetView<DashboardController> {
                 child: Row(
                   children: <Widget>[
                     IconBox(
-                      icon:  Icons.cloud_off_rounded,
+                      icon: Icons.cloud_off_rounded,
                       color: scheme.error.withValues(alpha: 0.8),
-                      size:  36,
+                      size: 36,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          Text('Guest mode', style: Theme.of(context).textTheme.titleSmall),
+                          Text(
+                            'Guest mode',
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
                           Text(
                             'Sign in to sync to your other devices.',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: scheme.onSurfaceVariant,
-                            ),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: scheme.onSurfaceVariant),
                           ),
                         ],
                       ),
@@ -71,9 +101,15 @@ class DashboardScreen extends GetView<DashboardController> {
                     FilledButton(
                       onPressed: () => Get.offAllNamed(AppRoutes.login),
                       style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
                         shape: const StadiumBorder(),
-                        textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                        textStyle: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                       child: const Text('Sync now'),
                     ),
@@ -90,16 +126,16 @@ class DashboardScreen extends GetView<DashboardController> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    'Good morning ☕',
+                    '${_greetingForHour(now.hour)}',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: scheme.onSurfaceVariant,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    "You're tracking nicely.",
+                    "Here's your live overview.",
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color:      scheme.onSurface,
+                      color: scheme.onSurface,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -109,7 +145,7 @@ class DashboardScreen extends GetView<DashboardController> {
 
             // ── Hero balance card ─────────────────────────────────
             LiquidGlassSurface(
-              padding:      const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(20),
               borderRadius: const BorderRadius.all(Radius.circular(24)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -122,12 +158,12 @@ class DashboardScreen extends GetView<DashboardController> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Text(
-                            'MAY 2026 · SPENT',
+                            '${_monthLabel(now)} · SPENT',
                             style: TextStyle(
-                              fontSize:      10,
-                              fontWeight:    FontWeight.w700,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
                               letterSpacing: 1.1,
-                              color:         scheme.onSurfaceVariant,
+                              color: scheme.onSurfaceVariant,
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -137,11 +173,13 @@ class DashboardScreen extends GetView<DashboardController> {
                                 TextSpan(
                                   text: formatInr(spend),
                                   style: TextStyle(
-                                    fontSize:   38,
+                                    fontSize: 38,
                                     fontWeight: FontWeight.w800,
-                                    color:      scheme.onSurface,
+                                    color: scheme.onSurface,
                                     letterSpacing: -1.2,
-                                    fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],
+                                    fontFeatures: const <FontFeature>[
+                                      FontFeature.tabularFigures(),
+                                    ],
                                   ),
                                 ),
                               ],
@@ -150,32 +188,81 @@ class DashboardScreen extends GetView<DashboardController> {
                         ],
                       ),
                       SAPill(
-                        label: '12%',
-                        color: scheme.tertiary,
-                        icon:  Icons.arrow_downward_rounded,
+                        label: '${monthTxns.length} txns',
+                        color: scheme.primary,
+                        icon: Icons.receipt_long_rounded,
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
                   SAProgressBar(value: usage, color: scheme.primary, height: 8),
                   const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Text(
-                        '${(usage * 100).toStringAsFixed(0)}% of ${formatInr(_budget)} budget',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
-                      ),
-                      Text(
-                        '${formatInr(remaining)} left',
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color:      scheme.tertiary,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final leadText =
+                          income > 0
+                              ? '${(usage * 100).toStringAsFixed(0)}% of ${formatInr(income)} income'
+                              : 'Track income to compare against spend';
+                      final trailText =
+                          remaining >= 0
+                              ? '${formatInr(remaining)} left'
+                              : '${formatInr(remaining.abs())} over';
+
+                      if (constraints.maxWidth < 330) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              leadText,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(color: scheme.onSurfaceVariant),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              trailText,
+                              style: Theme.of(
+                                context,
+                              ).textTheme.titleSmall?.copyWith(
+                                color:
+                                    remaining >= 0
+                                        ? scheme.tertiary
+                                        : scheme.error,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+
+                      return Row(
+                        children: <Widget>[
+                          Expanded(
+                            child: Text(
+                              leadText,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(color: scheme.onSurfaceVariant),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            trailText,
+                            style: Theme.of(
+                              context,
+                            ).textTheme.titleSmall?.copyWith(
+                              color:
+                                  remaining >= 0
+                                      ? scheme.tertiary
+                                      : scheme.error,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ],
               ),
@@ -184,28 +271,40 @@ class DashboardScreen extends GetView<DashboardController> {
             const SizedBox(height: 14),
 
             // ── Quick stat row ────────────────────────────────────
-            Row(
-              children: <Widget>[
-                Expanded(
-                  child: _StatCard(
-                    icon:  Icons.trending_up_rounded,
-                    color: scheme.tertiary,
-                    label: 'Income',
-                    value: '₹85,000',
-                    sub:   'May',
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _StatCard(
-                    icon:  Icons.receipt_long_rounded,
-                    color: scheme.secondary,
-                    label: 'Avg/day',
-                    value: '₹820',
-                    sub:   'last 7d',
-                  ),
-                ),
-              ],
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 620;
+                final incomeCard = _StatCard(
+                  icon: Icons.trending_up_rounded,
+                  color: scheme.tertiary,
+                  label: 'Income',
+                  value: formatInr(income),
+                  sub: _monthLabel(now),
+                );
+                final avgCard = _StatCard(
+                  icon: Icons.receipt_long_rounded,
+                  color: scheme.secondary,
+                  label: 'Avg/day',
+                  value: formatInr(avgPerDay),
+                  sub: '${now.day}/$daysInMonth days',
+                );
+                if (isWide) {
+                  return Row(
+                    children: <Widget>[
+                      Expanded(child: incomeCard),
+                      const SizedBox(width: 12),
+                      Expanded(child: avgCard),
+                    ],
+                  );
+                }
+                return Column(
+                  children: <Widget>[
+                    incomeCard,
+                    const SizedBox(height: 12),
+                    avgCard,
+                  ],
+                );
+              },
             ),
 
             const SizedBox(height: 20),
@@ -213,81 +312,178 @@ class DashboardScreen extends GetView<DashboardController> {
             // ── Quick add ─────────────────────────────────────────
             _SectionHeader(title: 'Quick add'),
             const SizedBox(height: 10),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              child: Row(
-                children: <Widget>[
-                  _QuickAdd(icon: Icons.mic_rounded,       label: 'Voice',     color: scheme.primary,   onTap: () => Get.toNamed(AppRoutes.voiceInput)),
-                  const SizedBox(width: 10),
-                  _QuickAdd(icon: Icons.qr_code_scanner_rounded, label: 'Scan QR', color: scheme.secondary, onTap: () {}),
-                  const SizedBox(width: 10),
-                  _QuickAdd(icon: Icons.receipt_long_rounded, label: 'Receipt',  color: scheme.tertiary,  onTap: () {}),
-                  const SizedBox(width: 10),
-                  _QuickAdd(icon: Icons.repeat_rounded,    label: 'Recurring', color: const Color(0xFFFFB860), onTap: () => Get.toNamed(AppRoutes.recurring)),
-                ],
-              ),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final options = <Widget>[
+                  _QuickAdd(
+                    icon: Icons.edit_note_rounded,
+                    label: 'Manual',
+                    color: scheme.primary,
+                    onTap: () => Get.toNamed(AppRoutes.addTxn),
+                  ),
+                  _QuickAdd(
+                    icon: Icons.mic_rounded,
+                    label: 'Voice',
+                    color: scheme.secondary,
+                    onTap: () => Get.toNamed(AppRoutes.voiceReview),
+                  ),
+                  _QuickAdd(
+                    icon: Icons.category_rounded,
+                    label: 'Category',
+                    color: scheme.tertiary,
+                    onTap: () => Get.toNamed(AppRoutes.categories),
+                  ),
+                  _QuickAdd(
+                    icon: Icons.repeat_rounded,
+                    label: 'Recurring',
+                    color: const Color(0xFFFFB860),
+                    onTap: () => Get.toNamed(AppRoutes.recurring),
+                  ),
+                ];
+                if (constraints.maxWidth < 500) {
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    child: Row(
+                      children: options
+                          .map(
+                            (item) => Padding(
+                              padding: const EdgeInsets.only(right: 10),
+                              child: item,
+                            ),
+                          )
+                          .toList(growable: false),
+                    ),
+                  );
+                }
+                return Wrap(spacing: 10, runSpacing: 10, children: options);
+              },
             ),
 
             const SizedBox(height: 20),
 
             // ── Recent transactions ───────────────────────────────
-            _SectionHeader(title: 'Today', action: 'See all', onAction: () => Get.toNamed(AppRoutes.txns)),
+            _SectionHeader(
+              title: 'Today',
+              action: 'See all',
+              onAction: () => Get.toNamed(AppRoutes.txns),
+            ),
             const SizedBox(height: 10),
             LiquidGlassSurface(
               padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: txns.isEmpty
-                  ? Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: Text(
-                        'No transactions yet. Add one to start tracking.',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: scheme.onSurfaceVariant,
+              child:
+                  txns.isEmpty
+                      ? Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Text(
+                          'No transactions yet. Add one to start tracking.',
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: scheme.onSurfaceVariant),
                         ),
-                      ),
-                    )
-                  : Column(
-                      children: List<Widget>.generate(
-                        txns.take(4).length,
-                        (i) {
-                          final txn    = txns[i];
+                      )
+                      : Column(
+                        children: List<Widget>.generate(txns.take(4).length, (
+                          i,
+                        ) {
+                          final txn = txns[i];
                           final isLast = i == txns.take(4).length - 1;
                           return TxnRow(
                             data: TransactionRowData(
-                              merchant:  txn.category,
-                              category:  txn.category,
-                              icon:      _iconFor(txn.category),
+                              merchant: txn.category,
+                              category: txn.category,
+                              icon: _iconFor(txn.category),
                               iconColor: _colorFor(txn.category),
-                              amount:    txn.amount,
-                              time:      _formatTime(txn.transactionDate),
-                              isIncome:  txn.type == 'income',
-                              mode:      txn.paymentMode,
+                              amount: txn.amount,
+                              time: _formatTime(txn.transactionDate),
+                              isIncome: txn.type == 'income',
+                              mode: txn.paymentMode,
                             ),
                             showDivider: !isLast,
-                            onTap: () => Get.toNamed(
-                              AppRoutes.txnDetail,
-                              arguments: txn,
-                            ),
+                            onTap:
+                                () => Get.toNamed(
+                                  AppRoutes.txnDetail,
+                                  arguments: txn,
+                                ),
                           );
-                        },
+                        }),
                       ),
-                    ),
             ),
 
             const SizedBox(height: 20),
 
-            // ── Top budgets ───────────────────────────────────────
-            _SectionHeader(title: 'Top budgets', action: 'Manage', onAction: () => Get.toNamed(AppRoutes.budgets)),
+            // ── Top categories ────────────────────────────────────
+            _SectionHeader(
+              title: 'Top categories',
+              action: 'Manage budgets',
+              onAction: () => Get.toNamed(AppRoutes.budgets),
+            ),
             const SizedBox(height: 10),
             LiquidGlassSurface(
               padding: const EdgeInsets.all(16),
-              child: Column(
-                children: <_BudgetRow>[
-                  _BudgetRow(icon: Icons.coffee_rounded,         color: const Color(0xFFFF9F40), name: 'Food',      used: 2840, limit: 4000),
-                  _BudgetRow(icon: Icons.directions_car_rounded, color: const Color(0xFF5B9FFF), name: 'Transport', used: 1620, limit: 2500),
-                  _BudgetRow(icon: Icons.shopping_bag_rounded,   color: const Color(0xFFB0A0FF), name: 'Shopping',  used: 3450, limit: 3000, isLast: true),
-                ],
-              ),
+              child:
+                  topCategories.isEmpty
+                      ? Text(
+                        'No category spends yet for this month.',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      )
+                      : Column(
+                        children: List<Widget>.generate(
+                          topCategories.take(3).length,
+                          (i) {
+                            final item = topCategories[i];
+                            final isLast =
+                                i == topCategories.take(3).length - 1;
+                            return Container(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              decoration:
+                                  isLast
+                                      ? null
+                                      : BoxDecoration(
+                                        border: Border(
+                                          bottom: BorderSide(
+                                            color: scheme.outline.withValues(
+                                              alpha: 0.2,
+                                            ),
+                                            width: 0.5,
+                                          ),
+                                        ),
+                                      ),
+                              child: Row(
+                                children: <Widget>[
+                                  IconBox(
+                                    icon: _iconFor(item.key),
+                                    color: _colorFor(item.key),
+                                    size: 32,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      item.key,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.titleSmall?.copyWith(
+                                        color: scheme.onSurface,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    formatInr(item.value),
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium?.copyWith(
+                                      color: scheme.onSurfaceVariant,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
             ),
           ],
         );
@@ -297,33 +493,71 @@ class DashboardScreen extends GetView<DashboardController> {
 
   IconData _iconFor(String category) {
     switch (category.toLowerCase()) {
-      case 'food':      return Icons.coffee_rounded;
-      case 'transport': return Icons.directions_car_rounded;
-      case 'shopping':  return Icons.shopping_bag_rounded;
-      case 'health':    return Icons.favorite_rounded;
-      case 'bills':     return Icons.bolt_rounded;
-      case 'income':    return Icons.arrow_downward_rounded;
-      default:          return Icons.paid_rounded;
+      case 'food':
+        return Icons.coffee_rounded;
+      case 'transport':
+        return Icons.directions_car_rounded;
+      case 'shopping':
+        return Icons.shopping_bag_rounded;
+      case 'health':
+        return Icons.favorite_rounded;
+      case 'bills':
+        return Icons.bolt_rounded;
+      case 'income':
+        return Icons.arrow_downward_rounded;
+      default:
+        return Icons.paid_rounded;
     }
   }
 
   Color _colorFor(String category) {
     switch (category.toLowerCase()) {
-      case 'food':      return const Color(0xFFFF9F40);
-      case 'transport': return const Color(0xFF5B9FFF);
-      case 'shopping':  return const Color(0xFFB0A0FF);
-      case 'health':    return const Color(0xFFFF6B6B);
-      case 'bills':     return const Color(0xFFFFB860);
-      case 'income':    return const Color(0xFF3FDDA0);
-      default:          return const Color(0xFF5B9FFF);
+      case 'food':
+        return const Color(0xFFFF9F40);
+      case 'transport':
+        return const Color(0xFF5B9FFF);
+      case 'shopping':
+        return const Color(0xFFB0A0FF);
+      case 'health':
+        return const Color(0xFFFF6B6B);
+      case 'bills':
+        return const Color(0xFFFFB860);
+      case 'income':
+        return const Color(0xFF3FDDA0);
+      default:
+        return const Color(0xFF5B9FFF);
     }
   }
 
   String _formatTime(DateTime d) {
-    final h  = d.hour % 12 == 0 ? 12 : d.hour % 12;
-    final m  = d.minute.toString().padLeft(2, '0');
+    final h = d.hour % 12 == 0 ? 12 : d.hour % 12;
+    final m = d.minute.toString().padLeft(2, '0');
     final ap = d.hour < 12 ? 'AM' : 'PM';
     return '$h:$m $ap';
+  }
+
+  String _greetingForHour(int hour) {
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  }
+
+  String _monthLabel(DateTime d) {
+    const months = <String>[
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return '${months[d.month - 1]} ${d.year}';
   }
 }
 
@@ -331,8 +565,8 @@ class DashboardScreen extends GetView<DashboardController> {
 
 class _SectionHeader extends StatelessWidget {
   const _SectionHeader({required this.title, this.action, this.onAction});
-  final String   title;
-  final String?  action;
+  final String title;
+  final String? action;
   final VoidCallback? onAction;
 
   @override
@@ -343,10 +577,10 @@ class _SectionHeader extends StatelessWidget {
         Text(
           title.toUpperCase(),
           style: TextStyle(
-            fontSize:      12,
-            fontWeight:    FontWeight.w700,
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
             letterSpacing: 0.8,
-            color:         scheme.onSurfaceVariant,
+            color: scheme.onSurfaceVariant,
           ),
         ),
         const Spacer(),
@@ -358,12 +592,16 @@ class _SectionHeader extends StatelessWidget {
                 Text(
                   action!,
                   style: TextStyle(
-                    fontSize:   12,
+                    fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color:      scheme.primary,
+                    color: scheme.primary,
                   ),
                 ),
-                Icon(Icons.chevron_right_rounded, size: 14, color: scheme.primary),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 14,
+                  color: scheme.primary,
+                ),
               ],
             ),
           ),
@@ -381,10 +619,10 @@ class _StatCard extends StatelessWidget {
     required this.sub,
   });
   final IconData icon;
-  final Color    color;
-  final String   label;
-  final String   value;
-  final String   sub;
+  final Color color;
+  final String label;
+  final String value;
+  final String sub;
 
   @override
   Widget build(BuildContext context) {
@@ -398,28 +636,39 @@ class _StatCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               IconBox(icon: icon, color: color, size: 32),
-              Icon(Icons.chevron_right_rounded, size: 14, color: scheme.onSurfaceVariant),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 14,
+                color: scheme.onSurfaceVariant,
+              ),
             ],
           ),
           const SizedBox(height: 10),
           Text(
             label.toUpperCase(),
-            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1.1, color: scheme.onSurfaceVariant),
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.1,
+              color: scheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 2),
           Text(
             value,
             style: TextStyle(
-              fontSize:   22,
+              fontSize: 22,
               fontWeight: FontWeight.w800,
-              color:      scheme.onSurface,
+              color: scheme.onSurface,
               letterSpacing: -0.5,
               fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],
             ),
           ),
           Text(
             sub,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
           ),
         ],
       ),
@@ -434,9 +683,9 @@ class _QuickAdd extends StatelessWidget {
     required this.color,
     required this.onTap,
   });
-  final IconData     icon;
-  final String       label;
-  final Color        color;
+  final IconData icon;
+  final String label;
+  final Color color;
   final VoidCallback onTap;
 
   @override
@@ -455,9 +704,9 @@ class _QuickAdd extends StatelessWidget {
               Text(
                 label,
                 style: TextStyle(
-                  fontSize:   12,
+                  fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color:      scheme.onSurface,
+                  color: scheme.onSurface,
                 ),
               ),
             ],
@@ -468,74 +717,30 @@ class _QuickAdd extends StatelessWidget {
   }
 }
 
-class _BudgetRow extends StatelessWidget {
-  const _BudgetRow({
-    required this.icon,
-    required this.color,
-    required this.name,
-    required this.used,
-    required this.limit,
-    this.isLast = false,
-  });
-  final IconData icon;
-  final Color    color;
-  final String   name;
-  final double   used;
-  final double   limit;
-  final bool     isLast;
+class _DashboardLoadingSkeleton extends StatelessWidget {
+  const _DashboardLoadingSkeleton();
 
   @override
   Widget build(BuildContext context) {
-    final scheme  = Theme.of(context).colorScheme;
-    final isDark   = Theme.of(context).brightness == Brightness.dark;
-    final pct      = (used / limit).clamp(0.0, 1.1);
-    final barColor = pct >= 1.0 ? scheme.error : pct > 0.8 ? scheme.error.withValues(alpha: 0.7) : scheme.tertiary;
-
-    return Container(
-      decoration: isLast
-          ? null
-          : BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.08)
-                      : Colors.black.withValues(alpha: 0.06),
-                  width: 0.5,
-                ),
-              ),
-            ),
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        children: <Widget>[
-          IconBox(icon: icon, color: color, size: 32),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Text(
-                      name,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color:      scheme.onSurface,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      '${formatInr(used)} / ${formatInr(limit)}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: scheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                SAProgressBar(value: pct.clamp(0.0, 1.0), color: barColor),
-              ],
-            ),
-          ),
+    return SAShimmer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: const <Widget>[
+          SAShimmerBox(height: 20, width: 180, radius: 8),
+          SizedBox(height: 8),
+          SAShimmerBox(height: 32, width: 260, radius: 10),
+          SizedBox(height: 12),
+          SAShimmerBox(height: 210, radius: 24),
+          SizedBox(height: 14),
+          SAShimmerBox(height: 110, radius: 20),
+          SizedBox(height: 12),
+          SAShimmerBox(height: 110, radius: 20),
+          SizedBox(height: 20),
+          SAShimmerBox(height: 16, width: 120, radius: 8),
+          SizedBox(height: 10),
+          SAShimmerBox(height: 88, radius: 18),
+          SizedBox(height: 10),
+          SAShimmerBox(height: 88, radius: 18),
         ],
       ),
     );

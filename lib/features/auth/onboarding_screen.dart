@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:spend_analytics/core/routes/app_routes.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spend_analytics/shared/widgets/liquid_glass_background.dart';
 import 'package:spend_analytics/shared/widgets/liquid_glass_surface.dart';
 
@@ -17,26 +18,33 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   static const _slides = <_Slide>[
     _Slide(
-      icon:  Icons.account_balance_wallet_outlined,
+      icon: Icons.account_balance_wallet_outlined,
       title: 'Track every rupee',
-      body:  'Log expenses in seconds — by voice, by tap, or set them on autopilot.',
+      body:
+          'Log expenses in seconds — by voice, by tap, or set them on autopilot.',
     ),
     _Slide(
-      icon:  Icons.pie_chart_outline_rounded,
+      icon: Icons.pie_chart_outline_rounded,
       title: 'See where it goes',
-      body:  'Beautiful breakdowns by category, merchant, and time of day.',
+      body: 'Beautiful breakdowns by category, merchant, and time of day.',
     ),
     _Slide(
-      icon:  Icons.shield_outlined,
+      icon: Icons.shield_outlined,
       title: 'Yours alone',
-      body:  'Offline-first, end-to-end encrypted. Your money is your business.',
+      body: 'Offline-first, end-to-end encrypted. Your money is your business.',
     ),
   ];
 
-  void _next() {
+  Future<void> _finishOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('onboarding_seen', true);
+  }
+
+  void _next() async {
     if (_step < _slides.length - 1) {
       setState(() => _step++);
     } else {
+      await _finishOnboarding();
       Get.offAllNamed(AppRoutes.login);
     }
   }
@@ -44,7 +52,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final slide  = _slides[_step];
+    final slide = _slides[_step];
 
     final colors = <Color>[scheme.primary, scheme.secondary, scheme.tertiary];
     final accentColor = colors[_step];
@@ -61,7 +69,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 Align(
                   alignment: Alignment.topRight,
                   child: TextButton(
-                    onPressed: () => Get.offAllNamed(AppRoutes.login),
+                    onPressed: () async {
+                      await _finishOnboarding();
+                      Get.offAllNamed(AppRoutes.login);
+                    },
                     child: Text(
                       'Skip',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
@@ -77,7 +88,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 28),
                   child: LiquidGlassSurface(
-                    padding:      const EdgeInsets.all(32),
+                    padding: const EdgeInsets.all(32),
                     borderRadius: const BorderRadius.all(Radius.circular(28)),
                     child: AspectRatio(
                       aspectRatio: 1,
@@ -85,8 +96,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         child: AnimatedSwitcher(
                           duration: const Duration(milliseconds: 260),
                           child: _IllustrationBox(
-                            key:   ValueKey<int>(_step),
-                            icon:  slide.icon,
+                            key: ValueKey<int>(_step),
+                            icon: slide.icon,
                             color: accentColor,
                           ),
                         ),
@@ -103,15 +114,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 220),
                     child: Column(
-                      key:      ValueKey<int>(_step),
+                      key: ValueKey<int>(_step),
                       children: <Widget>[
                         Text(
                           slide.title,
                           textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                            color:         scheme.onSurface,
-                            fontWeight:    FontWeight.w800,
-                            fontSize:      30,
+                          style: Theme.of(
+                            context,
+                          ).textTheme.headlineLarge?.copyWith(
+                            color: scheme.onSurface,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 30,
                             letterSpacing: -0.8,
                           ),
                         ),
@@ -119,9 +132,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         Text(
                           slide.body,
                           textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color:      scheme.onSurfaceVariant,
-                            height:     1.5,
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodyLarge?.copyWith(
+                            color: scheme.onSurfaceVariant,
+                            height: 1.5,
                           ),
                         ),
                       ],
@@ -138,13 +153,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     return AnimatedContainer(
                       duration: const Duration(milliseconds: 220),
                       margin: const EdgeInsets.symmetric(horizontal: 3),
-                      width:  i == _step ? 24 : 8,
+                      width: i == _step ? 24 : 8,
                       height: 8,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(999),
-                        color: i == _step
-                            ? scheme.primary
-                            : scheme.onSurfaceVariant.withValues(alpha: 0.3),
+                        color:
+                            i == _step
+                                ? scheme.primary
+                                : scheme.onSurfaceVariant.withValues(
+                                  alpha: 0.3,
+                                ),
                       ),
                     );
                   }),
@@ -164,7 +182,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     child: Text(
                       _step == _slides.length - 1 ? "Let's go" : 'Continue',
                       style: const TextStyle(
-                        fontSize:   16,
+                        fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -182,38 +200,34 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 }
 
 class _Slide {
-  const _Slide({
-    required this.icon,
-    required this.title,
-    required this.body,
-  });
+  const _Slide({required this.icon, required this.title, required this.body});
   final IconData icon;
-  final String   title;
-  final String   body;
+  final String title;
+  final String body;
 }
 
 class _IllustrationBox extends StatelessWidget {
   const _IllustrationBox({super.key, required this.icon, required this.color});
   final IconData icon;
-  final Color    color;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width:  120,
+      width: 120,
       height: 120,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          begin:  Alignment.topLeft,
-          end:    Alignment.bottomRight,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
           colors: <Color>[color, color.withValues(alpha: 0.6)],
         ),
         borderRadius: BorderRadius.circular(32),
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color:      color.withValues(alpha: 0.5),
+            color: color.withValues(alpha: 0.5),
             blurRadius: 48,
-            offset:     const Offset(0, 16),
+            offset: const Offset(0, 16),
           ),
         ],
       ),

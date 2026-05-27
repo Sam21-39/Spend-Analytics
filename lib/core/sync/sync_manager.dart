@@ -61,6 +61,18 @@ class SyncManager extends GetxService {
     await flushQueueIfPossible();
   }
 
+  Future<void> enqueueTransactionDelete({
+    required String transactionId,
+    required String userId,
+  }) async {
+    await _db.enqueueTransactionDelete(
+      transactionId: transactionId,
+      userId: userId,
+    );
+    await _refreshPendingCount();
+    await flushQueueIfPossible();
+  }
+
   Future<void> flushQueueIfPossible() async {
     if (isSyncing.value || !isOnline.value) {
       return;
@@ -72,7 +84,7 @@ class SyncManager extends GetxService {
     isSyncing.value = true;
     try {
       final userId = _supabase.currentUserId!;
-      final queue = await _db.pendingSyncQueue(limit: 100);
+      final queue = await _db.pendingSyncQueue(userId: userId, limit: 100);
 
       for (final item in queue) {
         try {
@@ -99,32 +111,74 @@ class SyncManager extends GetxService {
   }
 
   Future<void> _syncOneItem(SyncQueueItem item, String userId) async {
-    if (item.entityType != 'transaction' || item.operation != 'upsert') {
+    if (item.entityType != 'transaction') {
       throw UnsupportedError(
         'Unsupported sync item: ${item.entityType}/${item.operation}',
       );
     }
 
-    final payload = jsonDecode(item.payloadJson) as Map<String, dynamic>;
-    final txn = TransactionModel.fromJson(payload);
-    await _supabase.client.from('transactions').upsert(<String, dynamic>{
-      'id': txn.id,
-      'user_id': userId,
-      'amount': txn.amount,
-      'type': txn.type,
-      'category_id': null,
-      'category_name': txn.category,
-      'payment_mode': txn.paymentMode,
-      'note': txn.note,
-      'tags': txn.tags,
-      'transaction_date':
-          txn.transactionDate.toIso8601String().split('T').first,
-      'updated_at': txn.updatedAt.toUtc().toIso8601String(),
-    });
+    if (item.operation == 'upsert') {
+      final payload = jsonDecode(item.payloadJson) as Map<String, dynamic>;
+      final txn = TransactionModel.fromJson(payload);
+      final normalizedPaymentMode = _normalizePaymentMode(txn.paymentMode);
+      await _supabase.client.from('transactions').upsert(<String, dynamic>{
+        'id': txn.id,
+        'user_id': userId,
+        'amount': txn.amount,
+        'type': txn.type,
+        'category_id': null,
+        'category_name': txn.category,
+        'payment_mode': normalizedPaymentMode,
+        'note': txn.note,
+        'tags': txn.tags,
+        'transaction_date':
+            txn.transactionDate.toIso8601String().split('T').first,
+        'updated_at': txn.updatedAt.toUtc().toIso8601String(),
+      });
+      return;
+    }
+
+    if (item.operation == 'delete') {
+      final payload = jsonDecode(item.payloadJson) as Map<String, dynamic>;
+      final txnId = '${payload['id'] ?? item.entityId}'.trim();
+      if (txnId.isEmpty) {
+        throw StateError('Missing transaction id for delete operation');
+      }
+      await _supabase.client
+          .from('transactions')
+          .delete()
+          .eq('id', txnId)
+          .eq('user_id', userId);
+      return;
+    }
+
+    throw UnsupportedError(
+      'Unsupported sync item: ${item.entityType}/${item.operation}',
+    );
+  }
+
+  String _normalizePaymentMode(String value) {
+    final normalized = value.trim().toLowerCase();
+    switch (normalized) {
+      case 'cash':
+      case 'upi':
+      case 'card':
+      case 'netbanking':
+      case 'other':
+        return normalized;
+      default:
+        return 'other';
+    }
   }
 
   Future<void> _refreshPendingCount() async {
-    pendingSyncCount.value = await _db.syncQueueCount();
+    if (!_supabase.isEnabled || !_supabase.isAuthenticated) {
+      pendingSyncCount.value = 0;
+      return;
+    }
+    pendingSyncCount.value = await _db.syncQueueCountForUser(
+      _supabase.currentUserId!,
+    );
   }
 
   @override

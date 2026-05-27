@@ -19,7 +19,7 @@ class _LogoutConfirmScreenState extends State<LogoutConfirmScreen> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final isDark  = Theme.of(context).brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -27,26 +27,24 @@ class _LogoutConfirmScreenState extends State<LogoutConfirmScreen> {
         children: <Widget>[
           const LiquidGlassBackground(),
           // Blurred scrim
-          Container(
-            color: Colors.black.withValues(alpha: 0.45),
-          ),
+          Container(color: Colors.black.withValues(alpha: 0.45)),
           SafeArea(
             child: Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: LiquidGlassSurface(
-                  padding:      const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(24),
                   borderRadius: const BorderRadius.all(Radius.circular(28)),
-                  fillOpacity:  isDark ? 0.22 : 0.82,
+                  fillOpacity: isDark ? 0.22 : 0.82,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       // Icon
                       Container(
-                        width:  60,
+                        width: 60,
                         height: 60,
                         decoration: BoxDecoration(
-                          color:        scheme.error.withValues(alpha: 0.15),
+                          color: scheme.error.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(18),
                           border: Border.all(
                             color: scheme.error.withValues(alpha: 0.3),
@@ -55,7 +53,7 @@ class _LogoutConfirmScreenState extends State<LogoutConfirmScreen> {
                         alignment: Alignment.center,
                         child: Icon(
                           Icons.logout_rounded,
-                          size:  28,
+                          size: 28,
                           color: scheme.error,
                         ),
                       ),
@@ -65,8 +63,10 @@ class _LogoutConfirmScreenState extends State<LogoutConfirmScreen> {
                       Text(
                         'Sign out of Spend Analytics?',
                         textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          color:      scheme.onSurface,
+                        style: Theme.of(
+                          context,
+                        ).textTheme.headlineSmall?.copyWith(
+                          color: scheme.onSurface,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -75,7 +75,7 @@ class _LogoutConfirmScreenState extends State<LogoutConfirmScreen> {
                         'Local data stays on this device. Cloud-synced data is safe — sign back in to see it.',
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color:  scheme.onSurfaceVariant,
+                          color: scheme.onSurfaceVariant,
                           height: 1.5,
                         ),
                       ),
@@ -120,31 +120,37 @@ class _LogoutConfirmScreenState extends State<LogoutConfirmScreen> {
                           children: <Widget>[
                             AnimatedContainer(
                               duration: const Duration(milliseconds: 160),
-                              width:  18,
+                              width: 18,
                               height: 18,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(4),
-                                color:  _clearLocal ? scheme.primary : Colors.transparent,
+                                color:
+                                    _clearLocal
+                                        ? scheme.primary
+                                        : Colors.transparent,
                                 border: Border.all(
-                                  color: _clearLocal ? scheme.primary : scheme.outline,
+                                  color:
+                                      _clearLocal
+                                          ? scheme.primary
+                                          : scheme.outline,
                                   width: 1.5,
                                 ),
                               ),
                               alignment: Alignment.center,
-                              child: _clearLocal
-                                  ? const Icon(
-                                      Icons.check_rounded,
-                                      size:  12,
-                                      color: Colors.white,
-                                    )
-                                  : null,
+                              child:
+                                  _clearLocal
+                                      ? const Icon(
+                                        Icons.check_rounded,
+                                        size: 12,
+                                        color: Colors.white,
+                                      )
+                                      : null,
                             ),
                             const SizedBox(width: 8),
                             Text(
                               'Also clear local data',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: scheme.onSurfaceVariant,
-                              ),
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(color: scheme.onSurfaceVariant),
                             ),
                           ],
                         ),
@@ -163,7 +169,7 @@ class _LogoutConfirmScreenState extends State<LogoutConfirmScreen> {
   Future<void> _signOut() async {
     try {
       final auth = Get.find<AuthController>();
-      await auth.signOut();
+      await auth.signOut(clearLocalData: _clearLocal);
     } catch (_) {
       // Fallback — navigate to login regardless
     }

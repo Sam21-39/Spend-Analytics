@@ -12,6 +12,7 @@ class BudgetController extends GetxController {
 
   final categoryBudgets = <String, double>{}.obs;
   final categorySpend = <String, double>{}.obs;
+  final isLoading = true.obs;
   final isSyncing = false.obs;
 
   StreamSubscription<List<Budget>>? _budgetSub;
@@ -20,6 +21,8 @@ class BudgetController extends GetxController {
   late final String _userId;
   late final int _month;
   late final int _year;
+  bool _budgetsLoaded = false;
+  bool _spendLoaded = false;
 
   @override
   void onInit() {
@@ -32,22 +35,43 @@ class BudgetController extends GetxController {
   }
 
   Future<void> _bootstrap() async {
-    await _seedDefaultBudgetsIfNeeded();
-    await _syncWithCloud();
+    try {
+      await _seedDefaultBudgetsIfNeeded();
+      await _syncWithCloud();
 
-    _budgetSub = _db
-        .watchBudgetsForMonth(userId: _userId, month: _month, year: _year)
-        .listen((rows) {
-          categoryBudgets.assignAll(<String, double>{
-            for (final row in rows) row.category: row.limitAmount,
+      _budgetSub = _db
+          .watchBudgetsForMonth(userId: _userId, month: _month, year: _year)
+          .listen((rows) {
+            categoryBudgets.assignAll(<String, double>{
+              for (final row in rows) row.category: row.limitAmount,
+            });
+            _budgetsLoaded = true;
+            _updateLoading();
           });
-        });
 
-    _spendSub = _db
-        .watchCategorySpendByMonth(userId: _userId, month: _month, year: _year)
-        .listen((totals) {
-          categorySpend.assignAll(totals);
-        });
+      _spendSub = _db
+          .watchCategorySpendByMonth(
+            userId: _userId,
+            month: _month,
+            year: _year,
+          )
+          .listen((totals) {
+            categorySpend.assignAll(totals);
+            _spendLoaded = true;
+            _updateLoading();
+          });
+    } catch (error, stack) {
+      await _crashlytics.recordError(
+        error,
+        stack,
+        customKeys: const <String, Object?>{'action': 'budget_bootstrap'},
+      );
+      isLoading.value = false;
+    }
+  }
+
+  void _updateLoading() {
+    isLoading.value = !(_budgetsLoaded && _spendLoaded);
   }
 
   Future<void> _seedDefaultBudgetsIfNeeded() async {

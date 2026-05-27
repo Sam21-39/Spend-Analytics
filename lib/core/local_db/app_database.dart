@@ -129,20 +129,24 @@ class AppDatabase extends _$AppDatabase {
     return this;
   }
 
-  Future<List<TransactionModel>> allTransactions() async {
+  Future<List<TransactionModel>> allTransactionsForUser(String userId) async {
     final rows =
         await (select(transactions)
-          ..orderBy(<OrderClauseGenerator<$TransactionsTable>>[
-            (t) => OrderingTerm.desc(t.transactionDate),
-          ])).get();
+              ..where((t) => t.userId.equals(userId))
+              ..orderBy(<OrderClauseGenerator<$TransactionsTable>>[
+                (t) => OrderingTerm.desc(t.transactionDate),
+              ]))
+            .get();
     return rows.map(_mapTransaction).toList(growable: false);
   }
 
-  Stream<List<TransactionModel>> watchAllTransactions() {
-    final query = select(transactions)
-      ..orderBy(<OrderClauseGenerator<$TransactionsTable>>[
-        (t) => OrderingTerm.desc(t.transactionDate),
-      ]);
+  Stream<List<TransactionModel>> watchTransactionsForUser(String userId) {
+    final query =
+        select(transactions)
+          ..where((t) => t.userId.equals(userId))
+          ..orderBy(<OrderClauseGenerator<$TransactionsTable>>[
+            (t) => OrderingTerm.desc(t.transactionDate),
+          ]);
     return query.watch().map(
       (rows) => rows.map(_mapTransaction).toList(growable: false),
     );
@@ -243,7 +247,8 @@ class AppDatabase extends _$AppDatabase {
         await (select(syncQueueItems)..where((t) {
           return t.entityType.equals('transaction') &
               t.operation.equals('upsert') &
-              t.entityId.equals(txn.id);
+              t.entityId.equals(txn.id) &
+              t.userId.equals(txn.userId);
         })).getSingleOrNull();
 
     final payload = jsonEncode(txn.toJson());
@@ -275,8 +280,59 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
-  Future<List<SyncQueueItem>> pendingSyncQueue({int limit = 100}) async {
+  Future<void> enqueueTransactionDelete({
+    required String transactionId,
+    required String userId,
+  }) async {
+    final now = DateTime.now().toUtc();
+    final existing =
+        await (select(syncQueueItems)..where((t) {
+          return t.entityType.equals('transaction') &
+              t.operation.equals('delete') &
+              t.entityId.equals(transactionId) &
+              t.userId.equals(userId);
+        })).getSingleOrNull();
+
+    final payload = jsonEncode(<String, dynamic>{
+      'id': transactionId,
+      'userId': userId,
+      'updatedAt': now.toIso8601String(),
+    });
+
+    if (existing == null) {
+      await into(syncQueueItems).insert(
+        SyncQueueItemsCompanion.insert(
+          entityType: 'transaction',
+          operation: 'delete',
+          entityId: transactionId,
+          payloadJson: payload,
+          userId: Value<String?>(userId),
+          createdAt: now,
+          updatedAt: now,
+          retryCount: const Value<int>(0),
+          lastError: const Value<String?>(null),
+        ),
+      );
+      return;
+    }
+
+    await (update(syncQueueItems)
+      ..where((t) => t.id.equals(existing.id))).write(
+      SyncQueueItemsCompanion(
+        payloadJson: Value<String>(payload),
+        userId: Value<String?>(userId),
+        updatedAt: Value<DateTime>(now),
+        lastError: const Value<String?>(null),
+      ),
+    );
+  }
+
+  Future<List<SyncQueueItem>> pendingSyncQueue({
+    required String userId,
+    int limit = 100,
+  }) async {
     return (select(syncQueueItems)
+          ..where((t) => t.userId.equals(userId))
           ..orderBy(<OrderClauseGenerator<$SyncQueueItemsTable>>[
             (t) => OrderingTerm.asc(t.createdAt),
           ])
@@ -304,12 +360,26 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
-  Future<int> syncQueueCount() async {
+  Future<int> syncQueueCountForUser(String userId) async {
     final rowCount = syncQueueItems.id.count();
-    final query = selectOnly(syncQueueItems)
-      ..addColumns(<Expression<int>>[rowCount]);
+    final query =
+        selectOnly(syncQueueItems)
+          ..where(syncQueueItems.userId.equals(userId))
+          ..addColumns(<Expression<int>>[rowCount]);
     final row = await query.getSingle();
     return row.read(rowCount) ?? 0;
+  }
+
+  Future<void> clearUserData(String userId) async {
+    await transaction(() async {
+      await (delete(transactions)..where((t) => t.userId.equals(userId))).go();
+      await (delete(budgets)..where((t) => t.userId.equals(userId))).go();
+      await (delete(userRules)..where((t) => t.userId.equals(userId))).go();
+      await (delete(notificationEvents)
+        ..where((t) => t.userId.equals(userId) | t.userId.isNull())).go();
+      await (delete(syncQueueItems)
+        ..where((t) => t.userId.equals(userId))).go();
+    });
   }
 
   Future<void> saveBudget({

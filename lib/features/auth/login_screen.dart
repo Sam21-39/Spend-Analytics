@@ -4,6 +4,7 @@ import 'package:spend_analytics/features/auth/auth_controller.dart';
 import 'package:spend_analytics/shared/widgets/liquid_glass_background.dart';
 import 'package:spend_analytics/shared/widgets/liquid_glass_surface.dart';
 import 'package:spend_analytics/shared/widgets/sa_pill.dart';
+import 'package:spend_analytics/shared/widgets/sa_shimmer.dart';
 
 class LoginScreen extends GetView<AuthController> {
   const LoginScreen({super.key});
@@ -11,7 +12,7 @@ class LoginScreen extends GetView<AuthController> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final isDark  = Theme.of(context).brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -36,10 +37,12 @@ class LoginScreen extends GetView<AuthController> {
                         Text(
                           'Welcome back',
                           textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                            color:         scheme.onSurface,
-                            fontWeight:    FontWeight.w800,
-                            fontSize:      32,
+                          style: Theme.of(
+                            context,
+                          ).textTheme.headlineLarge?.copyWith(
+                            color: scheme.onSurface,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 32,
                             letterSpacing: -0.8,
                           ),
                         ),
@@ -47,37 +50,38 @@ class LoginScreen extends GetView<AuthController> {
                         Text(
                           'Sign in to sync across devices,\nor skip ahead in guest mode.',
                           textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: scheme.onSurfaceVariant,
-                          ),
+                          style: Theme.of(context).textTheme.bodyLarge
+                              ?.copyWith(color: scheme.onSurfaceVariant),
                         ),
 
                         const SizedBox(height: 32),
 
                         // Hero preview card
                         LiquidGlassSurface(
-                          padding:      const EdgeInsets.all(24),
-                          borderRadius: const BorderRadius.all(Radius.circular(28)),
-                          fillOpacity:  isDark ? 0.10 : 0.66,
+                          padding: const EdgeInsets.all(24),
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(28),
+                          ),
+                          fillOpacity: isDark ? 0.10 : 0.66,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Text(
                                 'THIS MONTH',
                                 style: TextStyle(
-                                  fontSize:      10,
-                                  fontWeight:    FontWeight.w700,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
                                   letterSpacing: 1.1,
-                                  color:         scheme.onSurfaceVariant,
+                                  color: scheme.onSurfaceVariant,
                                 ),
                               ),
                               const SizedBox(height: 6),
                               Text(
                                 '₹24,580',
                                 style: TextStyle(
-                                  fontSize:      36,
-                                  fontWeight:    FontWeight.w800,
-                                  color:         scheme.onSurface,
+                                  fontSize: 36,
+                                  fontWeight: FontWeight.w800,
+                                  color: scheme.onSurface,
                                   letterSpacing: -0.8,
                                   fontFeatures: const <FontFeature>[
                                     FontFeature.tabularFigures(),
@@ -90,19 +94,23 @@ class LoginScreen extends GetView<AuthController> {
                                   SAPill(
                                     label: '12% vs Apr',
                                     color: scheme.tertiary,
-                                    icon:  Icons.arrow_downward_rounded,
+                                    icon: Icons.arrow_downward_rounded,
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
                                     '· 47 transactions',
-                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium?.copyWith(
                                       color: scheme.onSurfaceVariant,
                                     ),
                                   ),
                                 ],
                               ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
                                 child: Divider(
                                   color: scheme.outline.withValues(alpha: 0.4),
                                   height: 1,
@@ -112,13 +120,15 @@ class LoginScreen extends GetView<AuthController> {
                                 children: <Widget>[
                                   Icon(
                                     Icons.shield_outlined,
-                                    size:  16,
+                                    size: 16,
                                     color: scheme.tertiary,
                                   ),
                                   const SizedBox(width: 10),
                                   Text(
                                     'Encrypted on your device first',
-                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium?.copyWith(
                                       color: scheme.onSurfaceVariant,
                                     ),
                                   ),
@@ -139,47 +149,68 @@ class LoginScreen extends GetView<AuthController> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
                       // Google sign-in
-                      Obx(
-                        () => FilledButton.icon(
-                          onPressed: controller.isLoading.value
-                              ? null
-                              : controller.signInWithGoogle,
-                          icon: _GoogleG(),
-                          label: const Text('Continue with Google'),
+                      Obx(() {
+                        final loading = controller.isLoading.value;
+                        return FilledButton.icon(
+                          onPressed:
+                              loading ? null : controller.signInWithGoogle,
+                          icon:
+                              loading ? const SizedBox(width: 22) : _GoogleG(),
+                          label:
+                              loading
+                                  ? const SAShimmer(
+                                    child: SAShimmerBox(
+                                      width: 140,
+                                      height: 14,
+                                      radius: 8,
+                                    ),
+                                  )
+                                  : const Text('Continue with Google'),
                           style: FilledButton.styleFrom(
-                            backgroundColor: isDark ? Colors.white : Colors.black,
-                            foregroundColor: isDark ? Colors.black : Colors.white,
+                            backgroundColor:
+                                isDark ? Colors.white : Colors.black,
+                            foregroundColor:
+                                isDark ? Colors.black : Colors.white,
                             minimumSize: const Size.fromHeight(54),
                             shape: const StadiumBorder(),
                             textStyle: const TextStyle(
-                              fontSize:   16,
+                              fontSize: 16,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                        ),
-                      ),
+                        );
+                      }),
 
                       const SizedBox(height: 12),
 
                       // Guest mode
-                      Obx(
-                        () => TextButton(
-                          onPressed: controller.isLoading.value
-                              ? null
-                              : controller.continueAsGuest,
+                      Obx(() {
+                        final loading = controller.isLoading.value;
+                        return TextButton(
+                          onPressed:
+                              loading ? null : controller.continueAsGuest,
                           style: TextButton.styleFrom(
                             minimumSize: const Size.fromHeight(50),
                           ),
-                          child: Text(
-                            'Continue as guest →',
-                            style: TextStyle(
-                              color:      scheme.onSurfaceVariant,
-                              fontSize:   15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
+                          child:
+                              loading
+                                  ? const SAShimmer(
+                                    child: SAShimmerBox(
+                                      width: 130,
+                                      height: 14,
+                                      radius: 8,
+                                    ),
+                                  )
+                                  : Text(
+                                    'Continue as guest →',
+                                    style: TextStyle(
+                                      color: scheme.onSurfaceVariant,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                        );
+                      }),
 
                       const SizedBox(height: 6),
 
@@ -204,33 +235,33 @@ class LoginScreen extends GetView<AuthController> {
 
 class _LogoMark extends StatelessWidget {
   const _LogoMark({required this.size, required this.scheme});
-  final double      size;
+  final double size;
   final ColorScheme scheme;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width:  size,
+      width: size,
       height: size,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          begin:  Alignment.topLeft,
-          end:    Alignment.bottomRight,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
           colors: <Color>[scheme.primary, scheme.secondary],
         ),
         borderRadius: BorderRadius.circular(size * 0.28),
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color:      scheme.primary.withValues(alpha: 0.4),
+            color: scheme.primary.withValues(alpha: 0.4),
             blurRadius: 24,
-            offset:     const Offset(0, 8),
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       alignment: Alignment.center,
       child: Icon(
         Icons.bar_chart_rounded,
-        size:  size * 0.55,
+        size: size * 0.55,
         color: Colors.white,
       ),
     );
