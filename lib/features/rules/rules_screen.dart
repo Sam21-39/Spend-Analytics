@@ -295,12 +295,14 @@ class RulesScreen extends GetView<RulesController> {
                 return _SuggestedCard(
                   rule: s,
                   onAdd: () async {
-                    await controller.addDailyLimitRule();
-                    Get.snackbar(
-                      'Rule added',
-                      '${s.label} rule is now active.',
-                      duration: const Duration(seconds: 2),
-                    );
+                    final added = await controller.addSuggestedRule(s.type);
+                    if (added) {
+                      Get.snackbar(
+                        'Rule added',
+                        '${s.label} rule is now active.',
+                        duration: const Duration(seconds: 2),
+                      );
+                    }
                   },
                 );
               },

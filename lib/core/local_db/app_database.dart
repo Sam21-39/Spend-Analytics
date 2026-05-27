@@ -505,6 +505,10 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
+  Future<void> deleteRuleById(String id) async {
+    await (delete(userRules)..where((t) => t.id.equals(id))).go();
+  }
+
   Future<void> seedDefaultRules(String userId) async {
     final existingCountExp = userRules.id.count();
     final row =

@@ -198,6 +198,21 @@ class SupabaseService extends GetxService {
         .toList(growable: false);
   }
 
+  Future<void> deleteRule(String id) async {
+    if (!isEnabled || !isAuthenticated) {
+      return;
+    }
+    if (!Uuid.isValidUUID(fromString: id)) {
+      return;
+    }
+
+    await client
+        .from('user_rules')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', currentUserId!);
+  }
+
   Map<String, dynamic> _mapOf(Object? value) {
     if (value is Map<String, dynamic>) {
       return value;

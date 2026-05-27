@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:spend_analytics/features/auth/auth_controller.dart';
@@ -11,8 +13,9 @@ class LoginScreen extends GetView<AuthController> {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -22,117 +25,94 @@ class LoginScreen extends GetView<AuthController> {
           SafeArea(
             child: Column(
               children: <Widget>[
-                // ── Scrollable hero ───────────────────────────────
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(24, 40, 24, 0),
                     physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(20, 26, 20, 0),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: <Widget>[
-                        // Logo
-                        _LogoMark(size: 72, scheme: scheme),
-                        const SizedBox(height: 20),
-
-                        // Welcome text
+                        Align(child: _LogoMark(size: 78, scheme: scheme)),
+                        const SizedBox(height: 18),
                         Text(
-                          'Welcome back',
+                          'Track smarter.\nSpend calmer.',
                           textAlign: TextAlign.center,
-                          style: Theme.of(
-                            context,
-                          ).textTheme.headlineLarge?.copyWith(
+                          style: theme.textTheme.headlineLarge?.copyWith(
                             color: scheme.onSurface,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 32,
-                            letterSpacing: -0.8,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -1.0,
+                            height: 1.04,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 10),
                         Text(
-                          'Sign in to sync across devices,\nor skip ahead in guest mode.',
+                          'One place for your expenses, budgets, and insights.\nPrivate first. Sync when you choose.',
                           textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodyLarge
-                              ?.copyWith(color: scheme.onSurfaceVariant),
-                        ),
-
-                        const SizedBox(height: 32),
-
-                        // Hero preview card
-                        LiquidGlassSurface(
-                          padding: const EdgeInsets.all(24),
-                          borderRadius: const BorderRadius.all(
-                            Radius.circular(28),
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: scheme.onSurfaceVariant,
+                            height: 1.35,
                           ),
-                          fillOpacity: isDark ? 0.10 : 0.66,
+                        ),
+                        const SizedBox(height: 22),
+                        LiquidGlassSurface(
+                          padding: const EdgeInsets.all(18),
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(26),
+                          ),
+                          fillOpacity: isDark ? 0.1 : 0.68,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
-                              Text(
-                                'THIS MONTH',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 1.1,
-                                  color: scheme.onSurfaceVariant,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                '₹24,580',
-                                style: TextStyle(
-                                  fontSize: 36,
-                                  fontWeight: FontWeight.w800,
-                                  color: scheme.onSurface,
-                                  letterSpacing: -0.8,
-                                  fontFeatures: const <FontFeature>[
-                                    FontFeature.tabularFigures(),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 10),
                               Row(
                                 children: <Widget>[
                                   SAPill(
-                                    label: '12% vs Apr',
-                                    color: scheme.tertiary,
-                                    icon: Icons.arrow_downward_rounded,
+                                    label: 'Offline-first',
+                                    color: scheme.secondary,
+                                    icon: Icons.shield_rounded,
                                   ),
                                   const SizedBox(width: 8),
-                                  Text(
-                                    '· 47 transactions',
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.bodyMedium?.copyWith(
-                                      color: scheme.onSurfaceVariant,
-                                    ),
+                                  SAPill(
+                                    label: 'Realtime sync',
+                                    color: scheme.tertiary,
+                                    icon: Icons.cloud_done_rounded,
                                   ),
                                 ],
                               ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                ),
-                                child: Divider(
-                                  color: scheme.outline.withValues(alpha: 0.4),
-                                  height: 1,
-                                ),
-                              ),
+                              const SizedBox(height: 14),
                               Row(
                                 children: <Widget>[
-                                  Icon(
-                                    Icons.shield_outlined,
-                                    size: 16,
-                                    color: scheme.tertiary,
+                                  Expanded(
+                                    child: _BrandStat(
+                                      label: 'Monthly spend',
+                                      value: '₹24,580',
+                                      color: scheme.onSurface,
+                                    ),
                                   ),
-                                  const SizedBox(width: 10),
-                                  Text(
-                                    'Encrypted on your device first',
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.bodyMedium?.copyWith(
-                                      color: scheme.onSurfaceVariant,
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: _BrandStat(
+                                      label: 'Transactions',
+                                      value: '47',
+                                      color: scheme.primary,
                                     ),
                                   ),
                                 ],
+                              ),
+                              const SizedBox(height: 12),
+                              Divider(
+                                height: 1,
+                                color: scheme.outline.withValues(alpha: 0.25),
+                              ),
+                              const SizedBox(height: 12),
+                              const _ValueProp(
+                                icon: Icons.auto_graph_rounded,
+                                text:
+                                    'Instant analytics with category-level trends.',
+                              ),
+                              const SizedBox(height: 8),
+                              const _ValueProp(
+                                icon: Icons.lock_rounded,
+                                text: 'Your data stays secure on-device first.',
                               ),
                             ],
                           ),
@@ -141,84 +121,83 @@ class LoginScreen extends GetView<AuthController> {
                     ),
                   ),
                 ),
-
-                // ── Bottom CTAs ───────────────────────────────────
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 36),
+                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
-                      // Google sign-in
                       Obx(() {
                         final loading = controller.isLoading.value;
-                        return FilledButton.icon(
+                        return FilledButton(
                           onPressed:
                               loading ? null : controller.signInWithGoogle,
-                          icon:
-                              loading ? const SizedBox(width: 22) : _GoogleG(),
-                          label:
+                          style: FilledButton.styleFrom(
+                            minimumSize: const Size.fromHeight(56),
+                            backgroundColor:
+                                isDark ? Colors.white : Colors.black,
+                            foregroundColor:
+                                isDark ? Colors.black : Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            textStyle: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 15,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              if (!loading) const _GoogleGlyph(),
+                              if (!loading) const SizedBox(width: 10),
                               loading
                                   ? const SAShimmer(
                                     child: SAShimmerBox(
-                                      width: 140,
+                                      width: 150,
                                       height: 14,
                                       radius: 8,
                                     ),
                                   )
                                   : const Text('Continue with Google'),
-                          style: FilledButton.styleFrom(
-                            backgroundColor:
-                                isDark ? Colors.white : Colors.black,
-                            foregroundColor:
-                                isDark ? Colors.black : Colors.white,
-                            minimumSize: const Size.fromHeight(54),
-                            shape: const StadiumBorder(),
+                            ],
+                          ),
+                        );
+                      }),
+                      const SizedBox(height: 10),
+                      Obx(() {
+                        final loading = controller.isLoading.value;
+                        return OutlinedButton.icon(
+                          onPressed:
+                              loading ? null : controller.continueAsGuest,
+                          icon: const Icon(
+                            Icons.person_outline_rounded,
+                            size: 18,
+                          ),
+                          label: const Text('Continue as Guest'),
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: const Size.fromHeight(52),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            side: BorderSide(
+                              color: scheme.outline.withValues(alpha: 0.35),
+                            ),
+                            foregroundColor: scheme.onSurfaceVariant,
                             textStyle: const TextStyle(
-                              fontSize: 16,
                               fontWeight: FontWeight.w700,
+                              fontSize: 14,
                             ),
                           ),
                         );
                       }),
-
-                      const SizedBox(height: 12),
-
-                      // Guest mode
-                      Obx(() {
-                        final loading = controller.isLoading.value;
-                        return TextButton(
-                          onPressed:
-                              loading ? null : controller.continueAsGuest,
-                          style: TextButton.styleFrom(
-                            minimumSize: const Size.fromHeight(50),
-                          ),
-                          child:
-                              loading
-                                  ? const SAShimmer(
-                                    child: SAShimmerBox(
-                                      width: 130,
-                                      height: 14,
-                                      radius: 8,
-                                    ),
-                                  )
-                                  : Text(
-                                    'Continue as guest →',
-                                    style: TextStyle(
-                                      color: scheme.onSurfaceVariant,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                        );
-                      }),
-
-                      const SizedBox(height: 6),
-
+                      const SizedBox(height: 8),
                       Text(
-                        'By continuing, you agree to our Terms & Privacy.',
+                        'By continuing, you agree to Terms and Privacy Policy.',
                         textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: scheme.onSurfaceVariant.withValues(alpha: 0.7),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: scheme.onSurfaceVariant.withValues(
+                            alpha: 0.72,
+                          ),
                         ),
                       ),
                     ],
@@ -235,6 +214,7 @@ class LoginScreen extends GetView<AuthController> {
 
 class _LogoMark extends StatelessWidget {
   const _LogoMark({required this.size, required this.scheme});
+
   final double size;
   final ColorScheme scheme;
 
@@ -244,34 +224,173 @@ class _LogoMark extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(size * 0.28),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: <Color>[scheme.primary, scheme.secondary],
+          colors: <Color>[
+            scheme.primary,
+            Color.lerp(scheme.primary, scheme.secondary, 0.55)!,
+            scheme.tertiary,
+          ],
         ),
-        borderRadius: BorderRadius.circular(size * 0.28),
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: scheme.primary.withValues(alpha: 0.4),
+            color: scheme.primary.withValues(alpha: 0.35),
             blurRadius: 24,
-            offset: const Offset(0, 8),
+            offset: const Offset(0, 10),
           ),
         ],
       ),
-      alignment: Alignment.center,
-      child: Icon(
-        Icons.bar_chart_rounded,
-        size: size * 0.55,
-        color: Colors.white,
+      child: Stack(
+        alignment: Alignment.center,
+        children: <Widget>[
+          Positioned(
+            left: size * 0.22,
+            bottom: size * 0.23,
+            child: _Bar(height: size * 0.24),
+          ),
+          Positioned(
+            left: size * 0.42,
+            bottom: size * 0.23,
+            child: _Bar(height: size * 0.34),
+          ),
+          Positioned(
+            left: size * 0.62,
+            bottom: size * 0.23,
+            child: _Bar(height: size * 0.46),
+          ),
+          Positioned(
+            top: size * 0.32,
+            child: Icon(
+              Icons.trending_up_rounded,
+              color: Colors.white.withValues(alpha: 0.94),
+              size: size * 0.28,
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-/// Google-coloured "G" icon used on the sign-in button.
-class _GoogleG extends StatelessWidget {
+class _Bar extends StatelessWidget {
+  const _Bar({required this.height});
+
+  final double height;
+
   @override
   Widget build(BuildContext context) {
-    return const Icon(Icons.g_mobiledata_rounded, size: 22);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 1.8, sigmaY: 1.8),
+        child: Container(
+          width: 8.5,
+          height: height,
+          color: Colors.white.withValues(alpha: 0.82),
+        ),
+      ),
+    );
+  }
+}
+
+class _BrandStat extends StatelessWidget {
+  const _BrandStat({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest.withValues(alpha: 0.26),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: scheme.outline.withValues(alpha: 0.15)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            label.toUpperCase(),
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: scheme.onSurfaceVariant,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.8,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: theme.textTheme.titleLarge?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -0.4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ValueProp extends StatelessWidget {
+  const _ValueProp({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Row(
+      children: <Widget>[
+        Icon(icon, size: 16, color: scheme.primary),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: scheme.onSurfaceVariant,
+              height: 1.3,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _GoogleGlyph extends StatelessWidget {
+  const _GoogleGlyph();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 20,
+      height: 20,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: const Text(
+        'G',
+        style: TextStyle(
+          color: Colors.black,
+          fontSize: 11,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    );
   }
 }

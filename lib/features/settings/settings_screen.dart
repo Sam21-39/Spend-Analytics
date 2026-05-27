@@ -151,9 +151,21 @@ class SettingsScreen extends GetView<SettingsController> {
                     icon: Icons.notifications_rounded,
                     color: const Color(0xFFFF9F40),
                     label: 'Notifications',
-                    subtitle: 'Budget alerts & reminders',
+                    subtitle:
+                        'Budget alerts & reminders · ${controller.notificationsPermissionLabel}',
                     value: controller.notificationsEnabled.value,
                     onChanged: controller.setNotificationsEnabled,
+                    isDivider: true,
+                    isDark: isDark,
+                  ),
+                  _ToggleRow(
+                    icon: Icons.mic_rounded,
+                    color: const Color(0xFF5B9FFF),
+                    label: 'Voice Entry (Beta)',
+                    subtitle:
+                        'Use voice to add expenses · ${controller.microphonePermissionLabel}',
+                    value: controller.voiceEntryEnabled.value,
+                    onChanged: controller.setVoiceEntryEnabled,
                     isDivider: true,
                     isDark: isDark,
                   ),
@@ -161,51 +173,12 @@ class SettingsScreen extends GetView<SettingsController> {
                     icon: Icons.fingerprint_rounded,
                     color: const Color(0xFF5B9FFF),
                     label: 'Biometric Lock',
-                    subtitle: 'Require Face ID / fingerprint',
+                    subtitle:
+                        'Require Face ID / fingerprint · ${controller.biometricPermissionLabel}',
                     value: controller.biometricLockEnabled.value,
                     onChanged: controller.setBiometricLockEnabled,
                     isDivider: false,
                     isDark: isDark,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            _SectionLabel(label: 'PERMISSIONS'),
-            const SizedBox(height: 10),
-            LiquidGlassSurface(
-              padding: EdgeInsets.zero,
-              child: Column(
-                children: <Widget>[
-                  _SettingRow(
-                    icon: Icons.notifications_active_rounded,
-                    color: const Color(0xFFFF9F40),
-                    label: 'Notifications Permission',
-                    subtitle: controller.notificationsPermissionLabel,
-                    chevron: true,
-                    isDivider: true,
-                    isDark: isDark,
-                    onTap: () => _requestNotificationsPermission(context),
-                  ),
-                  _SettingRow(
-                    icon: Icons.mic_rounded,
-                    color: const Color(0xFF5B9FFF),
-                    label: 'Microphone Permission',
-                    subtitle: controller.microphonePermissionLabel,
-                    chevron: true,
-                    isDivider: true,
-                    isDark: isDark,
-                    onTap: () => _requestMicrophonePermission(context),
-                  ),
-                  _SettingRow(
-                    icon: Icons.fingerprint_rounded,
-                    color: const Color(0xFFB0A0FF),
-                    label: 'Biometric Permission',
-                    subtitle: controller.biometricPermissionLabel,
-                    chevron: true,
-                    isDivider: false,
-                    isDark: isDark,
-                    onTap: () => _requestBiometricPermission(context),
                   ),
                 ],
               ),
@@ -389,46 +362,6 @@ class SettingsScreen extends GetView<SettingsController> {
         );
       },
     );
-  }
-
-  Future<void> _requestNotificationsPermission(BuildContext context) async {
-    final granted = await controller.requestNotificationsPermission();
-    if (granted) {
-      Get.snackbar('Notifications enabled', 'You will receive spend alerts.');
-    } else {
-      Get.snackbar(
-        'Permission blocked',
-        'Enable notifications from your device settings.',
-      );
-    }
-  }
-
-  Future<void> _requestMicrophonePermission(BuildContext context) async {
-    final granted = await controller.requestMicrophonePermission();
-    if (granted) {
-      Get.snackbar('Microphone enabled', 'Voice entry is ready to use.');
-    } else {
-      Get.snackbar(
-        'Permission blocked',
-        'Allow microphone access to use voice input.',
-      );
-    }
-  }
-
-  Future<void> _requestBiometricPermission(BuildContext context) async {
-    final granted = await controller.requestBiometricPermission();
-    if (granted) {
-      await controller.setBiometricLockEnabled(true);
-      Get.snackbar(
-        'Biometric enabled',
-        'Biometric lock can now protect the app.',
-      );
-    } else {
-      Get.snackbar(
-        'Biometric unavailable',
-        'Set up biometrics in device settings and try again.',
-      );
-    }
   }
 
   Future<void> _showAboutAppDialog(BuildContext context) async {

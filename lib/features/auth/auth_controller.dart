@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -12,6 +13,7 @@ import 'package:spend_analytics/core/local_db/app_database.dart';
 import 'package:spend_analytics/core/routes/app_routes.dart';
 import 'package:spend_analytics/core/supabase/realtime_service.dart';
 import 'package:spend_analytics/core/supabase/supabase_service.dart';
+import 'package:spend_analytics/features/categories/category_controller.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthController extends GetxController {
@@ -77,8 +79,11 @@ class AuthController extends GetxController {
       }
 
       isLoggedIn.value = true;
+      await _refreshCategoriesForCurrentUser();
       await _analytics.logEvent('login_success_google');
-      await _ensurePrivacyGateAcknowledged(resolveActiveUserId());
+      final activeUserId = resolveActiveUserId();
+      await _ensurePrivacyGateAcknowledged(activeUserId);
+      await _requestInitialNotificationsPermission(activeUserId);
       Get.offAllNamed(AppRoutes.dashboard);
     } catch (error, stack) {
       await _crashlytics.recordError(
@@ -150,6 +155,7 @@ class AuthController extends GetxController {
 
   Future<void> continueAsGuest() async {
     isLoggedIn.value = false;
+    await _refreshCategoriesForCurrentUser();
     await _analytics.logEvent('guest_mode_enabled');
     await _ensurePrivacyGateAcknowledged(resolveActiveUserId());
     Get.offAllNamed(AppRoutes.dashboard);
@@ -203,6 +209,26 @@ class AuthController extends GetxController {
     await _analytics.logEvent('onboarding_privacy_gate_completed');
   }
 
+  Future<void> _requestInitialNotificationsPermission(String userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'notifications_prompted_$userId';
+    if (prefs.getBool(key) ?? false) {
+      return;
+    }
+
+    try {
+      await FirebaseMessaging.instance.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+    } catch (_) {
+      // Best-effort prompt; failure should not block sign-in.
+    } finally {
+      await prefs.setBool(key, true);
+    }
+  }
+
   Future<void> signOut({bool clearLocalData = false}) async {
     isLoading.value = true;
     try {
@@ -218,6 +244,7 @@ class AuthController extends GetxController {
         }
       }
       isLoggedIn.value = false;
+      await _refreshCategoriesForCurrentUser();
       Get.offAllNamed(AppRoutes.login);
     } catch (error, stack) {
       await _crashlytics.recordError(
@@ -235,5 +262,12 @@ class AuthController extends GetxController {
   void onClose() {
     _authSub?.cancel();
     super.onClose();
+  }
+
+  Future<void> _refreshCategoriesForCurrentUser() async {
+    if (!Get.isRegistered<CategoryController>()) {
+      return;
+    }
+    await Get.find<CategoryController>().refreshForActiveUser();
   }
 }

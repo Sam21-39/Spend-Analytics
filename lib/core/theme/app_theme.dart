@@ -8,75 +8,97 @@ class AppTheme {
   AppTheme._();
 
   static ThemeData get light => _build(lightColorScheme(), Brightness.light);
-  static ThemeData get dark  => _build(darkColorScheme(),  Brightness.dark);
+  static ThemeData get dark => _build(darkColorScheme(), Brightness.dark);
 
   static ThemeData _build(ColorScheme scheme, Brightness brightness) {
     final isDark = brightness == Brightness.dark;
-    final base   = GoogleFonts.interTextTheme();
+    final base = GoogleFonts.interTextTheme();
 
     // ─── Typography ─────────────────────────────────────────────────────────
     final textTheme = base.copyWith(
-      displayLarge:   base.displayLarge?.copyWith(fontWeight: FontWeight.w800, letterSpacing: -2.0),
-      displayMedium:  base.displayMedium?.copyWith(fontWeight: FontWeight.w800, letterSpacing: -1.4),
-      displaySmall:   base.displaySmall?.copyWith(fontWeight: FontWeight.w700, letterSpacing: -0.8),
-      headlineLarge:  base.headlineLarge?.copyWith(fontWeight: FontWeight.w800, letterSpacing: -0.8),
-      headlineMedium: base.headlineMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: -0.5),
-      headlineSmall:  base.headlineSmall?.copyWith(fontWeight: FontWeight.w700, letterSpacing: -0.3),
-      titleLarge:     base.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-      titleMedium:    base.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-      titleSmall:     base.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-      bodyLarge:      base.bodyLarge?.copyWith(height: 1.45),
-      bodyMedium:     base.bodyMedium?.copyWith(height: 1.45),
-      labelLarge:     base.labelLarge?.copyWith(fontWeight: FontWeight.w600, letterSpacing: 0.3),
+      displayLarge: base.displayLarge?.copyWith(
+        fontWeight: FontWeight.w800,
+        letterSpacing: -2.0,
+      ),
+      displayMedium: base.displayMedium?.copyWith(
+        fontWeight: FontWeight.w800,
+        letterSpacing: -1.4,
+      ),
+      displaySmall: base.displaySmall?.copyWith(
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.8,
+      ),
+      headlineLarge: base.headlineLarge?.copyWith(
+        fontWeight: FontWeight.w800,
+        letterSpacing: -0.8,
+      ),
+      headlineMedium: base.headlineMedium?.copyWith(
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.5,
+      ),
+      headlineSmall: base.headlineSmall?.copyWith(
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.3,
+      ),
+      titleLarge: base.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+      titleMedium: base.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+      titleSmall: base.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+      bodyLarge: base.bodyLarge?.copyWith(height: 1.45),
+      bodyMedium: base.bodyMedium?.copyWith(height: 1.45),
+      labelLarge: base.labelLarge?.copyWith(
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.3,
+      ),
     );
 
     return ThemeData(
-      useMaterial3:           true,
-      colorScheme:            scheme,
-      brightness:             brightness,
+      useMaterial3: true,
+      colorScheme: scheme,
+      brightness: brightness,
       scaffoldBackgroundColor: isDark ? SADark.background : SALight.background,
-      textTheme:              textTheme,
+      textTheme: textTheme,
 
       // ── App Bar ────────────────────────────────────────────────────────────
       appBarTheme: AppBarTheme(
-        centerTitle:         false,
-        backgroundColor:     Colors.transparent,
-        foregroundColor:     scheme.onSurface,
-        elevation:           0,
+        centerTitle: false,
+        backgroundColor: Colors.transparent,
+        foregroundColor: scheme.onSurface,
+        elevation: 0,
         scrolledUnderElevation: 0,
-        systemOverlayStyle: isDark
-            ? SystemUiOverlayStyle.light
-            : SystemUiOverlayStyle.dark,
+        systemOverlayStyle:
+            isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
         titleTextStyle: textTheme.titleLarge?.copyWith(
-          color:       scheme.onSurface,
-          fontWeight:  FontWeight.w800,
-          fontSize:    22,
+          color: scheme.onSurface,
+          fontWeight: FontWeight.w800,
+          fontSize: 22,
         ),
       ),
 
       // ── Cards ──────────────────────────────────────────────────────────────
       cardTheme: CardThemeData(
         elevation: 0,
-        color:     Colors.transparent,
-        shape:     RoundedRectangleBorder(borderRadius: SARadius.lg),
-        margin:    EdgeInsets.zero,
+        color: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: SARadius.lg),
+        margin: EdgeInsets.zero,
       ),
 
       // ── Chips ──────────────────────────────────────────────────────────────
       chipTheme: ChipThemeData(
-        backgroundColor: isDark
-            ? Colors.white.withValues(alpha: 0.08)
-            : Colors.black.withValues(alpha: 0.05),
+        backgroundColor:
+            isDark
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.05),
         selectedColor: scheme.primaryContainer,
         labelStyle: textTheme.labelLarge?.copyWith(color: scheme.onSurface),
         secondaryLabelStyle: textTheme.labelLarge?.copyWith(
           color: scheme.onPrimaryContainer,
         ),
-        shape:   const StadiumBorder(),
+        shape: const StadiumBorder(),
         side: BorderSide(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.10)
-              : Colors.black.withValues(alpha: 0.07),
+          color:
+              isDark
+                  ? Colors.white.withValues(alpha: 0.10)
+                  : Colors.black.withValues(alpha: 0.07),
           width: 0.8,
         ),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -87,9 +109,11 @@ class AppTheme {
         style: FilledButton.styleFrom(
           backgroundColor: scheme.primary,
           foregroundColor: scheme.onPrimary,
-          shape:     RoundedRectangleBorder(borderRadius: SARadius.sm),
-          textStyle: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-          padding:   const EdgeInsets.symmetric(horizontal: 22, vertical: 15),
+          shape: RoundedRectangleBorder(borderRadius: SARadius.sm),
+          textStyle: textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 15),
           elevation: 0,
         ),
       ),
@@ -98,10 +122,12 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: scheme.primary,
-          side:      BorderSide(color: scheme.outline),
-          shape:     RoundedRectangleBorder(borderRadius: SARadius.sm),
-          textStyle: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-          padding:   const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
+          side: BorderSide(color: scheme.outline),
+          shape: RoundedRectangleBorder(borderRadius: SARadius.sm),
+          textStyle: textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
         ),
       ),
 
@@ -109,37 +135,40 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: scheme.primary,
-          textStyle: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+          textStyle: textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
 
       // ── Icon Button ────────────────────────────────────────────────────────
       iconButtonTheme: IconButtonThemeData(
-        style: IconButton.styleFrom(
-          foregroundColor: scheme.onSurfaceVariant,
-        ),
+        style: IconButton.styleFrom(foregroundColor: scheme.onSurfaceVariant),
       ),
 
       // ── Input ──────────────────────────────────────────────────────────────
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: isDark
-            ? Colors.white.withValues(alpha: 0.06)
-            : Colors.black.withValues(alpha: 0.04),
+        fillColor:
+            isDark
+                ? Colors.white.withValues(alpha: 0.06)
+                : Colors.black.withValues(alpha: 0.04),
         border: OutlineInputBorder(
           borderRadius: SARadius.sm,
           borderSide: BorderSide(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.12)
-                : Colors.black.withValues(alpha: 0.10),
+            color:
+                isDark
+                    ? Colors.white.withValues(alpha: 0.12)
+                    : Colors.black.withValues(alpha: 0.10),
           ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: SARadius.sm,
           borderSide: BorderSide(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.12)
-                : Colors.black.withValues(alpha: 0.10),
+            color:
+                isDark
+                    ? Colors.white.withValues(alpha: 0.12)
+                    : Colors.black.withValues(alpha: 0.10),
           ),
         ),
         focusedBorder: OutlineInputBorder(
@@ -155,10 +184,64 @@ class AppTheme {
           borderSide: BorderSide(color: scheme.error, width: 1.8),
         ),
         labelStyle: TextStyle(color: scheme.onSurfaceVariant),
-        hintStyle:  TextStyle(
-          color: scheme.onSurfaceVariant.withValues(alpha: 0.55),
+        floatingLabelStyle: TextStyle(
+          color: scheme.primary,
+          fontWeight: FontWeight.w600,
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        hintStyle: TextStyle(
+          color: scheme.onSurfaceVariant.withValues(alpha: 0.72),
+        ),
+        prefixStyle: TextStyle(color: scheme.onSurfaceVariant),
+        suffixStyle: TextStyle(color: scheme.onSurfaceVariant),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
+      ),
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: scheme.primary,
+        selectionColor: scheme.primary.withValues(alpha: 0.28),
+        selectionHandleColor: scheme.primary,
+      ),
+      dropdownMenuTheme: DropdownMenuThemeData(
+        textStyle: textTheme.bodyMedium?.copyWith(color: scheme.onSurface),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor:
+              isDark
+                  ? Colors.white.withValues(alpha: 0.06)
+                  : Colors.black.withValues(alpha: 0.04),
+          border: OutlineInputBorder(
+            borderRadius: SARadius.sm,
+            borderSide: BorderSide(
+              color:
+                  isDark
+                      ? Colors.white.withValues(alpha: 0.12)
+                      : Colors.black.withValues(alpha: 0.10),
+            ),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: SARadius.sm,
+            borderSide: BorderSide(
+              color:
+                  isDark
+                      ? Colors.white.withValues(alpha: 0.12)
+                      : Colors.black.withValues(alpha: 0.10),
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: SARadius.sm,
+            borderSide: BorderSide(color: scheme.primary, width: 1.5),
+          ),
+        ),
+        menuStyle: MenuStyle(
+          backgroundColor: WidgetStatePropertyAll(
+            isDark ? SADark.surfaceContainerHigh : SALight.surface,
+          ),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(borderRadius: SARadius.md),
+          ),
+        ),
       ),
 
       // ── Switch ─────────────────────────────────────────────────────────────
@@ -177,11 +260,12 @@ class AppTheme {
 
       // ── Divider ────────────────────────────────────────────────────────────
       dividerTheme: DividerThemeData(
-        color: isDark
-            ? Colors.white.withValues(alpha: 0.08)
-            : Colors.black.withValues(alpha: 0.06),
+        color:
+            isDark
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.06),
         thickness: 0.8,
-        space:     0.8,
+        space: 0.8,
       ),
 
       // ── List Tile ──────────────────────────────────────────────────────────
@@ -189,8 +273,8 @@ class AppTheme {
         contentPadding: EdgeInsets.zero,
         iconColor: scheme.onSurfaceVariant,
         titleTextStyle: textTheme.bodyLarge?.copyWith(
-          color:       scheme.onSurface,
-          fontWeight:  FontWeight.w500,
+          color: scheme.onSurface,
+          fontWeight: FontWeight.w500,
         ),
         subtitleTextStyle: textTheme.bodySmall?.copyWith(
           color: scheme.onSurfaceVariant,
@@ -199,28 +283,29 @@ class AppTheme {
 
       // ── Progress Indicator ─────────────────────────────────────────────────
       progressIndicatorTheme: ProgressIndicatorThemeData(
-        color:              scheme.primary,
-        linearTrackColor:   scheme.primary.withValues(alpha: 0.15),
-        linearMinHeight:    8,
+        color: scheme.primary,
+        linearTrackColor: scheme.primary.withValues(alpha: 0.15),
+        linearMinHeight: 8,
         circularTrackColor: scheme.primary.withValues(alpha: 0.15),
-        borderRadius:       BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(999),
       ),
 
       // ── FAB ────────────────────────────────────────────────────────────────
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: scheme.primaryContainer,
         foregroundColor: scheme.onPrimaryContainer,
-        elevation:       0,
-        shape:           const CircleBorder(),
+        elevation: 0,
+        shape: const CircleBorder(),
       ),
 
       // ── Snack Bar ──────────────────────────────────────────────────────────
       snackBarTheme: SnackBarThemeData(
-        behavior:        SnackBarBehavior.floating,
-        backgroundColor: isDark ? SADark.surfaceContainerHigh : SALight.onSurface,
+        behavior: SnackBarBehavior.floating,
+        backgroundColor:
+            isDark ? SADark.surfaceContainerHigh : SALight.onSurface,
         contentTextStyle: textTheme.bodyMedium?.copyWith(
-          color:       isDark ? SADark.onSurface : SALight.surface,
-          fontWeight:  FontWeight.w500,
+          color: isDark ? SADark.onSurface : SALight.surface,
+          fontWeight: FontWeight.w500,
         ),
         shape: RoundedRectangleBorder(borderRadius: SARadius.md),
         elevation: 4,
@@ -228,7 +313,7 @@ class AppTheme {
 
       // ── Bottom Sheet ───────────────────────────────────────────────────────
       bottomSheetTheme: const BottomSheetThemeData(
-        backgroundColor:      Colors.transparent,
+        backgroundColor: Colors.transparent,
         modalBackgroundColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
@@ -238,7 +323,7 @@ class AppTheme {
       // ── Dialog ─────────────────────────────────────────────────────────────
       dialogTheme: DialogThemeData(
         backgroundColor: isDark ? SADark.surfaceContainer : SALight.surface,
-        shape:           RoundedRectangleBorder(borderRadius: SARadius.xl),
+        shape: RoundedRectangleBorder(borderRadius: SARadius.xl),
         titleTextStyle: textTheme.titleLarge?.copyWith(color: scheme.onSurface),
         contentTextStyle: textTheme.bodyMedium?.copyWith(
           color: scheme.onSurfaceVariant,

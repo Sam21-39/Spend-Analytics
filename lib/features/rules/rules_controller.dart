@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:get/get.dart';
 import 'package:spend_analytics/core/firebase/crashlytics_service.dart';
@@ -86,14 +87,25 @@ class RulesController extends GetxController {
   }
 
   Future<void> _bootstrap() async {
-    await _db.seedDefaultRules(_userId);
     await _db.normalizeRuleIdsToUuid(_userId);
     await _syncWithCloud();
+    await _removeLegacySeededRulesIfPresent();
+    await _pruneDuplicateRulesByContent();
 
     final query = _db.select(_db.userRules)
       ..where((t) => t.userId.equals(_userId));
     _rulesSub = query.watch().listen((rows) {
-      final mapped = rows
+      final sorted = rows.toList(growable: false)
+        ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+
+      final unique = <String, UserRule>{};
+      for (final row in sorted) {
+        final key = '${row.ruleType}|${_canonicalParamsKey(row)}';
+        unique.putIfAbsent(key, () => row);
+      }
+
+      final mapped = unique.values
+          .where((row) => row.ruleType != 'recurring_due')
           .map(
             (row) => RuleViewModel(
               id: row.id,
@@ -105,6 +117,78 @@ class RulesController extends GetxController {
           .toList(growable: false);
       rules.assignAll(mapped);
     });
+  }
+
+  Future<void> _removeLegacySeededRulesIfPresent() async {
+    final existing = await _db.getRules(_userId);
+    if (existing.isEmpty) {
+      return;
+    }
+
+    bool isLegacySeed(UserRule row) {
+      final params = _db.parseRuleParameters(row);
+      switch (row.ruleType) {
+        case 'budget_threshold':
+          return (params['threshold_pct'] as num?)?.toDouble() == 0.8;
+        case 'daily_limit':
+          return (params['limit_amount'] as num?)?.toDouble() == 1500;
+        case 'no_entry_reminder':
+          return '${params['time'] ?? ''}'.trim() == '21:00';
+        default:
+          return false;
+      }
+    }
+
+    final legacySeeded = existing.where(isLegacySeed).toList(growable: false);
+    if (legacySeeded.isEmpty) {
+      return;
+    }
+
+    final hasAnyNonLegacyRule = legacySeeded.length != existing.length;
+    if (hasAnyNonLegacyRule) {
+      return;
+    }
+
+    for (final rule in legacySeeded) {
+      await _db.deleteRuleById(rule.id);
+      await _supabase.deleteRule(rule.id);
+    }
+  }
+
+  Future<void> _pruneDuplicateRulesByContent() async {
+    final existing = await _db.getRules(_userId);
+    if (existing.length < 2) {
+      return;
+    }
+
+    final sorted = existing.toList(growable: false)
+      ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+
+    final seenKeys = <String>{};
+    final duplicateIds = <String>[];
+    for (final row in sorted) {
+      final key = '${row.ruleType}|${_canonicalParamsKey(row)}';
+      if (seenKeys.contains(key)) {
+        duplicateIds.add(row.id);
+        continue;
+      }
+      seenKeys.add(key);
+    }
+
+    for (final id in duplicateIds) {
+      await _db.deleteRuleById(id);
+      await _supabase.deleteRule(id);
+    }
+  }
+
+  String _canonicalParamsKey(UserRule row) {
+    final params = _db.parseRuleParameters(row);
+    final sortedEntries = params.entries.toList(growable: false)
+      ..sort((a, b) => a.key.compareTo(b.key));
+    final canonical = <String, dynamic>{
+      for (final entry in sortedEntries) entry.key: entry.value,
+    };
+    return jsonEncode(canonical);
   }
 
   Future<void> _syncWithCloud() async {
@@ -169,7 +253,20 @@ class RulesController extends GetxController {
     );
   }
 
-  Future<void> addDailyLimitRule() async {
+  Future<bool> addDailyLimitRule() async {
+    final existing = await _db.getRules(_userId);
+    final hasSame = existing.any((rule) {
+      if (rule.ruleType != 'daily_limit') {
+        return false;
+      }
+      final params = _db.parseRuleParameters(rule);
+      return (params['limit_amount'] as num?)?.toDouble() == 2000;
+    });
+    if (hasSame) {
+      Get.snackbar('Rule exists', 'A similar Daily Limit rule already exists.');
+      return false;
+    }
+
     final id = const Uuid().v4();
     await _db.upsertRule(
       id: id,
@@ -184,6 +281,64 @@ class RulesController extends GetxController {
       parameters: const <String, dynamic>{'limit_amount': 2000},
       isActive: true,
     );
+    return true;
+  }
+
+  Future<bool> addSuggestedRule(String ruleType) async {
+    switch (ruleType) {
+      case 'daily_limit':
+        return addDailyLimitRule();
+      case 'category_spike':
+        return _addRuleIfMissing(
+          ruleType: 'category_spike',
+          parameters: const <String, dynamic>{'multiplier': 2.0},
+        );
+      case 'no_entry_reminder':
+        return _addRuleIfMissing(
+          ruleType: 'no_entry_reminder',
+          parameters: const <String, dynamic>{'time': '21:00'},
+        );
+      case 'weekend_overspend':
+        return _addRuleIfMissing(
+          ruleType: 'weekend_overspend',
+          parameters: const <String, dynamic>{'enabled': true},
+        );
+    }
+    return false;
+  }
+
+  Future<bool> _addRuleIfMissing({
+    required String ruleType,
+    required Map<String, dynamic> parameters,
+  }) async {
+    final existing = await _db.getRules(_userId);
+    final alreadyExists = existing.any((rule) {
+      if (rule.ruleType != ruleType) {
+        return false;
+      }
+      final params = _db.parseRuleParameters(rule);
+      return params.toString() == parameters.toString();
+    });
+    if (alreadyExists) {
+      Get.snackbar('Rule exists', 'A similar $ruleType rule already exists.');
+      return false;
+    }
+
+    final id = const Uuid().v4();
+    await _db.upsertRule(
+      id: id,
+      userId: _userId,
+      ruleType: ruleType,
+      parameters: parameters,
+      isActive: true,
+    );
+    await _supabase.upsertRule(
+      id: id,
+      ruleType: ruleType,
+      parameters: parameters,
+      isActive: true,
+    );
+    return true;
   }
 
   String _resolveActiveUserId() {

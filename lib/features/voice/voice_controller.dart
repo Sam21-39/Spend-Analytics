@@ -1,8 +1,12 @@
 import 'package:get/get.dart';
+import 'package:permission_handler/permission_handler.dart'
+    as permission_handler;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:spend_analytics/core/firebase/crashlytics_service.dart';
 import 'package:spend_analytics/features/auth/auth_controller.dart';
+import 'package:spend_analytics/features/settings/settings_controller.dart';
 import 'package:spend_analytics/features/transactions/transaction_controller.dart';
 import 'package:spend_analytics/features/voice/voice_parser.dart';
 import 'package:spend_analytics/shared/models/transaction_model.dart';
@@ -14,6 +18,7 @@ class VoiceController extends GetxController {
 
   final isSpeechAvailable = false.obs;
   final isListening = false.obs;
+  final voiceEntryEnabled = true.obs;
   final transcript = ''.obs;
   final amountText = ''.obs;
   final category = 'Others'.obs;
@@ -39,8 +44,22 @@ class VoiceController extends GetxController {
   @override
   Future<void> onInit() async {
     super.onInit();
+    await _hydrateVoiceEntryPreference();
+  }
+
+  Future<void> _hydrateVoiceEntryPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    voiceEntryEnabled.value =
+        prefs.getBool(SettingsController.voiceEntryPreferenceKey) ?? true;
+  }
+
+  Future<void> refreshVoiceEntryAvailability() async {
+    await _hydrateVoiceEntryPreference();
+  }
+
+  Future<bool> _ensureMicrophoneReady() async {
     try {
-      isSpeechAvailable.value = await _speechToText.initialize(
+      final available = await _speechToText.initialize(
         onError: (error) => isListening.value = false,
         onStatus: (status) {
           if (status == 'notListening' || status == 'done') {
@@ -49,6 +68,16 @@ class VoiceController extends GetxController {
           }
         },
       );
+      final granted = available;
+      isSpeechAvailable.value = granted;
+      if (!granted) {
+        Get.snackbar(
+          'Microphone permission needed',
+          'Enable microphone access in app settings to use voice entry.',
+        );
+        await permission_handler.openAppSettings();
+      }
+      return granted;
     } catch (error, stack) {
       await _crashlytics.recordError(
         error,
@@ -56,11 +85,25 @@ class VoiceController extends GetxController {
         customKeys: const <String, Object?>{'action': 'voice_init'},
       );
       isSpeechAvailable.value = false;
+      return false;
     }
   }
 
   Future<void> startListening() async {
-    if (!isSpeechAvailable.value || isListening.value) {
+    await refreshVoiceEntryAvailability();
+    if (!voiceEntryEnabled.value) {
+      Get.snackbar(
+        'Voice entry is off',
+        'Enable Voice Entry (Beta) from Settings to continue.',
+      );
+      return;
+    }
+    if (isListening.value) {
+      return;
+    }
+
+    final isReady = await _ensureMicrophoneReady();
+    if (!isReady) {
       return;
     }
 

@@ -123,9 +123,23 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
       showFab: true,
       onBack: () => Get.back<void>(),
       actions: <Widget>[
-        BarActionButton(icon: Icons.search_rounded, onTap: () {}),
+        BarActionButton(
+          icon: Icons.search_rounded,
+          onTap:
+              () => Get.snackbar(
+                'Search',
+                'Search in transactions is coming soon.',
+              ),
+        ),
         const SizedBox(width: 4),
-        BarActionButton(icon: Icons.filter_list_rounded, onTap: () {}),
+        BarActionButton(
+          icon: Icons.filter_list_rounded,
+          onTap:
+              () => Get.snackbar(
+                'Filters',
+                'Use the filter chips below for now.',
+              ),
+        ),
       ],
       child: StreamBuilder<List<TransactionModel>>(
         stream: db.watchTransactionsForUser(userId),

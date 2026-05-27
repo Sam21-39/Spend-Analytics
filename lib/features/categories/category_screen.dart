@@ -1,53 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:spend_analytics/features/categories/category_controller.dart';
+import 'package:spend_analytics/shared/utils/category_visuals.dart';
 import 'package:spend_analytics/shared/widgets/icon_box.dart';
 import 'package:spend_analytics/shared/widgets/liquid_glass_surface.dart';
 import 'package:spend_analytics/shared/widgets/liquid_page_scaffold.dart';
 
-class CategoryScreen extends GetView<CategoryController> {
+class CategoryScreen extends StatefulWidget {
   const CategoryScreen({super.key});
 
-  static IconData _iconFor(String name) {
-    switch (name.toLowerCase()) {
-      case 'food':
-        return Icons.coffee_rounded;
-      case 'rent':
-        return Icons.home_rounded;
-      case 'transport':
-        return Icons.directions_car_rounded;
-      case 'shopping':
-        return Icons.shopping_bag_rounded;
-      case 'health':
-        return Icons.favorite_rounded;
-      case 'bills':
-        return Icons.bolt_rounded;
-      case 'income':
-        return Icons.arrow_downward_rounded;
-      default:
-        return Icons.sell_rounded;
-    }
-  }
+  @override
+  State<CategoryScreen> createState() => _CategoryScreenState();
+}
 
-  static Color _colorFor(String name) {
-    switch (name.toLowerCase()) {
-      case 'food':
-        return const Color(0xFFFF9F40);
-      case 'rent':
-        return const Color(0xFF5B9FFF);
-      case 'transport':
-        return const Color(0xFF5B9FFF);
-      case 'shopping':
-        return const Color(0xFFB0A0FF);
-      case 'health':
-        return const Color(0xFFFF6B6B);
-      case 'bills':
-        return const Color(0xFFFFB860);
-      case 'income':
-        return const Color(0xFF3FDDA0);
-      default:
-        return const Color(0xFF3FDDA0);
-    }
+class _CategoryScreenState extends State<CategoryScreen> {
+  late final CategoryController controller;
+  String _selectedType = CategoryController.expenseType;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.find<CategoryController>();
   }
 
   @override
@@ -66,12 +39,11 @@ class CategoryScreen extends GetView<CategoryController> {
         ),
       ],
       child: Obx(() {
-        final cats = controller.categories;
+        final cats = controller.categoriesForType(_selectedType);
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            // Header note
             LiquidGlassSurface(
               padding: const EdgeInsets.all(16),
               child: Row(
@@ -82,21 +54,78 @@ class CategoryScreen extends GetView<CategoryController> {
                     color: scheme.onSurfaceVariant,
                   ),
                   const SizedBox(width: 10),
-                  Text(
-                    'Drag to reorder · Tap to rename',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: scheme.onSurfaceVariant,
+                  Expanded(
+                    child: Text(
+                      'Main category -> sub-categories · Drag to reorder',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: scheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-
+            const SizedBox(height: 14),
+            LiquidGlassSurface(
+              padding: const EdgeInsets.all(4),
+              borderRadius: const BorderRadius.all(Radius.circular(999)),
+              child: Row(
+                children: const <String>[
+                      CategoryController.expenseType,
+                      CategoryController.incomeType,
+                      CategoryController.transferType,
+                    ]
+                    .map((type) {
+                      final label =
+                          '${type[0].toUpperCase()}${type.substring(1)}';
+                      final active = type == _selectedType;
+                      return Expanded(
+                        child: GestureDetector(
+                          onTap: () => setState(() => _selectedType = type),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 160),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(999),
+                              color:
+                                  active
+                                      ? scheme.primary.withValues(alpha: 0.18)
+                                      : Colors.transparent,
+                              border:
+                                  active
+                                      ? Border.all(
+                                        color: scheme.primary.withValues(
+                                          alpha: 0.3,
+                                        ),
+                                        width: 0.5,
+                                      )
+                                      : null,
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              label,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color:
+                                    active
+                                        ? scheme.primary
+                                        : scheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    })
+                    .toList(growable: false),
+              ),
+            ),
             const SizedBox(height: 16),
-
             Text(
-              'CATEGORIES',
+              '${_selectedType.toUpperCase()} SUB-CATEGORIES',
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
@@ -105,25 +134,22 @@ class CategoryScreen extends GetView<CategoryController> {
               ),
             ),
             const SizedBox(height: 10),
-
-            // Reorderable list
             ReorderableListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: cats.length,
-              onReorder: (oldIdx, newIdx) {
-                if (newIdx > oldIdx) newIdx -= 1;
-                final updated = List<String>.from(cats);
-                final item = updated.removeAt(oldIdx);
-                updated.insert(newIdx, item);
-                cats.assignAll(updated);
-              },
+              onReorder:
+                  (oldIdx, newIdx) => controller.reorderCategories(
+                    oldIdx,
+                    newIdx,
+                    type: _selectedType,
+                  ),
               itemBuilder: (ctx, i) {
                 final name = cats[i];
                 final isLast = i == cats.length - 1;
 
                 return Container(
-                  key: ValueKey(name),
+                  key: ValueKey('$_selectedType-$name'),
                   decoration:
                       isLast
                           ? BoxDecoration(
@@ -157,8 +183,14 @@ class CategoryScreen extends GetView<CategoryController> {
                   child: Row(
                     children: <Widget>[
                       IconBox(
-                        icon: _iconFor(name),
-                        color: _colorFor(name),
+                        icon: CategoryVisuals.iconFor(
+                          name,
+                          type: _selectedType,
+                        ),
+                        color: CategoryVisuals.colorFor(
+                          name,
+                          type: _selectedType,
+                        ),
                         size: 38,
                       ),
                       const SizedBox(width: 12),
@@ -189,7 +221,6 @@ class CategoryScreen extends GetView<CategoryController> {
                     child: child,
                   ),
             ),
-
             const SizedBox(height: 20),
           ],
         );
@@ -202,15 +233,23 @@ class CategoryScreen extends GetView<CategoryController> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => _AddCategorySheet(controller: controller),
+      builder:
+          (ctx) => _AddCategorySheet(
+            controller: controller,
+            selectedType: _selectedType,
+          ),
     );
   }
 }
 
 class _AddCategorySheet extends StatefulWidget {
-  const _AddCategorySheet({required this.controller});
+  const _AddCategorySheet({
+    required this.controller,
+    required this.selectedType,
+  });
 
   final CategoryController controller;
+  final String selectedType;
 
   @override
   State<_AddCategorySheet> createState() => _AddCategorySheetState();
@@ -222,6 +261,8 @@ class _AddCategorySheetState extends State<_AddCategorySheet> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final typeLabel =
+        '${widget.selectedType[0].toUpperCase()}${widget.selectedType.substring(1)}';
     return Padding(
       padding: EdgeInsets.only(
         left: 16,
@@ -248,7 +289,7 @@ class _AddCategorySheetState extends State<_AddCategorySheet> {
               ),
               const SizedBox(height: 18),
               Text(
-                'New Category',
+                'New $typeLabel Sub-Category',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
@@ -279,10 +320,28 @@ class _AddCategorySheetState extends State<_AddCategorySheet> {
               ),
               const SizedBox(height: 16),
               FilledButton(
-                onPressed: () {
+                onPressed: () async {
                   final name = _nameInput.trim();
-                  if (name.isEmpty) return;
-                  widget.controller.categories.add(name);
+                  if (name.isEmpty) {
+                    return;
+                  }
+                  final added = await widget.controller.addCategory(
+                    name,
+                    type: widget.selectedType,
+                  );
+                  if (!added) {
+                    if (!context.mounted) {
+                      return;
+                    }
+                    Get.snackbar(
+                      'Category exists',
+                      'That category is already in this list.',
+                    );
+                    return;
+                  }
+                  if (!context.mounted) {
+                    return;
+                  }
                   Navigator.of(context).pop();
                 },
                 style: FilledButton.styleFrom(

@@ -6,7 +6,16 @@
       "type": "dart",
       "request": "launch",
       "program": "lib/main.dart",
+      "flutterMode": "debug",
       "args": ["fvm", "flutter", "run", "debug"]
+    },
+    {
+      "name": "Flutter [Release]",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "flutterMode": "release",
+      "args": ["fvm", "flutter", "run", "release"]
     }
   ]
 }

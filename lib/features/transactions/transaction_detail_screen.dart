@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:spend_analytics/core/routes/app_routes.dart';
 import 'package:spend_analytics/features/transactions/transaction_controller.dart';
 import 'package:spend_analytics/shared/models/transaction_model.dart';
+import 'package:spend_analytics/shared/utils/category_visuals.dart';
 import 'package:spend_analytics/shared/utils/currency_formatter.dart';
 import 'package:spend_analytics/shared/widgets/icon_box.dart';
 import 'package:spend_analytics/shared/widgets/liquid_page_scaffold.dart';
@@ -14,19 +15,8 @@ import 'package:spend_analytics/shared/widgets/sa_pill.dart';
 class TransactionDetailScreen extends StatelessWidget {
   const TransactionDetailScreen({super.key});
 
-  static const _categoryMeta = <String, ({IconData icon, Color color})>{
-    'Food': (icon: Icons.coffee_rounded, color: Color(0xFFFF9F40)),
-    'Transport': (icon: Icons.directions_car_rounded, color: Color(0xFF5B9FFF)),
-    'Shopping': (icon: Icons.shopping_bag_rounded, color: Color(0xFFB0A0FF)),
-    'Health': (icon: Icons.favorite_rounded, color: Color(0xFFFF6B6B)),
-    'Bills': (icon: Icons.bolt_rounded, color: Color(0xFFFFB860)),
-    'Income': (icon: Icons.arrow_downward_rounded, color: Color(0xFF3FDDA0)),
-    'Others': (icon: Icons.sell_rounded, color: Color(0xFF3FDDA0)),
-  };
-
   static ({IconData icon, Color color}) _meta(String category) =>
-      _categoryMeta[category] ??
-      (icon: Icons.paid_rounded, color: const Color(0xFF5B9FFF));
+      CategoryVisuals.resolve(category);
 
   @override
   Widget build(BuildContext context) {

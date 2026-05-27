@@ -8,7 +8,6 @@ import 'package:spend_analytics/features/auth/splash_screen.dart';
 import 'package:spend_analytics/features/budgets/budget_controller.dart';
 import 'package:spend_analytics/features/budgets/budget_detail_screen.dart';
 import 'package:spend_analytics/features/budgets/budget_screen.dart';
-import 'package:spend_analytics/features/categories/category_controller.dart';
 import 'package:spend_analytics/features/categories/category_screen.dart';
 import 'package:spend_analytics/features/dashboard/dashboard_controller.dart';
 import 'package:spend_analytics/features/dashboard/dashboard_screen.dart';
@@ -162,13 +161,7 @@ class AppRoutes {
         () => Get.lazyPut<RecurringController>(() => RecurringController()),
       ),
     ),
-    GetPage(
-      name: categories,
-      page: () => const CategoryScreen(),
-      binding: BindingsBuilder(
-        () => Get.lazyPut<CategoryController>(() => CategoryController()),
-      ),
-    ),
+    GetPage(name: categories, page: () => const CategoryScreen()),
     GetPage(
       name: notifications,
       page: () => const NotificationCenterScreen(),

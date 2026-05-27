@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:spend_analytics/core/routes/app_routes.dart';
 import 'package:spend_analytics/features/dashboard/dashboard_controller.dart';
+import 'package:spend_analytics/shared/utils/category_visuals.dart';
 import 'package:spend_analytics/shared/utils/currency_formatter.dart';
 import 'package:spend_analytics/shared/widgets/icon_box.dart';
 import 'package:spend_analytics/shared/widgets/liquid_glass_surface.dart';
@@ -323,7 +324,7 @@ class DashboardScreen extends GetView<DashboardController> {
                   ),
                   _QuickAdd(
                     icon: Icons.mic_rounded,
-                    label: 'Voice',
+                    label: 'Voice (Beta)',
                     color: scheme.secondary,
                     onTap: () => Get.toNamed(AppRoutes.voiceReview),
                   ),
@@ -335,9 +336,13 @@ class DashboardScreen extends GetView<DashboardController> {
                   ),
                   _QuickAdd(
                     icon: Icons.repeat_rounded,
-                    label: 'Recurring',
+                    label: 'Recurring (Soon)',
                     color: const Color(0xFFFFB860),
-                    onTap: () => Get.toNamed(AppRoutes.recurring),
+                    onTap:
+                        () => Get.snackbar(
+                          'Coming soon',
+                          'Recurring tracking will be available in a future update.',
+                        ),
                   ),
                 ];
                 if (constraints.maxWidth < 500) {
@@ -492,41 +497,11 @@ class DashboardScreen extends GetView<DashboardController> {
   }
 
   IconData _iconFor(String category) {
-    switch (category.toLowerCase()) {
-      case 'food':
-        return Icons.coffee_rounded;
-      case 'transport':
-        return Icons.directions_car_rounded;
-      case 'shopping':
-        return Icons.shopping_bag_rounded;
-      case 'health':
-        return Icons.favorite_rounded;
-      case 'bills':
-        return Icons.bolt_rounded;
-      case 'income':
-        return Icons.arrow_downward_rounded;
-      default:
-        return Icons.paid_rounded;
-    }
+    return CategoryVisuals.iconFor(category);
   }
 
   Color _colorFor(String category) {
-    switch (category.toLowerCase()) {
-      case 'food':
-        return const Color(0xFFFF9F40);
-      case 'transport':
-        return const Color(0xFF5B9FFF);
-      case 'shopping':
-        return const Color(0xFFB0A0FF);
-      case 'health':
-        return const Color(0xFFFF6B6B);
-      case 'bills':
-        return const Color(0xFFFFB860);
-      case 'income':
-        return const Color(0xFF3FDDA0);
-      default:
-        return const Color(0xFF5B9FFF);
-    }
+    return CategoryVisuals.colorFor(category);
   }
 
   String _formatTime(DateTime d) {

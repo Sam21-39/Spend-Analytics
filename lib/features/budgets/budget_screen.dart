@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:spend_analytics/core/routes/app_routes.dart';
 import 'package:spend_analytics/features/budgets/budget_controller.dart';
+import 'package:spend_analytics/features/categories/category_controller.dart';
+import 'package:spend_analytics/shared/utils/category_visuals.dart';
 import 'package:spend_analytics/shared/utils/currency_formatter.dart';
 import 'package:spend_analytics/shared/widgets/icon_box.dart';
 import 'package:spend_analytics/shared/widgets/liquid_glass_surface.dart';
@@ -12,40 +14,6 @@ import 'package:spend_analytics/shared/widgets/sa_shimmer.dart';
 
 class BudgetScreen extends GetView<BudgetController> {
   const BudgetScreen({super.key});
-
-  static IconData _iconFor(String category) {
-    switch (category.toLowerCase()) {
-      case 'food':
-        return Icons.coffee_rounded;
-      case 'transport':
-        return Icons.directions_car_rounded;
-      case 'shopping':
-        return Icons.shopping_bag_rounded;
-      case 'health':
-        return Icons.favorite_rounded;
-      case 'bills':
-        return Icons.bolt_rounded;
-      default:
-        return Icons.sell_rounded;
-    }
-  }
-
-  static Color _colorFor(String category) {
-    switch (category.toLowerCase()) {
-      case 'food':
-        return const Color(0xFFFF9F40);
-      case 'transport':
-        return const Color(0xFF5B9FFF);
-      case 'shopping':
-        return const Color(0xFFB0A0FF);
-      case 'health':
-        return const Color(0xFFFF6B6B);
-      case 'bills':
-        return const Color(0xFFFFB860);
-      default:
-        return const Color(0xFF3FDDA0);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -209,8 +177,8 @@ class BudgetScreen extends GetView<BudgetController> {
                       Row(
                         children: <Widget>[
                           IconBox(
-                            icon: _iconFor(cat),
-                            color: _colorFor(cat),
+                            icon: CategoryVisuals.iconFor(cat),
+                            color: CategoryVisuals.colorFor(cat),
                             size: 40,
                           ),
                           const SizedBox(width: 12),
@@ -276,8 +244,8 @@ class BudgetScreen extends GetView<BudgetController> {
                                     'category': cat,
                                     'limit': limit,
                                     'spent': spent,
-                                    'color': _colorFor(cat),
-                                    'icon': _iconFor(cat),
+                                    'color': CategoryVisuals.colorFor(cat),
+                                    'icon': CategoryVisuals.iconFor(cat),
                                   },
                                 ),
                             child: Text(
@@ -355,15 +323,6 @@ class _AddBudgetSheet extends StatefulWidget {
 }
 
 class _AddBudgetSheetState extends State<_AddBudgetSheet> {
-  static const _cats = <_CatOption>[
-    _CatOption('Food', Icons.coffee_rounded, Color(0xFFFF9F40)),
-    _CatOption('Transport', Icons.directions_car_rounded, Color(0xFF5B9FFF)),
-    _CatOption('Shopping', Icons.shopping_bag_rounded, Color(0xFFB0A0FF)),
-    _CatOption('Health', Icons.favorite_rounded, Color(0xFFFF6B6B)),
-    _CatOption('Bills', Icons.bolt_rounded, Color(0xFFFFB860)),
-    _CatOption('Others', Icons.sell_rounded, Color(0xFF3FDDA0)),
-  ];
-
   String _amountInput = '';
   String? _selectedCategory;
 
@@ -414,62 +373,117 @@ class _AddBudgetSheetState extends State<_AddBudgetSheet> {
                 ),
               ),
               const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children:
-                    _cats.map((c) {
-                      final active = _selectedCategory == c.name;
-                      return GestureDetector(
-                        onTap: () => setState(() => _selectedCategory = c.name),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 150),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(999),
+              Obx(() {
+                final categoryController = Get.find<CategoryController>();
+                final groups = <String, List<String>>{
+                  CategoryController.expenseType: categoryController
+                      .categoriesForType(CategoryController.expenseType),
+                  CategoryController.incomeType: categoryController
+                      .categoriesForType(CategoryController.incomeType),
+                  CategoryController.transferType: categoryController
+                      .categoriesForType(CategoryController.transferType),
+                };
+                Widget buildChip(String type, String name) {
+                  final active = _selectedCategory == name;
+                  return GestureDetector(
+                    onTap: () => setState(() => _selectedCategory = name),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(999),
+                        color:
+                            active
+                                ? scheme.primary.withValues(alpha: 0.14)
+                                : scheme.surfaceContainerHighest.withValues(
+                                  alpha: 0.4,
+                                ),
+                        border: Border.all(
+                          color:
+                              active
+                                  ? scheme.primary.withValues(alpha: 0.4)
+                                  : scheme.outline.withValues(alpha: 0.2),
+                          width: 0.8,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Icon(
+                            CategoryVisuals.iconFor(name, type: type),
+                            size: 14,
                             color:
                                 active
-                                    ? scheme.primary.withValues(alpha: 0.14)
-                                    : scheme.surfaceContainerHighest.withValues(
-                                      alpha: 0.4,
+                                    ? scheme.primary
+                                    : CategoryVisuals.colorFor(
+                                      name,
+                                      type: type,
                                     ),
-                            border: Border.all(
-                              color:
-                                  active
-                                      ? scheme.primary.withValues(alpha: 0.4)
-                                      : scheme.outline.withValues(alpha: 0.2),
-                              width: 0.8,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            name,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: active ? scheme.primary : scheme.onSurface,
                             ),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              Icon(
-                                c.icon,
-                                size: 14,
-                                color: active ? scheme.primary : c.color,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                c.name,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color:
-                                      active
-                                          ? scheme.primary
-                                          : scheme.onSurface,
-                                ),
-                              ),
-                            ],
-                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                Widget buildGroup(String type, List<String> names) {
+                  final label = '${type[0].toUpperCase()}${type.substring(1)}';
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        label,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: scheme.onSurfaceVariant,
+                          letterSpacing: 0.6,
                         ),
-                      );
-                    }).toList(),
-              ),
+                      ),
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: names
+                            .map((name) => buildChip(type, name))
+                            .toList(growable: false),
+                      ),
+                    ],
+                  );
+                }
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    buildGroup(
+                      CategoryController.expenseType,
+                      groups[CategoryController.expenseType]!,
+                    ),
+                    const SizedBox(height: 10),
+                    buildGroup(
+                      CategoryController.incomeType,
+                      groups[CategoryController.incomeType]!,
+                    ),
+                    const SizedBox(height: 10),
+                    buildGroup(
+                      CategoryController.transferType,
+                      groups[CategoryController.transferType]!,
+                    ),
+                  ],
+                );
+              }),
               const SizedBox(height: 18),
               Text(
                 'MONTHLY LIMIT',
@@ -553,13 +567,6 @@ class _AddBudgetSheetState extends State<_AddBudgetSheet> {
       ),
     );
   }
-}
-
-class _CatOption {
-  const _CatOption(this.name, this.icon, this.color);
-  final String name;
-  final IconData icon;
-  final Color color;
 }
 
 class _BudgetLoadingSkeleton extends StatelessWidget {

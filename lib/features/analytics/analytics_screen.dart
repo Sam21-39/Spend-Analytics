@@ -23,9 +23,23 @@ class AnalyticsScreen extends GetView<AnalyticsController> {
       title: 'Analytics',
       activeRoute: AppRoutes.analytics,
       actions: <Widget>[
-        BarActionButton(icon: Icons.calendar_today_outlined, onTap: () {}),
+        BarActionButton(
+          icon: Icons.calendar_today_outlined,
+          onTap:
+              () => Get.snackbar(
+                'Date range',
+                'Use the range chips below to change analytics period.',
+              ),
+        ),
         const SizedBox(width: 4),
-        BarActionButton(icon: Icons.more_horiz_rounded, onTap: () {}),
+        BarActionButton(
+          icon: Icons.more_horiz_rounded,
+          onTap:
+              () => Get.snackbar(
+                'More options',
+                'Advanced analytics actions are coming soon.',
+              ),
+        ),
       ],
       child: Obx(() {
         if (controller.isLoading.value) {

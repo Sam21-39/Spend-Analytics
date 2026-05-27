@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:spend_analytics/core/local_db/app_database.dart';
 import 'package:spend_analytics/core/supabase/supabase_service.dart';
 import 'package:spend_analytics/shared/models/transaction_model.dart';
+import 'package:spend_analytics/shared/utils/category_visuals.dart';
 
 class AnalyticsCategorySlice {
   const AnalyticsCategorySlice({
@@ -323,41 +324,11 @@ class AnalyticsController extends GetxController {
   }
 
   static IconData _iconFor(String category) {
-    switch (category.toLowerCase()) {
-      case 'food':
-        return Icons.coffee_rounded;
-      case 'transport':
-        return Icons.directions_car_rounded;
-      case 'shopping':
-        return Icons.shopping_bag_rounded;
-      case 'health':
-        return Icons.favorite_rounded;
-      case 'bills':
-        return Icons.bolt_rounded;
-      case 'income':
-        return Icons.arrow_downward_rounded;
-      default:
-        return Icons.sell_rounded;
-    }
+    return CategoryVisuals.iconFor(category);
   }
 
   static Color _colorFor(String category) {
-    switch (category.toLowerCase()) {
-      case 'food':
-        return const Color(0xFFFF9F40);
-      case 'transport':
-        return const Color(0xFF5B9FFF);
-      case 'shopping':
-        return const Color(0xFFB0A0FF);
-      case 'health':
-        return const Color(0xFFFF6B6B);
-      case 'bills':
-        return const Color(0xFFFFB860);
-      case 'income':
-        return const Color(0xFF3FDDA0);
-      default:
-        return const Color(0xFF3FDDA0);
-    }
+    return CategoryVisuals.colorFor(category);
   }
 
   String _monthShort(int month) {

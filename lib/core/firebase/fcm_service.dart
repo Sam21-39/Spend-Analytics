@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -38,7 +39,7 @@ class FcmService extends GetxService {
       _handleNotificationTap(initial);
     }
 
-    await _refreshFcmToken();
+    unawaited(_refreshFcmToken());
     FirebaseMessaging.instance.onTokenRefresh.listen((_) {
       _refreshFcmToken();
     });

@@ -19,13 +19,16 @@ class SpendAnalyticsApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeService = Get.find<ThemeService>();
+    final themeMode =
+        Get.isRegistered<ThemeService>()
+            ? Get.find<ThemeService>().themeMode.value
+            : ThemeMode.system;
     return GetMaterialApp(
       title: AppConfig.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      themeMode: themeService.themeMode.value,
+      themeMode: themeMode,
       initialRoute: AppRoutes.splash,
       getPages: AppRoutes.pages,
       defaultTransition: Transition.fadeIn,

@@ -4,6 +4,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:permission_handler/permission_handler.dart'
+    as permission_handler;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:spend_analytics/core/config/app_config.dart';
@@ -19,7 +21,9 @@ class SettingsController extends GetxController {
   static const _kCurrency = 'settings_currency';
   static const _kNotifications = 'settings_notifications_enabled';
   static const _kBiometric = 'settings_biometric_enabled';
+  static const _kVoiceEntry = 'settings_voice_entry_enabled';
   static const _kPremiumEnabled = 'settings_premium_enabled';
+  static const voiceEntryPreferenceKey = _kVoiceEntry;
 
   final SupabaseService _supabase = Get.find<SupabaseService>();
   final AppDatabase _db = Get.find<AppDatabase>();
@@ -32,6 +36,7 @@ class SettingsController extends GetxController {
   final selectedCurrency = 'INR'.obs;
   final notificationsEnabled = true.obs;
   final biometricLockEnabled = false.obs;
+  final voiceEntryEnabled = true.obs;
   final displayName = 'Guest User'.obs;
   final avatarUrl = ''.obs;
   final email = ''.obs;
@@ -125,6 +130,7 @@ class SettingsController extends GetxController {
     final currency = prefs.getString(_kCurrency);
     final notifications = prefs.getBool(_kNotifications);
     final biometric = prefs.getBool(_kBiometric);
+    final voiceEntry = prefs.getBool(_kVoiceEntry);
     final premium = prefs.getBool(_kPremiumEnabled);
 
     if (currency != null && currencies.contains(currency)) {
@@ -135,6 +141,9 @@ class SettingsController extends GetxController {
     }
     if (biometric != null) {
       biometricLockEnabled.value = biometric;
+    }
+    if (voiceEntry != null) {
+      voiceEntryEnabled.value = voiceEntry;
     }
     premiumEnabled.value = premium ?? false;
     await refreshPermissionStatuses();
@@ -178,43 +187,47 @@ class SettingsController extends GetxController {
   }
 
   Future<void> setNotificationsEnabled(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
     if (value) {
       final granted = await requestNotificationsPermission();
       notificationsEnabled.value = granted;
-      final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_kNotifications, granted);
       if (!granted) {
-        Get.snackbar(
-          'Notifications blocked',
-          'Enable notifications from system settings to receive alerts.',
+        await _openAppSettingsWithMessage(
+          title: 'Notifications blocked',
+          message: 'Enable notifications in app settings to receive alerts.',
         );
       }
       return;
     }
 
     notificationsEnabled.value = false;
-    final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_kNotifications, false);
   }
 
   Future<void> setBiometricLockEnabled(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
     if (value) {
       final granted = await requestBiometricPermission();
       biometricLockEnabled.value = granted;
-      final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_kBiometric, granted);
       if (!granted) {
-        Get.snackbar(
-          'Biometric unavailable',
-          'Set up biometrics on your device first.',
+        await _openAppSettingsWithMessage(
+          title: 'Biometric unavailable',
+          message: 'Set up biometrics in device settings, then try again.',
         );
       }
       return;
     }
 
     biometricLockEnabled.value = false;
-    final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_kBiometric, false);
+  }
+
+  Future<void> setVoiceEntryEnabled(bool value) async {
+    voiceEntryEnabled.value = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kVoiceEntry, value);
   }
 
   Future<void> setThemeMode(ThemeMode mode) async {
@@ -228,6 +241,7 @@ class SettingsController extends GetxController {
 
   Future<void> refreshPermissionStatuses() async {
     await _refreshNotificationPermission();
+    await _refreshMicrophonePermission();
     await _refreshBiometricAvailability();
   }
 
@@ -268,6 +282,10 @@ class SettingsController extends GetxController {
       microphonePermission.value = SettingsPermissionState.denied;
       return false;
     }
+  }
+
+  Future<void> openSystemAppSettings() async {
+    await permission_handler.openAppSettings();
   }
 
   Future<bool> requestBiometricPermission() async {
@@ -341,6 +359,15 @@ class SettingsController extends GetxController {
     }
   }
 
+  Future<void> _refreshMicrophonePermission() async {
+    final hasPermission = _speechToText.hasPermission;
+    if (hasPermission == true) {
+      microphonePermission.value = SettingsPermissionState.granted;
+      return;
+    }
+    microphonePermission.value = SettingsPermissionState.unknown;
+  }
+
   String _permissionLabel(SettingsPermissionState state) {
     switch (state) {
       case SettingsPermissionState.granted:
@@ -352,6 +379,14 @@ class SettingsController extends GetxController {
       case SettingsPermissionState.unknown:
         return 'Not requested';
     }
+  }
+
+  Future<void> _openAppSettingsWithMessage({
+    required String title,
+    required String message,
+  }) async {
+    Get.snackbar(title, message);
+    await openSystemAppSettings();
   }
 
   void _updateLoading() {

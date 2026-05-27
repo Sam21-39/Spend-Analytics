@@ -1,0 +1,27 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="mark" x1="240" y1="210" x2="790" y2="820" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5B9FFF"/>
+      <stop offset="1" stop-color="#B0A0FF"/>
+    </linearGradient>
+    <filter id="shadow" x="124" y="146" width="776" height="800" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="12"/>
+      <feGaussianBlur stdDeviation="16"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.356 0 0 0 0 0.624 0 0 0 0 1 0 0 0 0.4 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1_1"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1_1" result="shape"/>
+    </filter>
+  </defs>
+
+  <!-- Transparent background by design: only logo mark is drawn -->
+  <g filter="url(#shadow)">
+    <rect x="156" y="156" width="712" height="712" rx="200" fill="url(#mark)"/>
+  </g>
+
+  <!-- White bar_chart-style glyph to match splash logo -->
+  <rect x="328" y="554" width="94" height="178" rx="30" fill="white"/>
+  <rect x="468" y="404" width="94" height="328" rx="30" fill="white"/>
+  <rect x="608" y="488" width="94" height="244" rx="30" fill="white"/>
+</svg>
