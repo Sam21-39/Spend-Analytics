@@ -126,14 +126,14 @@ class DashboardScreen extends GetView<DashboardController> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    '${_greetingForHour(now.hour)}',
+                    'Dashboard overview',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: scheme.onSurfaceVariant,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    "Here's your live overview.",
+                    '${_greetingForHour(now.hour)}, ${controller.firstName.value}',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       color: scheme.onSurface,
                       fontWeight: FontWeight.w800,
@@ -539,7 +539,8 @@ class DashboardScreen extends GetView<DashboardController> {
   String _greetingForHour(int hour) {
     if (hour < 12) return 'Good morning';
     if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
+    if (hour < 21) return 'Good evening';
+    return 'Good night';
   }
 
   String _monthLabel(DateTime d) {

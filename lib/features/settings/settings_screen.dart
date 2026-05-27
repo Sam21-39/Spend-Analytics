@@ -31,29 +31,9 @@ class SettingsScreen extends GetView<SettingsController> {
               padding: const EdgeInsets.all(20),
               child: Row(
                 children: <Widget>[
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: <Color>[scheme.primary, scheme.secondary],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        controller.displayName.value.isEmpty
-                            ? 'U'
-                            : controller.displayName.value[0].toUpperCase(),
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
+                  _ProfileAvatar(
+                    name: controller.displayName.value,
+                    avatarUrl: controller.avatarUrl.value,
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -677,6 +657,43 @@ class SettingsScreen extends GetView<SettingsController> {
           ],
         );
       },
+    );
+  }
+}
+
+class _ProfileAvatar extends StatelessWidget {
+  const _ProfileAvatar({required this.name, required this.avatarUrl});
+
+  final String name;
+  final String avatarUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final hasAvatar = avatarUrl.trim().isNotEmpty;
+    return CircleAvatar(
+      radius: 28,
+      backgroundColor: scheme.surfaceContainerHighest,
+      foregroundImage: hasAvatar ? NetworkImage(avatarUrl.trim()) : null,
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Image.asset(
+          'assets/images/sp_logo.png',
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+            final initial =
+                name.trim().isEmpty ? 'U' : name.trim()[0].toUpperCase();
+            return Text(
+              initial,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: scheme.onSurface,
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 }

@@ -33,6 +33,7 @@ class SettingsController extends GetxController {
   final notificationsEnabled = true.obs;
   final biometricLockEnabled = false.obs;
   final displayName = 'Guest User'.obs;
+  final avatarUrl = ''.obs;
   final email = ''.obs;
   final isGuestMode = true.obs;
   final premiumEnabled = false.obs;
@@ -147,12 +148,14 @@ class SettingsController extends GetxController {
     if (sessionUser == null) {
       isGuestMode.value = true;
       displayName.value = 'Guest User';
+      avatarUrl.value = '';
       email.value = '';
     } else {
       isGuestMode.value = false;
       final meta = sessionUser.userMetadata ?? <String, dynamic>{};
       final name = '${meta['display_name'] ?? ''}'.trim();
       displayName.value = name.isEmpty ? 'User' : name;
+      avatarUrl.value = '${meta['avatar_url'] ?? meta['picture'] ?? ''}'.trim();
       email.value = sessionUser.email ?? '';
     }
 
