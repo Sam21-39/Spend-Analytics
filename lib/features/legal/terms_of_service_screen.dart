@@ -38,7 +38,7 @@ class TermsOfServiceScreen extends StatelessWidget {
                 const _Clause(
                   title: 'Agreement to Terms',
                   body:
-                      'By using SpendSense, you agree to these terms and to use the app in compliance with applicable law.',
+                      'By using Spend Analytics, you agree to these terms and to use the app in compliance with applicable law.',
                 ),
                 const _Clause(
                   title: 'User Accounts',
@@ -53,7 +53,7 @@ class TermsOfServiceScreen extends StatelessWidget {
                 const _Clause(
                   title: 'Data Ownership',
                   body:
-                      'You retain ownership of all financial records you enter. SpendSense does not claim ownership of your data.',
+                      'You retain ownership of all financial records you enter. Spend Analytics does not claim ownership of your data.',
                 ),
                 const _Clause(
                   title: 'Acceptable Use',
@@ -63,7 +63,7 @@ class TermsOfServiceScreen extends StatelessWidget {
                 const _Clause(
                   title: 'Limitation of Liability',
                   body:
-                      'SpendSense provides personal finance tooling and does not provide legal, tax, or investment advice.',
+                      'Spend Analytics provides personal finance tooling and does not provide legal, tax, or investment advice.',
                 ),
                 const _Clause(
                   title: 'Termination',

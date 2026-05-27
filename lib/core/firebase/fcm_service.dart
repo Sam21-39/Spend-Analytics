@@ -25,7 +25,7 @@ class FcmService extends GetxService {
 
     FirebaseMessaging.onMessage.listen((message) {
       showLocalNotification(
-        title: message.notification?.title ?? 'SpendSense',
+        title: message.notification?.title ?? 'Spend Analytics',
         body: message.notification?.body ?? 'You have a new update',
         route: message.data['route'] as String?,
         payload: message.data,
@@ -66,7 +66,7 @@ class FcmService extends GetxService {
       const NotificationDetails(
         android: AndroidNotificationDetails(
           'spendsense_alerts',
-          'SpendSense Alerts',
+          'Spend Analytics Alerts',
           importance: Importance.max,
           priority: Priority.high,
         ),

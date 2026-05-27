@@ -39,7 +39,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                 _Section(
                   title: 'Our Commitment',
                   body:
-                      'At SpendSense, your financial data is exclusively yours. We do not build an ad business and we do not monetize your personal finance records.',
+                      'At Spend Analytics, your financial data is exclusively yours. We do not build an ad business and we do not monetize your personal finance records.',
                 ),
                 _Section(
                   title: 'Privacy First Principles',
