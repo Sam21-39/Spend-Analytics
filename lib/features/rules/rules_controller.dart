@@ -7,6 +7,8 @@ import 'package:spend_analytics/core/local_db/app_database.dart';
 import 'package:spend_analytics/core/supabase/supabase_service.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../shared/utils/currency_formatter.dart';
+
 class RuleViewModel {
   const RuleViewModel({
     required this.id,
@@ -23,13 +25,11 @@ class RuleViewModel {
   String get title {
     switch (ruleType) {
       case 'budget_threshold':
-        final pct = ((parameters['threshold_pct'] as num? ?? 0.8) * 100)
-            .toStringAsFixed(0);
+        final pct = ((parameters['threshold_pct'] as num? ?? 0.8) * 100).toStringAsFixed(0);
         return 'Budget alert at $pct%';
       case 'daily_limit':
-        final limit = (parameters['limit_amount'] as num? ?? 1500)
-            .toStringAsFixed(0);
-        return 'Daily spend limit ₹$limit';
+        final limit = (parameters['limit_amount'] as num? ?? 1500).toStringAsFixed(0);
+        return 'Daily spend limit ${getCurrencySymbol()}$limit';
       case 'no_entry_reminder':
         final time = parameters['time']?.toString() ?? '21:00';
         return 'No-entry reminder at $time';
@@ -39,9 +39,7 @@ class RuleViewModel {
       case 'weekend_overspend':
         return 'Weekend overspend insight';
       case 'recurring_due':
-        final days = (parameters['days_before'] as num? ?? 2).toStringAsFixed(
-          0,
-        );
+        final days = (parameters['days_before'] as num? ?? 2).toStringAsFixed(0);
         return 'Recurring due in $days day(s)';
       default:
         return ruleType;
@@ -92,8 +90,7 @@ class RulesController extends GetxController {
     await _removeLegacySeededRulesIfPresent();
     await _pruneDuplicateRulesByContent();
 
-    final query = _db.select(_db.userRules)
-      ..where((t) => t.userId.equals(_userId));
+    final query = _db.select(_db.userRules)..where((t) => t.userId.equals(_userId));
     _rulesSub = query.watch().listen((rows) {
       final sorted = rows.toList(growable: false)
         ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
@@ -185,9 +182,7 @@ class RulesController extends GetxController {
     final params = _db.parseRuleParameters(row);
     final sortedEntries = params.entries.toList(growable: false)
       ..sort((a, b) => a.key.compareTo(b.key));
-    final canonical = <String, dynamic>{
-      for (final entry in sortedEntries) entry.key: entry.value,
-    };
+    final canonical = <String, dynamic>{for (final entry in sortedEntries) entry.key: entry.value};
     return jsonEncode(canonical);
   }
 
@@ -332,12 +327,7 @@ class RulesController extends GetxController {
       parameters: parameters,
       isActive: true,
     );
-    await _supabase.upsertRule(
-      id: id,
-      ruleType: ruleType,
-      parameters: parameters,
-      isActive: true,
-    );
+    await _supabase.upsertRule(id: id, ruleType: ruleType, parameters: parameters, isActive: true);
     return true;
   }
 

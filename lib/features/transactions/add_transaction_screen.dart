@@ -7,6 +7,7 @@ import 'package:spend_analytics/features/categories/category_controller.dart';
 import 'package:spend_analytics/features/transactions/transaction_controller.dart';
 import 'package:spend_analytics/shared/models/transaction_model.dart';
 import 'package:spend_analytics/shared/utils/category_visuals.dart';
+import 'package:spend_analytics/shared/utils/currency_formatter.dart';
 import 'package:spend_analytics/shared/widgets/icon_box.dart';
 import 'package:spend_analytics/shared/widgets/liquid_glass_surface.dart';
 import 'package:spend_analytics/shared/widgets/liquid_page_scaffold.dart';
@@ -245,9 +246,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   void _addQuick(int n) {
     final current = double.tryParse(_amountCtrl.text) ?? 0;
     final next = (current + n).clamp(0, 9999999).toDouble();
-    _amountCtrl.text = next == next.roundToDouble()
-        ? next.toStringAsFixed(0)
-        : next.toString();
+    _amountCtrl.text = next == next.roundToDouble() ? next.toStringAsFixed(0) : next.toString();
     // Clear amount error when a quick-amount is added
     if (_amountInvalid) setState(() => _amountInvalid = false);
   }
@@ -527,7 +526,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     textBaseline: TextBaseline.alphabetic,
                     children: <Widget>[
                       Text(
-                        '₹',
+                        getCurrencySymbol(),
                         style: TextStyle(
                           fontSize: ScreenX.sp(36),
                           fontWeight: FontWeight.w600,
@@ -540,7 +539,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                           controller: _amountCtrl,
                           autofocus: !_isEditing,
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      // Only digits + single decimal; cap at 7 digits before decimal
+                          // Only digits + single decimal; cap at 7 digits before decimal
                           inputFormatters: [
                             FilteringTextInputFormatter.allow(RegExp(r'^\d{0,7}(\.\d{0,2})?')),
                           ],
@@ -573,8 +572,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     Text(
                       double.tryParse(_amountCtrl.text.trim()) != null &&
                               (double.tryParse(_amountCtrl.text.trim()) ?? 0) > 9999999
-                          ? 'Amount cannot exceed ₹99,99,999'
-                          : 'Please enter a valid amount (min ₹1)',
+                          ? 'Amount cannot exceed ${getCurrencySymbol()}99,99,999'
+                          : 'Please enter a valid amount (min ${getCurrencySymbol()}1)',
                       style: TextStyle(
                         fontSize: ScreenX.sp(12),
                         color: scheme.error,
@@ -606,7 +605,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                     ),
                                   ),
                                   child: Text(
-                                    '+ ₹$n',
+                                    '+ ${getCurrencySymbol()}$n',
                                     style: TextStyle(
                                       fontSize: ScreenX.sp(13),
                                       fontWeight: FontWeight.w700,
@@ -769,6 +768,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         prefixIcon: const Icon(Icons.storefront_outlined),
                         counterText: '',
                       ),
+                      style: TextStyle(color: scheme.onSurface),
                     ),
                   ],
                   SizedBox(height: ScreenX.dp(12)),
@@ -862,14 +862,16 @@ class _NoteRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _ = Theme.of(context).colorScheme;
+    final scheme = Theme.of(context).colorScheme;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: ScreenX.dp(4), vertical: ScreenX.dp(4)),
       child: TextField(
         controller: controller,
         maxLines: 1,
         maxLength: 200,
-        style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: ScreenX.sp(15)),
+        style: Theme.of(
+          context,
+        ).textTheme.bodyLarge?.copyWith(fontSize: ScreenX.sp(15), color: scheme.onSurface),
         decoration: InputDecoration(
           hintText: 'Add a note…',
           prefixIcon: const Icon(Icons.edit_outlined, size: 18),

@@ -26,10 +26,7 @@ class BudgetScreen extends GetView<BudgetController> {
       title: 'Budgets',
       activeRoute: AppRoutes.budgets,
       actions: <Widget>[
-        BarActionButton(
-          icon: Icons.add_rounded,
-          onTap: () => _showAddBudgetSheet(context),
-        ),
+        BarActionButton(icon: Icons.add_rounded, onTap: () => _showAddBudgetSheet(context)),
       ],
       child: Obx(() {
         if (controller.isLoading.value) {
@@ -39,12 +36,8 @@ class BudgetScreen extends GetView<BudgetController> {
         final spend = controller.categorySpend;
 
         final totalLimit = budgets.values.fold<double>(0, (s, v) => s + v);
-        final totalSpent = budgets.keys.fold<double>(
-          0,
-          (s, k) => s + (spend[k] ?? 0),
-        );
-        final overallPct =
-            totalLimit == 0 ? 0.0 : (totalSpent / totalLimit).clamp(0.0, 1.0);
+        final totalSpent = budgets.keys.fold<double>(0, (s, k) => s + (spend[k] ?? 0));
+        final overallPct = totalLimit == 0 ? 0.0 : (totalSpent / totalLimit).clamp(0.0, 1.0);
 
         Color ringColor;
         if (overallPct >= 1.0)
@@ -211,11 +204,7 @@ class BudgetScreen extends GetView<BudgetController> {
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
-                              Icon(
-                                statusIcon,
-                                size: ScreenX.dp(14),
-                                color: statusColor,
-                              ),
+                              Icon(statusIcon, size: ScreenX.dp(14), color: statusColor),
                               SizedBox(width: ScreenX.dp(4)),
                               Text(
                                 statusText,
@@ -230,11 +219,7 @@ class BudgetScreen extends GetView<BudgetController> {
                         ],
                       ),
                       SizedBox(height: ScreenX.dp(14)),
-                      SAProgressBar(
-                        value: pct,
-                        color: barColor,
-                        height: ScreenX.dp(7),
-                      ),
+                      SAProgressBar(value: pct, color: barColor, height: ScreenX.dp(7)),
                       SizedBox(height: ScreenX.dp(6)),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -285,11 +270,7 @@ class BudgetScreen extends GetView<BudgetController> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    Icon(
-                      Icons.add_rounded,
-                      size: ScreenX.dp(18),
-                      color: scheme.onSurfaceVariant,
-                    ),
+                    Icon(Icons.add_rounded, size: ScreenX.dp(18), color: scheme.onSurfaceVariant),
                     SizedBox(width: ScreenX.dp(6)),
                     Text(
                       'Add a budget',
@@ -348,25 +329,22 @@ class _AddBudgetSheetState extends State<_AddBudgetSheet> {
   void _onAmountTap() {
     final text = _amountCtrl.text;
     if (text == '0' || text.isEmpty) {
-      _amountCtrl.selection = TextSelection(
-        baseOffset: 0,
-        extentOffset: text.length,
-      );
+      _amountCtrl.selection = TextSelection(baseOffset: 0, extentOffset: text.length);
     }
   }
 
   bool _validate() {
-    final amount = double.tryParse(_amountCtrl.text.trim());
+    final amt = double.tryParse(_amountCtrl.text.trim());
     String? catErr;
     String? amtErr;
 
     if (_selectedCategory == null) {
       catErr = 'Please choose a category';
     }
-    if (amount == null || amount <= 0) {
-      amtErr = 'Enter a valid amount (min ₹1)';
-    } else if (amount > 9999999) {
-      amtErr = 'Amount cannot exceed ₹99,99,999';
+    if (amt == null || amt < 1) {
+      amtErr = 'Enter a valid amount (min ${getCurrencySymbol()}1)';
+    } else if (amt > 9999999) {
+      amtErr = 'Amount cannot exceed ${getCurrencySymbol()}99,99,999';
     }
 
     setState(() {
@@ -424,10 +402,7 @@ class _AddBudgetSheetState extends State<_AddBudgetSheet> {
                   fontSize: ScreenX.sp(10),
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1,
-                  color:
-                      _categoryError != null
-                          ? scheme.error
-                          : scheme.onSurfaceVariant,
+                  color: _categoryError != null ? scheme.error : scheme.onSurfaceVariant,
                 ),
               ),
               if (_categoryError != null) ...[
@@ -447,12 +422,15 @@ class _AddBudgetSheetState extends State<_AddBudgetSheet> {
               Obx(() {
                 final categoryController = Get.find<CategoryController>();
                 final groups = <String, List<String>>{
-                  CategoryController.expenseType: categoryController
-                      .categoriesForType(CategoryController.expenseType),
-                  CategoryController.incomeType: categoryController
-                      .categoriesForType(CategoryController.incomeType),
-                  CategoryController.transferType: categoryController
-                      .categoriesForType(CategoryController.transferType),
+                  CategoryController.expenseType: categoryController.categoriesForType(
+                    CategoryController.expenseType,
+                  ),
+                  CategoryController.incomeType: categoryController.categoriesForType(
+                    CategoryController.incomeType,
+                  ),
+                  CategoryController.transferType: categoryController.categoriesForType(
+                    CategoryController.transferType,
+                  ),
                 };
                 Widget buildChip(String type, String name) {
                   final active = _selectedCategory == name;
@@ -473,9 +451,7 @@ class _AddBudgetSheetState extends State<_AddBudgetSheet> {
                         color:
                             active
                                 ? scheme.primary.withValues(alpha: 0.14)
-                                : scheme.surfaceContainerHighest.withValues(
-                                  alpha: 0.4,
-                                ),
+                                : scheme.surfaceContainerHighest.withValues(alpha: 0.4),
                         border: Border.all(
                           color:
                               active
@@ -493,10 +469,7 @@ class _AddBudgetSheetState extends State<_AddBudgetSheet> {
                             color:
                                 active
                                     ? scheme.primary
-                                    : CategoryVisuals.colorFor(
-                                      name,
-                                      type: type,
-                                    ),
+                                    : CategoryVisuals.colorFor(name, type: type),
                           ),
                           SizedBox(width: ScreenX.dp(6)),
                           Text(
@@ -504,8 +477,7 @@ class _AddBudgetSheetState extends State<_AddBudgetSheet> {
                             style: TextStyle(
                               fontSize: ScreenX.sp(13),
                               fontWeight: FontWeight.w700,
-                              color:
-                                  active ? scheme.primary : scheme.onSurface,
+                              color: active ? scheme.primary : scheme.onSurface,
                             ),
                           ),
                         ],
@@ -516,8 +488,7 @@ class _AddBudgetSheetState extends State<_AddBudgetSheet> {
 
                 // Horizontal scrollable row per category type
                 Widget buildHorizontalGroup(String type, List<String> names) {
-                  final label =
-                      '${type[0].toUpperCase()}${type.substring(1)}';
+                  final label = '${type[0].toUpperCase()}${type.substring(1)}';
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -537,8 +508,7 @@ class _AddBudgetSheetState extends State<_AddBudgetSheet> {
                           scrollDirection: Axis.horizontal,
                           padding: EdgeInsets.zero,
                           itemCount: names.length,
-                          separatorBuilder: (_, __) =>
-                              SizedBox(width: ScreenX.dp(8)),
+                          separatorBuilder: (_, __) => SizedBox(width: ScreenX.dp(8)),
                           itemBuilder: (_, i) => buildChip(type, names[i]),
                         ),
                       ),
@@ -575,22 +545,15 @@ class _AddBudgetSheetState extends State<_AddBudgetSheet> {
                   fontSize: ScreenX.sp(10),
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1,
-                  color:
-                      _amountError != null
-                          ? scheme.error
-                          : scheme.onSurfaceVariant,
+                  color: _amountError != null ? scheme.error : scheme.onSurfaceVariant,
                 ),
               ),
               SizedBox(height: ScreenX.dp(8)),
 
               TextField(
                 controller: _amountCtrl,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-                ],
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
                 onTap: _onAmountTap,
                 onChanged: (_) {
                   if (_amountError != null) {
@@ -603,7 +566,7 @@ class _AddBudgetSheetState extends State<_AddBudgetSheet> {
                   color: scheme.onSurface,
                 ),
                 decoration: InputDecoration(
-                  prefixText: '₹ ',
+                  prefixText: '${getCurrencySymbol()} ',
                   prefixStyle: TextStyle(
                     fontSize: ScreenX.sp(20),
                     fontWeight: FontWeight.w700,
@@ -619,10 +582,7 @@ class _AddBudgetSheetState extends State<_AddBudgetSheet> {
                 onPressed: () async {
                   if (!_validate()) return;
                   final amount = double.parse(_amountCtrl.text.trim());
-                  await widget.controller.upsertBudget(
-                    _selectedCategory!,
-                    amount,
-                  );
+                  await widget.controller.upsertBudget(_selectedCategory!, amount);
                   if (mounted) {
                     Navigator.of(context).pop();
                   }
@@ -633,10 +593,7 @@ class _AddBudgetSheetState extends State<_AddBudgetSheet> {
                 ),
                 child: Text(
                   'Save budget',
-                  style: TextStyle(
-                    fontSize: ScreenX.sp(15),
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: TextStyle(fontSize: ScreenX.sp(15), fontWeight: FontWeight.w700),
                 ),
               ),
             ],
@@ -688,11 +645,7 @@ class _StatusDot extends StatelessWidget {
         shape: BoxShape.circle,
         color: color,
         boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: color.withValues(alpha: 0.5),
-            blurRadius: 4,
-            spreadRadius: 1,
-          ),
+          BoxShadow(color: color.withValues(alpha: 0.5), blurRadius: 4, spreadRadius: 1),
         ],
       ),
     );
@@ -700,20 +653,14 @@ class _StatusDot extends StatelessWidget {
 }
 
 class DashedBorderContainer extends StatelessWidget {
-  const DashedBorderContainer({
-    super.key,
-    required this.child,
-    required this.isDark,
-  });
+  const DashedBorderContainer({super.key, required this.child, required this.isDark});
   final Widget child;
   final bool isDark;
 
   @override
   Widget build(BuildContext context) {
     final borderColor =
-        isDark
-            ? Colors.white.withValues(alpha: 0.18)
-            : Colors.black.withValues(alpha: 0.14);
+        isDark ? Colors.white.withValues(alpha: 0.18) : Colors.black.withValues(alpha: 0.14);
 
     return CustomPaint(
       painter: _DashedBorderPainter(color: borderColor),

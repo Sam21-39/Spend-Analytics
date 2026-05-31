@@ -34,10 +34,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
       showBottomNav: false,
       onBack: () => Get.back<void>(),
       actions: <Widget>[
-        BarActionButton(
-          icon: Icons.add_rounded,
-          onTap: () => _showAddSheet(context),
-        ),
+        BarActionButton(icon: Icons.add_rounded, onTap: () => _showAddSheet(context)),
       ],
       child: Obx(() {
         final cats = controller.categoriesForType(_selectedType);
@@ -61,10 +58,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                       'Main category → sub-categories · Drag to reorder',
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: ScreenX.sp(13),
-                        color: scheme.onSurfaceVariant,
-                      ),
+                      style: TextStyle(fontSize: ScreenX.sp(13), color: scheme.onSurfaceVariant),
                     ),
                   ),
                 ],
@@ -83,17 +77,14 @@ class _CategoryScreenState extends State<CategoryScreen> {
                       CategoryController.transferType,
                     ]
                     .map((type) {
-                      final label =
-                          '${type[0].toUpperCase()}${type.substring(1)}';
+                      final label = '${type[0].toUpperCase()}${type.substring(1)}';
                       final active = type == _selectedType;
                       return Expanded(
                         child: GestureDetector(
                           onTap: () => setState(() => _selectedType = type),
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 160),
-                            padding: EdgeInsets.symmetric(
-                              vertical: ScreenX.dp(10),
-                            ),
+                            padding: EdgeInsets.symmetric(vertical: ScreenX.dp(10)),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(999),
                               color:
@@ -103,9 +94,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                               border:
                                   active
                                       ? Border.all(
-                                        color: scheme.primary.withValues(
-                                          alpha: 0.3,
-                                        ),
+                                        color: scheme.primary.withValues(alpha: 0.3),
                                         width: 0.5,
                                       )
                                       : null,
@@ -116,10 +105,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                               style: TextStyle(
                                 fontSize: ScreenX.sp(14),
                                 fontWeight: FontWeight.w700,
-                                color:
-                                    active
-                                        ? scheme.primary
-                                        : scheme.onSurfaceVariant,
+                                color: active ? scheme.primary : scheme.onSurfaceVariant,
                               ),
                             ),
                           ),
@@ -149,11 +135,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
               physics: const NeverScrollableScrollPhysics(),
               itemCount: cats.length,
               onReorder:
-                  (oldIdx, newIdx) => controller.reorderCategories(
-                    oldIdx,
-                    newIdx,
-                    type: _selectedType,
-                  ),
+                  (oldIdx, newIdx) =>
+                      controller.reorderCategories(oldIdx, newIdx, type: _selectedType),
               itemBuilder: (ctx, i) {
                 final name = cats[i];
                 final isLast = i == cats.length - 1;
@@ -167,9 +150,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                                 isDark
                                     ? Colors.white.withValues(alpha: 0.06)
                                     : Colors.black.withValues(alpha: 0.03),
-                            borderRadius: const BorderRadius.vertical(
-                              bottom: Radius.circular(18),
-                            ),
+                            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(18)),
                           )
                           : BoxDecoration(
                             color:
@@ -193,14 +174,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   child: Row(
                     children: <Widget>[
                       IconBox(
-                        icon: CategoryVisuals.iconFor(
-                          name,
-                          type: _selectedType,
-                        ),
-                        color: CategoryVisuals.colorFor(
-                          name,
-                          type: _selectedType,
-                        ),
+                        icon: CategoryVisuals.iconFor(name, type: _selectedType),
+                        color: CategoryVisuals.colorFor(name, type: _selectedType),
                         size: ScreenX.dp(38),
                       ),
                       SizedBox(width: ScreenX.dp(12)),
@@ -243,11 +218,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder:
-          (ctx) => _AddCategorySheet(
-            controller: controller,
-            selectedType: _selectedType,
-          ),
+      builder: (ctx) => _AddCategorySheet(controller: controller, selectedType: _selectedType),
     );
   }
 }
@@ -255,10 +226,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
 // ── Add Category Sheet ────────────────────────────────────────────────────────
 
 class _AddCategorySheet extends StatefulWidget {
-  const _AddCategorySheet({
-    required this.controller,
-    required this.selectedType,
-  });
+  const _AddCategorySheet({required this.controller, required this.selectedType});
 
   final CategoryController controller;
   final String selectedType;
@@ -280,8 +248,7 @@ class _AddCategorySheetState extends State<_AddCategorySheet> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final typeLabel =
-        '${widget.selectedType[0].toUpperCase()}${widget.selectedType.substring(1)}';
+    final typeLabel = '${widget.selectedType[0].toUpperCase()}${widget.selectedType.substring(1)}';
 
     return Padding(
       padding: EdgeInsets.only(
@@ -337,6 +304,7 @@ class _AddCategorySheetState extends State<_AddCategorySheet> {
                   errorText: _nameError,
                   counterText: '',
                 ),
+                style: TextStyle(color: scheme.onSurface),
               ),
               SizedBox(height: ScreenX.dp(16)),
 
@@ -353,9 +321,7 @@ class _AddCategorySheetState extends State<_AddCategorySheet> {
                   );
                   if (!added) {
                     if (!context.mounted) return;
-                    setState(
-                      () => _nameError = 'That category already exists',
-                    );
+                    setState(() => _nameError = 'That category already exists');
                     return;
                   }
                   if (!context.mounted) return;
@@ -367,10 +333,7 @@ class _AddCategorySheetState extends State<_AddCategorySheet> {
                 ),
                 child: Text(
                   'Add category',
-                  style: TextStyle(
-                    fontSize: ScreenX.sp(15),
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: TextStyle(fontSize: ScreenX.sp(15), fontWeight: FontWeight.w700),
                 ),
               ),
             ],

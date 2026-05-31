@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:spend_analytics/shared/utils/currency_formatter.dart';
 import 'package:spend_analytics/shared/widgets/icon_box.dart';
 import 'package:spend_analytics/shared/widgets/liquid_glass_surface.dart';
 import 'package:spend_analytics/shared/widgets/liquid_page_scaffold.dart';
@@ -15,8 +16,8 @@ class AddRuleScreen extends StatefulWidget {
 class _AddRuleScreenState extends State<AddRuleScreen> {
   int _selected = 0;
 
-  static const _types = <_RuleType>[
-    _RuleType(
+  static final _types = <_RuleType>[
+    const _RuleType(
       id: 'budget_threshold',
       icon: Icons.warning_amber_rounded,
       name: 'Budget threshold',
@@ -26,9 +27,9 @@ class _AddRuleScreenState extends State<AddRuleScreen> {
       id: 'daily_limit',
       icon: Icons.trending_up_rounded,
       name: 'Daily limit',
-      body: 'Stop me at ₹X per day',
+      body: 'Stop me at ${getCurrencySymbol()}X per day',
     ),
-    _RuleType(
+    const _RuleType(
       id: 'no_entry',
       icon: Icons.notifications_outlined,
       name: 'No-entry reminder',

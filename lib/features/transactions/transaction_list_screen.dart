@@ -22,14 +22,7 @@ class TransactionListScreen extends StatefulWidget {
 class _TransactionListScreenState extends State<TransactionListScreen> {
   String _filter = 'All';
 
-  static const _filters = <String>[
-    'All',
-    'Expense',
-    'Income',
-    'Food',
-    'Transport',
-    'Shopping',
-  ];
+  static const _filters = <String>['All', 'Expense', 'Income', 'Food', 'Transport', 'Shopping'];
 
   static IconData _iconFor(String category) {
     switch (category.toLowerCase()) {
@@ -103,10 +96,8 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
 
   List<TransactionModel> _applyFilter(List<TransactionModel> all) {
     if (_filter == 'All') return all;
-    if (_filter == 'Expense')
-      return all.where((t) => t.type == 'expense').toList();
-    if (_filter == 'Income')
-      return all.where((t) => t.type == 'income').toList();
+    if (_filter == 'Expense') return all.where((t) => t.type == 'expense').toList();
+    if (_filter == 'Income') return all.where((t) => t.type == 'income').toList();
     return all.where((t) => t.category == _filter).toList();
   }
 
@@ -126,27 +117,18 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
       actions: <Widget>[
         BarActionButton(
           icon: Icons.search_rounded,
-          onTap:
-              () => Get.snackbar(
-                'Search',
-                'Search in transactions is coming soon.',
-              ),
+          onTap: () => Get.snackbar('Search', 'Search in transactions is coming soon.'),
         ),
         const SizedBox(width: 4),
         BarActionButton(
           icon: Icons.filter_list_rounded,
-          onTap:
-              () => Get.snackbar(
-                'Filters',
-                'Use the filter chips below for now.',
-              ),
+          onTap: () => Get.snackbar('Filters', 'Use the filter chips below for now.'),
         ),
       ],
       child: StreamBuilder<List<TransactionModel>>(
         stream: db.watchTransactionsForUser(userId),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting &&
-              !snapshot.hasData) {
+          if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
             return const _TransactionsLoadingSkeleton();
           }
           final all = snapshot.data ?? const <TransactionModel>[];
@@ -206,18 +188,21 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                             label: 'SPENT',
                             value: formatInr(spent),
                             color: scheme.onSurface,
+                            headerTextColor: scheme.onSurface,
                           ),
                           _Divider(isDark: isDark),
                           _SumCol(
                             label: 'RECEIVED',
                             value: '+${formatInr(received)}',
                             color: scheme.tertiary,
+                            headerTextColor: scheme.onSurface,
                           ),
                           _Divider(isDark: isDark),
                           _SumCol(
                             label: 'NET',
                             value: formatInr(net.abs()),
                             color: scheme.onSurface,
+                            headerTextColor: scheme.onSurface,
                           ),
                         ],
                       );
@@ -230,12 +215,14 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                               label: 'SPENT',
                               value: formatInr(spent),
                               color: scheme.onSurface,
+                              headerTextColor: scheme.onSurface,
                             ),
                             SizedBox(width: ScreenX.dp(10)),
                             _SumCol(
                               label: 'RECEIVED',
                               value: '+${formatInr(received)}',
                               color: scheme.tertiary,
+                              headerTextColor: scheme.onSurface,
                             ),
                           ],
                         ),
@@ -246,6 +233,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                               label: 'NET',
                               value: formatInr(net.abs()),
                               color: scheme.onSurface,
+                              headerTextColor: scheme.onSurface,
                             ),
                           ],
                         ),
@@ -264,9 +252,9 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                   child: Center(
                     child: Text(
                       'No transactions match this filter.',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: scheme.onSurfaceVariant,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
                     ),
                   ),
                 )
@@ -276,15 +264,19 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                   final txns = entry.value;
                   final dayTotal = txns.fold<double>(
                     0,
-                    (sum, t) =>
-                        sum + (t.type == 'expense' ? -t.amount : t.amount),
+                    (sum, t) => sum + (t.type == 'expense' ? -t.amount : t.amount),
                   );
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
                       Padding(
-                        padding: EdgeInsets.fromLTRB(ScreenX.dp(4), 0, ScreenX.dp(4), ScreenX.dp(8)),
+                        padding: EdgeInsets.fromLTRB(
+                          ScreenX.dp(4),
+                          0,
+                          ScreenX.dp(4),
+                          ScreenX.dp(8),
+                        ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
@@ -299,8 +291,9 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                             ),
                             Text(
                               '${dayTotal >= 0 ? '+' : '−'}${formatInr(dayTotal.abs())}',
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(color: scheme.onSurfaceVariant),
+                              style: Theme.of(
+                                context,
+                              ).textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
                             ),
                           ],
                         ),
@@ -323,11 +316,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                                 mode: t.paymentMode,
                               ),
                               showDivider: !isLast,
-                              onTap:
-                                  () => Get.toNamed(
-                                    AppRoutes.txnDetail,
-                                    arguments: t,
-                                  ),
+                              onTap: () => Get.toNamed(AppRoutes.txnDetail, arguments: t),
                             );
                           }),
                         ),
@@ -379,10 +368,12 @@ class _SumCol extends StatelessWidget {
     required this.label,
     required this.value,
     required this.color,
+    required this.headerTextColor,
   });
   final String label;
   final String value;
   final Color color;
+  final Color headerTextColor;
 
   @override
   Widget build(BuildContext context) {
@@ -392,6 +383,7 @@ class _SumCol extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
+              color: headerTextColor,
               fontSize: ScreenX.sp(10),
               fontWeight: FontWeight.w700,
               letterSpacing: 1,
@@ -422,10 +414,7 @@ class _Divider extends StatelessWidget {
     return Container(
       width: 1,
       height: 40,
-      color:
-          isDark
-              ? Colors.white.withValues(alpha: 0.12)
-              : Colors.black.withValues(alpha: 0.08),
+      color: isDark ? Colors.white.withValues(alpha: 0.12) : Colors.black.withValues(alpha: 0.08),
     );
   }
 }

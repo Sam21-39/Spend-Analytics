@@ -15,6 +15,7 @@ import 'package:spend_analytics/core/sync/sync_manager.dart';
 import 'package:spend_analytics/core/theme/theme_service.dart';
 import 'package:spend_analytics/features/auth/auth_controller.dart';
 import 'package:spend_analytics/features/categories/category_controller.dart';
+import 'package:spend_analytics/features/settings/settings_controller.dart';
 
 class DependencyInjection {
   static Future<void> init() async {
@@ -46,6 +47,7 @@ class DependencyInjection {
 
     Get.put(AuthController(), permanent: true);
     Get.put(CategoryController(), permanent: true);
+    Get.put(SettingsController(), permanent: true);
   }
 
   static Future<void> _initNonCritical() async {

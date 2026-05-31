@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:spend_analytics/shared/utils/currency_formatter.dart';
 import 'package:spend_analytics/shared/widgets/icon_box.dart';
 
 /// Single transaction row — used in dashboard, transaction list, budget detail.
@@ -107,7 +108,7 @@ class TxnRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: <Widget>[
                 Text(
-                  '${data.isIncome ? '+' : '−'}₹${_formatAmount(data.amount)}',
+                  '${data.isIncome ? '+' : '−'}${getCurrencySymbol()}${_formatAmount(data.amount)}',
                   style: TextStyle(
                     fontSize:            15,
                     fontWeight:          FontWeight.w800,

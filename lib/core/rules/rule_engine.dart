@@ -3,6 +3,7 @@ import 'package:spend_analytics/core/firebase/fcm_service.dart';
 import 'package:spend_analytics/core/local_db/app_database.dart';
 import 'package:spend_analytics/core/routes/app_routes.dart';
 import 'package:spend_analytics/shared/models/transaction_model.dart';
+import 'package:spend_analytics/shared/utils/currency_formatter.dart';
 
 class RuleEngine extends GetxService {
   final AppDatabase _db = Get.find<AppDatabase>();
@@ -33,10 +34,7 @@ class RuleEngine extends GetxService {
     }
   }
 
-  Future<void> _checkBudgetThreshold(
-    TransactionModel txn,
-    Map<String, dynamic> params,
-  ) async {
+  Future<void> _checkBudgetThreshold(TransactionModel txn, Map<String, dynamic> params) async {
     final threshold = (params['threshold_pct'] as num? ?? 0.8).toDouble();
     if (threshold <= 0 || threshold > 1) {
       return;
@@ -45,9 +43,7 @@ class RuleEngine extends GetxService {
     final month = txn.transactionDate.month;
     final year = txn.transactionDate.year;
     final budgets =
-        await _db
-            .watchBudgetsForMonth(userId: txn.userId, month: month, year: year)
-            .first;
+        await _db.watchBudgetsForMonth(userId: txn.userId, month: month, year: year).first;
 
     final matched = budgets.where((b) => b.category == txn.category).toList();
     if (matched.isEmpty) {
@@ -73,8 +69,8 @@ class RuleEngine extends GetxService {
 
     final percent = (ratio * 100).toStringAsFixed(0);
     final remaining = (budget - spent).toStringAsFixed(0);
-    final title = '⚠ Budget Alert';
-    final body = '${txn.category} is $percent% used - ₹$remaining left';
+    final title = 'Budget alert: ${txn.category}';
+    final body = '${txn.category} is $percent% used - ${getCurrencySymbol()}$remaining left';
 
     await _db.addNotificationEvent(
       userId: txn.userId,
@@ -92,38 +88,37 @@ class RuleEngine extends GetxService {
     );
   }
 
-  Future<void> _checkDailyLimit(
-    TransactionModel txn,
-    Map<String, dynamic> params,
-  ) async {
+  Future<void> _checkDailyLimit(TransactionModel txn, Map<String, dynamic> params) async {
     final limit = (params['limit_amount'] as num? ?? 1500).toDouble();
     if (limit <= 0) {
       return;
     }
 
-    final total = await _db.getDailyExpenseTotal(
-      userId: txn.userId,
-      date: txn.transactionDate,
-    );
+    final total = await _db.getDailyExpenseTotal(userId: txn.userId, date: txn.transactionDate);
     final previous = total - txn.amount;
     if (total < limit || previous >= limit) {
       return;
     }
 
-    final title = '💸 Daily Limit';
-    final body = 'You crossed ₹${limit.toStringAsFixed(0)} today';
+    final percent = (total / limit * 100).toStringAsFixed(0);
+    final remaining = (limit - total).toStringAsFixed(0);
+    final title = 'Daily limit reached';
+    final body =
+        '$percent% of ${getCurrencySymbol()}$limit used - ${getCurrencySymbol()}$remaining left';
 
     await _db.addNotificationEvent(
       userId: txn.userId,
       title: title,
       body: body,
       route: AppRoutes.dashboard,
+      payload: <String, dynamic>{},
       source: 'rule',
     );
     await _fcm.showLocalNotification(
       title: title,
       body: body,
       route: AppRoutes.dashboard,
+      payload: <String, dynamic>{},
     );
   }
 }

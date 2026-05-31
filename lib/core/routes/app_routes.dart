@@ -21,7 +21,6 @@ import 'package:spend_analytics/features/rules/add_rule_screen.dart';
 import 'package:spend_analytics/features/rules/rules_controller.dart';
 import 'package:spend_analytics/features/rules/rules_screen.dart';
 import 'package:spend_analytics/features/settings/logout_confirm_screen.dart';
-import 'package:spend_analytics/features/settings/settings_controller.dart';
 import 'package:spend_analytics/features/settings/settings_screen.dart';
 import 'package:spend_analytics/features/subscription/subscription_plans_screen.dart';
 import 'package:spend_analytics/features/transactions/add_transaction_screen.dart';
@@ -85,30 +84,22 @@ class AppRoutes {
     GetPage(
       name: dashboard,
       page: () => const DashboardScreen(),
-      binding: BindingsBuilder(
-        () => Get.lazyPut<DashboardController>(() => DashboardController()),
-      ),
+      binding: BindingsBuilder(() => Get.lazyPut<DashboardController>(() => DashboardController())),
     ),
     GetPage(
       name: analytics,
       page: () => const AnalyticsScreen(),
-      binding: BindingsBuilder(
-        () => Get.lazyPut<AnalyticsController>(() => AnalyticsController()),
-      ),
+      binding: BindingsBuilder(() => Get.lazyPut<AnalyticsController>(() => AnalyticsController())),
     ),
     GetPage(
       name: budgets,
       page: () => const BudgetScreen(),
-      binding: BindingsBuilder(
-        () => Get.lazyPut<BudgetController>(() => BudgetController()),
-      ),
+      binding: BindingsBuilder(() => Get.lazyPut<BudgetController>(() => BudgetController())),
     ),
     GetPage(
       name: rules,
       page: () => const RulesScreen(),
-      binding: BindingsBuilder(
-        () => Get.lazyPut<RulesController>(() => RulesController()),
-      ),
+      binding: BindingsBuilder(() => Get.lazyPut<RulesController>(() => RulesController())),
     ),
 
     // Transactions
@@ -141,34 +132,26 @@ class AppRoutes {
     GetPage(
       name: voiceInput,
       page: () => const VoiceInputScreen(),
-      binding: BindingsBuilder(
-        () => Get.lazyPut<VoiceController>(() => VoiceController()),
-      ),
+      binding: BindingsBuilder(() => Get.lazyPut<VoiceController>(() => VoiceController())),
     ),
     GetPage(
       name: voiceReview,
       page: () => const VoiceAutoReviewScreen(),
-      binding: BindingsBuilder(
-        () => Get.lazyPut<VoiceController>(() => VoiceController()),
-      ),
+      binding: BindingsBuilder(() => Get.lazyPut<VoiceController>(() => VoiceController())),
     ),
 
     // Other features
     GetPage(
       name: recurring,
       page: () => const RecurringScreen(),
-      binding: BindingsBuilder(
-        () => Get.lazyPut<RecurringController>(() => RecurringController()),
-      ),
+      binding: BindingsBuilder(() => Get.lazyPut<RecurringController>(() => RecurringController())),
     ),
     GetPage(name: categories, page: () => const CategoryScreen()),
     GetPage(
       name: notifications,
       page: () => const NotificationCenterScreen(),
       binding: BindingsBuilder(
-        () => Get.lazyPut<NotificationCenterController>(
-          () => NotificationCenterController(),
-        ),
+        () => Get.lazyPut<NotificationCenterController>(() => NotificationCenterController()),
       ),
     ),
 
@@ -176,13 +159,7 @@ class AppRoutes {
     GetPage(name: addRule, page: () => const AddRuleScreen()),
 
     // Settings
-    GetPage(
-      name: settings,
-      page: () => const SettingsScreen(),
-      binding: BindingsBuilder(
-        () => Get.lazyPut<SettingsController>(() => SettingsController()),
-      ),
-    ),
+    GetPage(name: settings, page: () => const SettingsScreen()),
     GetPage(name: logout, page: () => const LogoutConfirmScreen()),
 
     // Subscription & legal
