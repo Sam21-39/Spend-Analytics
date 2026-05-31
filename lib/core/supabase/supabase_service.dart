@@ -213,6 +213,26 @@ class SupabaseService extends GetxService {
         .eq('user_id', currentUserId!);
   }
 
+  /// Fetches every transaction for [userId] from Supabase.
+  /// Used on first login / reinstall to hydrate the local DB.
+  Future<List<Map<String, dynamic>>> fetchAllTransactions({
+    required String userId,
+  }) async {
+    if (!isEnabled || !isAuthenticated) {
+      return const <Map<String, dynamic>>[];
+    }
+    final result = await client
+        .from('transactions')
+        .select(
+          'id,user_id,amount,type,category_name,payment_mode,note,tags,transaction_date,updated_at',
+        )
+        .eq('user_id', userId)
+        .order('transaction_date', ascending: false);
+
+    final rows = (result as List<dynamic>).whereType<Map<String, dynamic>>();
+    return rows.toList(growable: false);
+  }
+
   Map<String, dynamic> _mapOf(Object? value) {
     if (value is Map<String, dynamic>) {
       return value;

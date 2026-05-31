@@ -6,6 +6,7 @@ import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:spend_analytics/core/firebase/crashlytics_service.dart';
 import 'package:spend_analytics/features/auth/auth_controller.dart';
+import 'package:spend_analytics/features/categories/category_controller.dart';
 import 'package:spend_analytics/features/settings/settings_controller.dart';
 import 'package:spend_analytics/features/transactions/transaction_controller.dart';
 import 'package:spend_analytics/features/voice/voice_parser.dart';
@@ -23,16 +24,25 @@ class VoiceController extends GetxController {
   final amountText = ''.obs;
   final category = 'Others'.obs;
   final paymentMode = 'other'.obs;
+  final type = 'expense'.obs;
   final note = ''.obs;
 
-  final categories = const <String>[
-    'Food',
-    'Transport',
-    'Shopping',
-    'Bills',
-    'Health',
-    'Others',
-  ];
+  /// Uses CategoryController's expense categories so voice always matches
+  /// the same list used across all other screens.
+  List<String> get categories {
+    if (Get.isRegistered<CategoryController>()) {
+      return Get.find<CategoryController>().categoriesForType('expense');
+    }
+    return const <String>[
+      'Food',
+      'Groceries',
+      'Transport',
+      'Shopping',
+      'Bills',
+      'Health',
+      'Others',
+    ];
+  }
 
   TransactionController get _txnController {
     if (Get.isRegistered<TransactionController>()) {
@@ -68,16 +78,15 @@ class VoiceController extends GetxController {
           }
         },
       );
-      final granted = available;
-      isSpeechAvailable.value = granted;
-      if (!granted) {
+      isSpeechAvailable.value = available;
+      if (!available) {
         Get.snackbar(
           'Microphone permission needed',
           'Enable microphone access in app settings to use voice entry.',
         );
         await permission_handler.openAppSettings();
       }
-      return granted;
+      return available;
     } catch (error, stack) {
       await _crashlytics.recordError(
         error,
@@ -114,7 +123,7 @@ class VoiceController extends GetxController {
       // ignore: deprecated_member_use
       listenFor: const Duration(seconds: 35),
       // ignore: deprecated_member_use
-      pauseFor: const Duration(seconds: 3),
+      pauseFor: const Duration(seconds: 2), // Reduced from 3s → snappier UX
       // ignore: deprecated_member_use
       partialResults: true,
       // ignore: deprecated_member_use
@@ -141,12 +150,16 @@ class VoiceController extends GetxController {
   }
 
   void _parseTranscript() {
-    final parsed = VoiceParser.parse(transcript.value);
+    final parsed = VoiceParser.parse(
+      transcript.value,
+      availableCategories: categories,
+    );
     if (parsed.amount != null) {
       amountText.value = parsed.amount!.toStringAsFixed(2);
     }
     category.value = parsed.category;
     paymentMode.value = parsed.paymentMode;
+    type.value = parsed.type;
     note.value = parsed.note ?? '';
   }
 
@@ -156,13 +169,20 @@ class VoiceController extends GetxController {
       Get.snackbar('Invalid Amount', 'Please capture or edit a valid amount.');
       return;
     }
+    if (amount > 9999999) {
+      Get.snackbar(
+        'Amount Too Large',
+        'Amount cannot exceed ₹99,99,999.',
+      );
+      return;
+    }
 
     final auth = Get.find<AuthController>();
     final txn = TransactionModel(
       id: const Uuid().v4(),
       userId: auth.resolveActiveUserId(),
       amount: amount,
-      type: 'expense',
+      type: type.value,
       category: category.value,
       paymentMode: paymentMode.value,
       transactionDate: DateTime.now(),

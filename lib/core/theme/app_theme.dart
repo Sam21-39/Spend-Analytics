@@ -151,8 +151,8 @@ class AppTheme {
         filled: true,
         fillColor:
             isDark
-                ? Colors.white.withValues(alpha: 0.06)
-                : Colors.black.withValues(alpha: 0.04),
+                ? Colors.white.withValues(alpha: 0.07)
+                : Colors.black.withValues(alpha: 0.06),
         border: OutlineInputBorder(
           borderRadius: SARadius.sm,
           borderSide: BorderSide(
@@ -193,11 +193,19 @@ class AppTheme {
         ),
         prefixStyle: TextStyle(color: scheme.onSurfaceVariant),
         suffixStyle: TextStyle(color: scheme.onSurfaceVariant),
+        prefixIconColor: scheme.onSurfaceVariant,
+        suffixIconColor: scheme.onSurfaceVariant,
+        errorStyle: TextStyle(
+          color: scheme.error,
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,
         ),
       ),
+
       textSelectionTheme: TextSelectionThemeData(
         cursorColor: scheme.primary,
         selectionColor: scheme.primary.withValues(alpha: 0.28),

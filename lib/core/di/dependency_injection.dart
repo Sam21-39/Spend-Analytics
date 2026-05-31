@@ -8,6 +8,7 @@ import 'package:spend_analytics/core/firebase/fcm_service.dart';
 import 'package:spend_analytics/core/firebase/firebase_bootstrap_service.dart';
 import 'package:spend_analytics/core/local_db/app_database.dart';
 import 'package:spend_analytics/core/rules/rule_engine.dart';
+import 'package:spend_analytics/core/services/biometric_lock_service.dart';
 import 'package:spend_analytics/core/supabase/realtime_service.dart';
 import 'package:spend_analytics/core/supabase/supabase_service.dart';
 import 'package:spend_analytics/core/sync/sync_manager.dart';
@@ -70,6 +71,13 @@ class DependencyInjection {
       'rule_engine',
       rulesEngine.init,
       timeout: const Duration(seconds: 4),
+    );
+
+    final biometricLock = Get.put(BiometricLockService(), permanent: true);
+    await _runWithTimeout(
+      'biometric_lock',
+      biometricLock.init,
+      timeout: const Duration(seconds: 3),
     );
   }
 

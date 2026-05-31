@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:screenx/screenx.dart';
 import 'package:spend_analytics/features/categories/category_controller.dart';
 import 'package:spend_analytics/shared/utils/category_visuals.dart';
 import 'package:spend_analytics/shared/widgets/icon_box.dart';
@@ -44,23 +45,24 @@ class _CategoryScreenState extends State<CategoryScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
+            // ── Info banner ──────────────────────────────────────
             LiquidGlassSurface(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(ScreenX.dp(16)),
               child: Row(
                 children: <Widget>[
                   Icon(
                     Icons.drag_indicator_rounded,
-                    size: 18,
+                    size: ScreenX.dp(18),
                     color: scheme.onSurfaceVariant,
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: ScreenX.dp(10)),
                   Expanded(
                     child: Text(
-                      'Main category -> sub-categories · Drag to reorder',
+                      'Main category → sub-categories · Drag to reorder',
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: ScreenX.sp(13),
                         color: scheme.onSurfaceVariant,
                       ),
                     ),
@@ -68,9 +70,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 14),
+            SizedBox(height: ScreenX.dp(14)),
+
+            // ── Type toggle ──────────────────────────────────────
             LiquidGlassSurface(
-              padding: const EdgeInsets.all(4),
+              padding: EdgeInsets.all(ScreenX.dp(4)),
               borderRadius: const BorderRadius.all(Radius.circular(999)),
               child: Row(
                 children: const <String>[
@@ -87,7 +91,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
                           onTap: () => setState(() => _selectedType = type),
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 160),
-                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            padding: EdgeInsets.symmetric(
+                              vertical: ScreenX.dp(10),
+                            ),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(999),
                               color:
@@ -108,7 +114,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                             child: Text(
                               label,
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: ScreenX.sp(14),
                                 fontWeight: FontWeight.w700,
                                 color:
                                     active
@@ -123,17 +129,21 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     .toList(growable: false),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: ScreenX.dp(16)),
+
+            // ── Section label ────────────────────────────────────
             Text(
               '${_selectedType.toUpperCase()} SUB-CATEGORIES',
               style: TextStyle(
-                fontSize: 11,
+                fontSize: ScreenX.sp(11),
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.8,
                 color: scheme.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: ScreenX.dp(10)),
+
+            // ── Reorderable list ─────────────────────────────────
             ReorderableListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -176,9 +186,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
                               ),
                             ),
                           ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: ScreenX.dp(16),
+                    vertical: ScreenX.dp(12),
                   ),
                   child: Row(
                     children: <Widget>[
@@ -191,14 +201,14 @@ class _CategoryScreenState extends State<CategoryScreen> {
                           name,
                           type: _selectedType,
                         ),
-                        size: 38,
+                        size: ScreenX.dp(38),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: ScreenX.dp(12)),
                       Expanded(
                         child: Text(
                           name,
                           style: TextStyle(
-                            fontSize: 15,
+                            fontSize: ScreenX.sp(15),
                             fontWeight: FontWeight.w700,
                             color: scheme.onSurface,
                           ),
@@ -206,7 +216,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                       ),
                       Icon(
                         Icons.drag_handle_rounded,
-                        size: 18,
+                        size: ScreenX.dp(18),
                         color: scheme.onSurfaceVariant.withValues(alpha: 0.5),
                       ),
                     ],
@@ -221,7 +231,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     child: child,
                   ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: ScreenX.dp(20)),
           ],
         );
       }),
@@ -242,6 +252,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
   }
 }
 
+// ── Add Category Sheet ────────────────────────────────────────────────────────
+
 class _AddCategorySheet extends StatefulWidget {
   const _AddCategorySheet({
     required this.controller,
@@ -256,73 +268,83 @@ class _AddCategorySheet extends StatefulWidget {
 }
 
 class _AddCategorySheetState extends State<_AddCategorySheet> {
-  String _nameInput = '';
+  final TextEditingController _nameCtrl = TextEditingController();
+  String? _nameError;
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final typeLabel =
         '${widget.selectedType[0].toUpperCase()}${widget.selectedType.substring(1)}';
+
     return Padding(
       padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 16,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        left: ScreenX.dp(16),
+        right: ScreenX.dp(16),
+        top: ScreenX.dp(16),
+        bottom: MediaQuery.of(context).viewInsets.bottom + ScreenX.dp(24),
       ),
       child: LiquidGlassSurface(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(ScreenX.dp(20)),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
+              // Drag handle
               Center(
                 child: Container(
-                  width: 36,
-                  height: 4,
+                  width: ScreenX.dp(36),
+                  height: ScreenX.dp(4),
                   decoration: BoxDecoration(
                     color: scheme.onSurfaceVariant.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(999),
                   ),
                 ),
               ),
-              const SizedBox(height: 18),
+              SizedBox(height: ScreenX.dp(18)),
+
               Text(
                 'New $typeLabel Sub-Category',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: ScreenX.sp(18),
                   fontWeight: FontWeight.w800,
                   color: scheme.onSurface,
                 ),
               ),
-              const SizedBox(height: 14),
+              SizedBox(height: ScreenX.dp(14)),
+
+              // ── Name input ──────────────────────────────────────
               TextField(
+                controller: _nameCtrl,
                 autofocus: true,
                 textCapitalization: TextCapitalization.words,
-                onChanged: (value) => _nameInput = value,
+                maxLength: 40,
+                onChanged: (_) {
+                  if (_nameError != null) {
+                    setState(() => _nameError = null);
+                  }
+                },
                 decoration: InputDecoration(
                   hintText: 'e.g. Entertainment',
-                  hintStyle: TextStyle(color: scheme.onSurfaceVariant),
-                  filled: true,
-                  fillColor: scheme.surfaceContainerHighest.withValues(
-                    alpha: 0.4,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
+                  prefixIcon: const Icon(Icons.category_outlined),
+                  errorText: _nameError,
+                  counterText: '',
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: ScreenX.dp(16)),
+
               FilledButton(
                 onPressed: () async {
-                  final name = _nameInput.trim();
+                  final name = _nameCtrl.text.trim();
                   if (name.isEmpty) {
+                    setState(() => _nameError = 'Category name cannot be empty');
                     return;
                   }
                   final added = await widget.controller.addCategory(
@@ -330,27 +352,25 @@ class _AddCategorySheetState extends State<_AddCategorySheet> {
                     type: widget.selectedType,
                   );
                   if (!added) {
-                    if (!context.mounted) {
-                      return;
-                    }
-                    Get.snackbar(
-                      'Category exists',
-                      'That category is already in this list.',
+                    if (!context.mounted) return;
+                    setState(
+                      () => _nameError = 'That category already exists',
                     );
                     return;
                   }
-                  if (!context.mounted) {
-                    return;
-                  }
+                  if (!context.mounted) return;
                   Navigator.of(context).pop();
                 },
                 style: FilledButton.styleFrom(
-                  minimumSize: const Size.fromHeight(50),
+                  minimumSize: Size.fromHeight(ScreenX.dp(50)),
                   shape: const StadiumBorder(),
                 ),
-                child: const Text(
+                child: Text(
                   'Add category',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                  style: TextStyle(
+                    fontSize: ScreenX.sp(15),
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],

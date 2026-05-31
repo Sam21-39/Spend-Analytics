@@ -61,6 +61,13 @@ dependencies:
   # Monetization
   purchases_flutter: ^9.12.3
 
+  # Responsiveness
+  screenx: ^1.0.0
+
+  # File sharing (CSV export)
+  share_plus: ^10.1.4
+  path_provider: ^2.1.5
+
 flutter_icons:
   android: "launcher_icon"
   ios: true

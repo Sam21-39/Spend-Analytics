@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:screenx/screenx.dart';
 import 'package:spend_analytics/core/local_db/app_database.dart';
 import 'package:spend_analytics/core/routes/app_routes.dart';
 import 'package:spend_analytics/features/auth/auth_controller.dart';
@@ -180,7 +181,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                   children:
                       _filters.map((f) {
                         return Padding(
-                          padding: const EdgeInsets.only(right: 8),
+                          padding: EdgeInsets.only(right: ScreenX.dp(8)),
                           child: SAChip(
                             label: f,
                             active: f == _filter,
@@ -191,11 +192,11 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                 ),
               ),
 
-              const SizedBox(height: 14),
+              SizedBox(height: ScreenX.dp(14)),
 
               // ── Summary card ─────────────────────────────────
               LiquidGlassSurface(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(ScreenX.dp(16)),
                 child: LayoutBuilder(
                   builder: (context, constraints) {
                     if (constraints.maxWidth >= 520) {
@@ -230,7 +231,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                               value: formatInr(spent),
                               color: scheme.onSurface,
                             ),
-                            const SizedBox(width: 10),
+                            SizedBox(width: ScreenX.dp(10)),
                             _SumCol(
                               label: 'RECEIVED',
                               value: '+${formatInr(received)}',
@@ -238,7 +239,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: ScreenX.dp(12)),
                         Row(
                           children: <Widget>[
                             _SumCol(
@@ -254,12 +255,12 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                 ),
               ),
 
-              const SizedBox(height: 16),
+              SizedBox(height: ScreenX.dp(16)),
 
               // ── Grouped transaction lists ─────────────────────
               if (filtered.isEmpty)
                 Padding(
-                  padding: const EdgeInsets.only(top: 32),
+                  padding: EdgeInsets.only(top: ScreenX.dp(32)),
                   child: Center(
                     child: Text(
                       'No transactions match this filter.',
@@ -283,14 +284,14 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
+                        padding: EdgeInsets.fromLTRB(ScreenX.dp(4), 0, ScreenX.dp(4), ScreenX.dp(8)),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
                             Text(
                               label.toUpperCase(),
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: ScreenX.sp(11),
                                 fontWeight: FontWeight.w700,
                                 letterSpacing: 1.1,
                                 color: scheme.onSurfaceVariant,
@@ -305,7 +306,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                         ),
                       ),
                       LiquidGlassSurface(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        padding: EdgeInsets.symmetric(horizontal: ScreenX.dp(12)),
                         child: Column(
                           children: List<Widget>.generate(txns.length, (i) {
                             final t = txns[i];
@@ -331,7 +332,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                           }),
                         ),
                       ),
-                      const SizedBox(height: 14),
+                      SizedBox(height: ScreenX.dp(14)),
                     ],
                   );
                 }),
@@ -390,17 +391,17 @@ class _SumCol extends StatelessWidget {
         children: <Widget>[
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 10,
+            style: TextStyle(
+              fontSize: ScreenX.sp(10),
               fontWeight: FontWeight.w700,
               letterSpacing: 1,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: ScreenX.dp(4)),
           Text(
             value,
             style: TextStyle(
-              fontSize: 16,
+              fontSize: ScreenX.sp(15),
               fontWeight: FontWeight.w800,
               color: color,
               fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],

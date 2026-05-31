@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:screenx/screenx.dart';
 import 'package:spend_analytics/shared/widgets/liquid_bottom_nav.dart';
 import 'package:spend_analytics/shared/widgets/liquid_glass_background.dart';
 import 'package:spend_analytics/shared/widgets/liquid_glass_surface.dart';
@@ -77,16 +78,21 @@ class LiquidPageScaffold extends StatelessWidget {
               children: <Widget>[
                 // ── App bar pill ──────────────────────────────────────
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                  padding: EdgeInsets.fromLTRB(
+                    ScreenX.dp(16),
+                    ScreenX.dp(10),
+                    ScreenX.dp(16),
+                    0,
+                  ),
                   child: LiquidGlassSurface(
                     padding: EdgeInsets.zero,
                     borderRadius: const BorderRadius.all(Radius.circular(999)),
                     blur: 32,
                     fillOpacity: isDark ? 0.11 : 0.68,
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 8,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: ScreenX.dp(8),
+                        vertical: ScreenX.dp(8),
                       ),
                       child: Row(
                         children: <Widget>[
@@ -99,11 +105,14 @@ class LiquidPageScaffold extends StatelessWidget {
                             )
                           else
                             Padding(
-                              padding: const EdgeInsets.only(left: 6),
-                              child: _LogoMark(size: 26, scheme: scheme),
+                              padding: EdgeInsets.only(left: ScreenX.dp(6)),
+                              child: _LogoMark(
+                                size: ScreenX.dp(26),
+                                scheme: scheme,
+                              ),
                             ),
 
-                          const SizedBox(width: 9),
+                          SizedBox(width: ScreenX.dp(9)),
 
                           // Title
                           Expanded(
@@ -114,7 +123,7 @@ class LiquidPageScaffold extends StatelessWidget {
                               ).textTheme.titleMedium?.copyWith(
                                 color: scheme.onSurface,
                                 fontWeight: FontWeight.w800,
-                                fontSize: 16,
+                                fontSize: ScreenX.sp(16),
                                 letterSpacing: -0.2,
                               ),
                               overflow: TextOverflow.ellipsis,
@@ -125,7 +134,7 @@ class LiquidPageScaffold extends StatelessWidget {
                           if (actions != null)
                             ...actions!.map((a) => _wrapAction(a, isDark)),
 
-                          const SizedBox(width: 4),
+                          SizedBox(width: ScreenX.dp(4)),
                         ],
                       ),
                     ),
@@ -216,8 +225,8 @@ class _BarIconBtn extends StatelessWidget {
     return GestureDetector(
       onTap: onTap ?? () => Get.back<void>(),
       child: Container(
-        width: 36,
-        height: 36,
+        width: ScreenX.dp(36),
+        height: ScreenX.dp(36),
         decoration: BoxDecoration(
           color:
               isDark
@@ -236,17 +245,17 @@ class _BarIconBtn extends StatelessWidget {
         child: Stack(
           clipBehavior: Clip.none,
           children: <Widget>[
-            Icon(icon, size: 18, color: iconColor ?? scheme.onSurface),
+            Icon(icon, size: ScreenX.dp(18), color: iconColor ?? scheme.onSurface),
             if (badge != null)
               Positioned(
                 top: -4,
                 right: -4,
                 child: Container(
-                  constraints: const BoxConstraints(
-                    minWidth: 14,
-                    minHeight: 14,
+                  constraints: BoxConstraints(
+                    minWidth: ScreenX.dp(14),
+                    minHeight: ScreenX.dp(14),
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  padding: EdgeInsets.symmetric(horizontal: ScreenX.dp(4)),
                   decoration: BoxDecoration(
                     color: scheme.error,
                     borderRadius: BorderRadius.circular(999),
@@ -255,9 +264,9 @@ class _BarIconBtn extends StatelessWidget {
                   alignment: Alignment.center,
                   child: Text(
                     badge!,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 9,
+                      fontSize: ScreenX.sp(9),
                       fontWeight: FontWeight.w800,
                     ),
                   ),

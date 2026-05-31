@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:screenx/screenx.dart';
 import 'package:spend_analytics/features/auth/auth_controller.dart';
 import 'package:spend_analytics/features/categories/category_controller.dart';
 import 'package:spend_analytics/features/transactions/transaction_controller.dart';
@@ -21,11 +23,19 @@ class AddTransactionScreen extends StatefulWidget {
 class _AddTransactionScreenState extends State<AddTransactionScreen> {
   final AuthController _auth = Get.find<AuthController>();
   final TransactionController _ctrl = Get.find<TransactionController>();
-  final TextEditingController _amountCtrl = TextEditingController(text: '0');
+  final TextEditingController _amountCtrl = TextEditingController();
   final TextEditingController _counterpartyCtrl = TextEditingController();
   final TextEditingController _fromAccountCtrl = TextEditingController();
   final TextEditingController _toAccountCtrl = TextEditingController();
   final TextEditingController _noteCtrl = TextEditingController();
+
+  // Form key for validation state
+  final _formKey = GlobalKey<FormState>();
+
+  // Field-level error state
+  String? _fromAccountError;
+  String? _toAccountError;
+  bool _amountInvalid = false;
 
   TransactionModel? _editingTxn;
 
@@ -66,11 +76,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     _CatMeta('Bank Transfer', Icons.account_balance_rounded, Color(0xFF5B9FFF)),
     _CatMeta('UPI Transfer', Icons.qr_code_rounded, Color(0xFF3FDDA0)),
     _CatMeta('Wallet Transfer', Icons.wallet_rounded, Color(0xFFB0A0FF)),
-    _CatMeta(
-      'Cash Withdrawal',
-      Icons.money_off_csred_rounded,
-      Color(0xFFFF9F40),
-    ),
+    _CatMeta('Cash Withdrawal', Icons.money_off_csred_rounded, Color(0xFFFF9F40)),
     _CatMeta('Cash Deposit', Icons.payments_rounded, Color(0xFF3FDDA0)),
     _CatMeta('Card Payment', Icons.credit_card_rounded, Color(0xFF7AC7FF)),
     _CatMeta('Credit Card Bill', Icons.receipt_long_rounded, Color(0xFFFF6B6B)),
@@ -81,22 +87,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
   static const _paymentModesByType = <String, List<String>>{
     'expense': <String>['upi', 'card', 'cash', 'netbanking', 'wallet', 'other'],
-    'income': <String>[
-      'bank_transfer',
-      'upi',
-      'cash',
-      'cheque',
-      'wallet',
-      'other',
-    ],
-    'transfer': <String>[
-      'bank_transfer',
-      'upi',
-      'wallet',
-      'card',
-      'cash',
-      'other',
-    ],
+    'income': <String>['bank_transfer', 'upi', 'cash', 'cheque', 'wallet', 'other'],
+    'transfer': <String>['bank_transfer', 'upi', 'wallet', 'card', 'cash', 'other'],
   };
 
   bool get _isEditing => _editingTxn != null;
@@ -116,9 +108,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
       final categories = _categoriesForType(_type);
       _category =
-          categories.any((c) => c.name == arg.category)
-              ? arg.category
-              : categories.first.name;
+          categories.any((c) => c.name == arg.category) ? arg.category : categories.first.name;
 
       _paymentMode = _normalizedPaymentMode(arg.paymentMode, _type);
       _hydrateNoteFields(arg.note);
@@ -148,6 +138,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     if (!keepExisting || !modes.contains(_paymentMode)) {
       _paymentMode = modes.first;
     }
+    // Clear validation errors on type change
+    _fromAccountError = null;
+    _toAccountError = null;
+    _amountInvalid = false;
   }
 
   List<_CatMeta> _categoriesForType(String type) {
@@ -250,26 +244,54 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
   void _addQuick(int n) {
     final current = double.tryParse(_amountCtrl.text) ?? 0;
-    _amountCtrl.text = (current + n).toStringAsFixed(0);
+    final next = (current + n).clamp(0, 9999999).toDouble();
+    _amountCtrl.text = next == next.roundToDouble()
+        ? next.toStringAsFixed(0)
+        : next.toString();
+    // Clear amount error when a quick-amount is added
+    if (_amountInvalid) setState(() => _amountInvalid = false);
+  }
+
+  /// No longer needed — field starts empty, no auto-clear required.
+  void _onAmountTap() {}
+
+  bool _validateFields() {
+    bool valid = true;
+
+    final amount = double.tryParse(_amountCtrl.text.trim());
+    final amountValid = amount != null && amount > 0 && amount <= 9999999;
+
+    String? fromErr;
+    String? toErr;
+
+    if (_type == 'transfer') {
+      if (_fromAccountCtrl.text.trim().isEmpty) {
+        fromErr = 'From account is required';
+        valid = false;
+      }
+      if (_toAccountCtrl.text.trim().isEmpty) {
+        toErr = 'To account is required';
+        valid = false;
+      }
+    }
+
+    setState(() {
+      _amountInvalid = !amountValid;
+      _fromAccountError = fromErr;
+      _toAccountError = toErr;
+    });
+
+    if (!amountValid) {
+      valid = false;
+    }
+
+    return valid;
   }
 
   Future<void> _save() async {
-    final amount = double.tryParse(_amountCtrl.text.trim());
-    if (amount == null || amount <= 0) {
-      Get.snackbar('Invalid amount', 'Please enter a valid amount.');
-      return;
-    }
+    if (!_validateFields()) return;
 
-    if (_type == 'transfer') {
-      if (_fromAccountCtrl.text.trim().isEmpty ||
-          _toAccountCtrl.text.trim().isEmpty) {
-        Get.snackbar(
-          'Incomplete transfer',
-          'Please provide both from and to accounts.',
-        );
-        return;
-      }
-    }
+    final amount = double.parse(_amountCtrl.text.trim());
 
     final txn = TransactionModel(
       id: _editingTxn?.id ?? const Uuid().v4(),
@@ -320,8 +342,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     final first = lines.first.trim();
 
     if (first.startsWith(counterpartyPrefix)) {
-      _counterpartyCtrl.text =
-          first.substring(counterpartyPrefix.length).trim();
+      _counterpartyCtrl.text = first.substring(counterpartyPrefix.length).trim();
       _noteCtrl.text = lines.skip(1).join('\n').trim();
       return;
     }
@@ -431,358 +452,398 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       title: _isEditing ? 'Edit transaction' : 'New transaction',
       showBottomNav: false,
       onBack: () => Get.back<void>(),
-      actions: <Widget>[
-        BarActionButton(
-          icon: Icons.close_rounded,
-          onTap: () => Get.back<void>(),
-        ),
-      ],
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          LiquidGlassSurface(
-            padding: const EdgeInsets.all(4),
-            borderRadius: const BorderRadius.all(Radius.circular(999)),
-            child: Row(
-              children:
-                  <String>['Expense', 'Income', 'Transfer'].map((tp) {
-                    final targetType = tp.toLowerCase();
-                    final active = targetType == _type;
-                    return Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => _setType(targetType)),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 160),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(999),
-                            color:
-                                active
-                                    ? scheme.primary.withValues(alpha: 0.18)
-                                    : Colors.transparent,
-                            border:
-                                active
-                                    ? Border.all(
-                                      color: scheme.primary.withValues(
-                                        alpha: 0.3,
-                                      ),
-                                      width: 0.5,
-                                    )
-                                    : null,
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            tp,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
+      actions: <Widget>[BarActionButton(icon: Icons.close_rounded, onTap: () => Get.back<void>())],
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            // ── Type toggle ─────────────────────────────────────────
+            LiquidGlassSurface(
+              padding: EdgeInsets.all(ScreenX.dp(4)),
+              borderRadius: const BorderRadius.all(Radius.circular(999)),
+              child: Row(
+                children:
+                    <String>['Expense', 'Income', 'Transfer'].map((tp) {
+                      final targetType = tp.toLowerCase();
+                      final active = targetType == _type;
+                      return Expanded(
+                        child: GestureDetector(
+                          onTap: () => setState(() => _setType(targetType)),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 160),
+                            padding: EdgeInsets.symmetric(vertical: ScreenX.dp(10)),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(999),
                               color:
                                   active
-                                      ? scheme.primary
-                                      : scheme.onSurfaceVariant,
+                                      ? scheme.primary.withValues(alpha: 0.18)
+                                      : Colors.transparent,
+                              border:
+                                  active
+                                      ? Border.all(
+                                        color: scheme.primary.withValues(alpha: 0.3),
+                                        width: 0.5,
+                                      )
+                                      : null,
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              tp,
+                              style: TextStyle(
+                                fontSize: ScreenX.sp(14),
+                                fontWeight: FontWeight.w700,
+                                color: active ? scheme.primary : scheme.onSurfaceVariant,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    );
-                  }).toList(),
+                      );
+                    }).toList(),
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          LiquidGlassSurface(
-            padding: const EdgeInsets.all(28),
-            borderRadius: const BorderRadius.all(Radius.circular(24)),
-            child: Column(
-              children: <Widget>[
-                Text(
-                  'AMOUNT',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.1,
-                    color: scheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
-                  children: <Widget>[
-                    Text(
-                      '₹',
-                      style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.w600,
-                        color: scheme.onSurfaceVariant,
-                      ),
+
+            SizedBox(height: ScreenX.dp(16)),
+
+            // ── Amount card ─────────────────────────────────────────
+            LiquidGlassSurface(
+              padding: EdgeInsets.all(ScreenX.dp(28)),
+              borderRadius: const BorderRadius.all(Radius.circular(24)),
+              child: Column(
+                children: <Widget>[
+                  Text(
+                    'AMOUNT',
+                    style: TextStyle(
+                      fontSize: ScreenX.sp(10),
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.1,
+                      color: _amountInvalid ? scheme.error : scheme.onSurfaceVariant,
                     ),
-                    const SizedBox(width: 4),
-                    IntrinsicWidth(
-                      child: TextField(
-                        controller: _amountCtrl,
-                        autofocus: !_isEditing,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: ScreenX.dp(12)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: <Widget>[
+                      Text(
+                        '₹',
                         style: TextStyle(
-                          fontSize: 52,
-                          fontWeight: FontWeight.w800,
-                          color: scheme.onSurface,
-                          letterSpacing: -2,
-                          fontFeatures: const <FontFeature>[
-                            FontFeature.tabularFigures(),
+                          fontSize: ScreenX.sp(36),
+                          fontWeight: FontWeight.w600,
+                          color: _amountInvalid ? scheme.error : scheme.onSurfaceVariant,
+                        ),
+                      ),
+                      SizedBox(width: ScreenX.dp(4)),
+                      IntrinsicWidth(
+                        child: TextField(
+                          controller: _amountCtrl,
+                          autofocus: !_isEditing,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      // Only digits + single decimal; cap at 7 digits before decimal
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(RegExp(r'^\d{0,7}(\.\d{0,2})?')),
                           ],
+                          textAlign: TextAlign.center,
+                          onTap: _onAmountTap,
+                          onChanged: (_) {
+                            if (_amountInvalid) {
+                              setState(() => _amountInvalid = false);
+                            }
+                          },
+                          style: TextStyle(
+                            fontSize: ScreenX.sp(52),
+                            fontWeight: FontWeight.w800,
+                            color: _amountInvalid ? scheme.error : scheme.onSurface,
+                            letterSpacing: -2,
+                            fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],
+                          ),
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            isDense: true,
+                            contentPadding: EdgeInsets.zero,
+                            hintText: '0',
+                          ),
                         ),
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          isDense: true,
-                          contentPadding: EdgeInsets.zero,
-                        ),
+                      ),
+                    ],
+                  ),
+                  if (_amountInvalid) ...[
+                    SizedBox(height: ScreenX.dp(6)),
+                    Text(
+                      double.tryParse(_amountCtrl.text.trim()) != null &&
+                              (double.tryParse(_amountCtrl.text.trim()) ?? 0) > 9999999
+                          ? 'Amount cannot exceed ₹99,99,999'
+                          : 'Please enter a valid amount (min ₹1)',
+                      style: TextStyle(
+                        fontSize: ScreenX.sp(12),
+                        color: scheme.error,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
-                ),
-                const SizedBox(height: 14),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children:
-                        _quickAmounts.map((n) {
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: GestureDetector(
-                              onTap: () => _addQuick(n),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 8,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: scheme.primary.withValues(alpha: 0.10),
-                                  borderRadius: BorderRadius.circular(999),
-                                  border: Border.all(
-                                    color: scheme.primary.withValues(
-                                      alpha: 0.2,
-                                    ),
-                                    width: 0.5,
+                  SizedBox(height: ScreenX.dp(14)),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children:
+                          _quickAmounts.map((n) {
+                            return Padding(
+                              padding: EdgeInsets.only(right: ScreenX.dp(8)),
+                              child: GestureDetector(
+                                onTap: () => _addQuick(n),
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: ScreenX.dp(14),
+                                    vertical: ScreenX.dp(8),
                                   ),
-                                ),
-                                child: Text(
-                                  '+ ₹$n',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                    color: scheme.primary,
+                                  decoration: BoxDecoration(
+                                    color: scheme.primary.withValues(alpha: 0.10),
+                                    borderRadius: BorderRadius.circular(999),
+                                    border: Border.all(
+                                      color: scheme.primary.withValues(alpha: 0.2),
+                                      width: 0.5,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    '+ ₹$n',
+                                    style: TextStyle(
+                                      fontSize: ScreenX.sp(13),
+                                      fontWeight: FontWeight.w700,
+                                      color: scheme.primary,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          );
-                        }).toList(),
+                            );
+                          }).toList(),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            _type == 'transfer' ? 'TRANSFER TYPE' : 'CATEGORY',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.8,
-              color: scheme.onSurfaceVariant,
+
+            SizedBox(height: ScreenX.dp(16)),
+
+            // ── Category label ──────────────────────────────────────
+            Text(
+              _type == 'transfer' ? 'TRANSFER TYPE' : 'CATEGORY',
+              style: TextStyle(
+                fontSize: ScreenX.sp(11),
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.8,
+                color: scheme.onSurfaceVariant,
+              ),
             ),
-          ),
-          const SizedBox(height: 10),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final width = constraints.maxWidth;
-              final crossAxisCount =
-                  width >= 700
-                      ? 4
-                      : width >= 480
-                      ? 3
-                      : 2;
-              Widget buildGrid(List<_CatMeta> categories) {
-                return LiquidGlassSurface(
-                  padding: const EdgeInsets.all(14),
-                  child: GridView.count(
-                    crossAxisCount: crossAxisCount,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                    childAspectRatio: 1.05,
-                    children:
-                        categories.map((c) {
-                          final active = _category == c.name;
-                          return GestureDetector(
-                            onTap:
-                                () => setState(() {
-                                  _category = c.name;
-                                  if (_type == 'transfer') {
-                                    _paymentMode =
-                                        _transferPaymentModeForCategory(c.name);
-                                  }
-                                }),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 160),
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(14),
-                                color:
-                                    active
-                                        ? scheme.primary.withValues(alpha: 0.08)
-                                        : Colors.transparent,
-                                border: Border.all(
+            SizedBox(height: ScreenX.dp(10)),
+
+            // ── Category grid ───────────────────────────────────────
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final width = constraints.maxWidth;
+                final crossAxisCount =
+                    width >= 700
+                        ? 4
+                        : width >= 480
+                        ? 3
+                        : 2;
+                Widget buildGrid(List<_CatMeta> categories) {
+                  return LiquidGlassSurface(
+                    padding: EdgeInsets.all(ScreenX.dp(14)),
+                    child: GridView.count(
+                      crossAxisCount: crossAxisCount,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      mainAxisSpacing: ScreenX.dp(10),
+                      crossAxisSpacing: ScreenX.dp(10),
+                      childAspectRatio: 1.05,
+                      children:
+                          categories.map((c) {
+                            final active = _category == c.name;
+                            return GestureDetector(
+                              onTap:
+                                  () => setState(() {
+                                    _category = c.name;
+                                    if (_type == 'transfer') {
+                                      _paymentMode = _transferPaymentModeForCategory(c.name);
+                                    }
+                                  }),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 160),
+                                padding: EdgeInsets.all(ScreenX.dp(8)),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(14),
                                   color:
                                       active
-                                          ? scheme.primary.withValues(
-                                            alpha: 0.4,
-                                          )
-                                          : scheme.outline.withValues(
-                                            alpha: 0.3,
-                                          ),
-                                  width: 0.8,
+                                          ? scheme.primary.withValues(alpha: 0.08)
+                                          : Colors.transparent,
+                                  border: Border.all(
+                                    color:
+                                        active
+                                            ? scheme.primary.withValues(alpha: 0.4)
+                                            : scheme.outline.withValues(alpha: 0.3),
+                                    width: 0.8,
+                                  ),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    IconBox(icon: c.icon, color: c.color, size: ScreenX.dp(36)),
+                                    SizedBox(height: ScreenX.dp(6)),
+                                    Text(
+                                      c.name,
+                                      textAlign: TextAlign.center,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: ScreenX.sp(12),
+                                        fontWeight: FontWeight.w700,
+                                        color: active ? scheme.primary : scheme.onSurface,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  IconBox(
-                                    icon: c.icon,
-                                    color: c.color,
-                                    size: 36,
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    c.name,
-                                    textAlign: TextAlign.center,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
-                                      color:
-                                          active
-                                              ? scheme.primary
-                                              : scheme.onSurface,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                  ),
-                );
-              }
+                            );
+                          }).toList(),
+                    ),
+                  );
+                }
 
-              return Obx(() => buildGrid(_categoriesForType(_type)));
-            },
-          ),
-          const SizedBox(height: 16),
-          LiquidGlassSurface(
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                if (_type == 'transfer') ...<Widget>[
-                  TextField(
-                    controller: _fromAccountCtrl,
-                    textCapitalization: TextCapitalization.words,
-                    decoration: const InputDecoration(
-                      labelText: 'From Account',
-                      hintText: 'e.g., HDFC Savings / Cash Wallet',
-                      prefixIcon: Icon(Icons.call_made_rounded),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _toAccountCtrl,
-                    textCapitalization: TextCapitalization.words,
-                    decoration: const InputDecoration(
-                      labelText: 'To Account',
-                      hintText: 'e.g., ICICI Current / Credit Card',
-                      prefixIcon: Icon(Icons.call_received_rounded),
-                    ),
-                  ),
-                ] else ...<Widget>[
-                  TextField(
-                    controller: _counterpartyCtrl,
-                    textCapitalization: TextCapitalization.words,
-                    decoration: InputDecoration(
-                      labelText: _counterpartyLabelForType(),
-                      hintText: _counterpartyHintForType(),
-                      prefixIcon: const Icon(Icons.storefront_outlined),
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 12),
-                OutlinedButton.icon(
-                  onPressed: _pickDate,
-                  icon: const Icon(Icons.calendar_today_outlined),
-                  label: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text('Date: ${_formatDate(_transactionDate)}'),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                if (_type != 'transfer') ...<Widget>[
-                  Text(
-                    'Payment Mode',
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children:
-                        _paymentModesForType(_type).map((mode) {
-                          final active = _paymentMode == mode;
-                          return ChoiceChip(
-                            label: Text(_paymentModeLabel(mode)),
-                            selected: active,
-                            onSelected:
-                                (_) => setState(() => _paymentMode = mode),
-                          );
-                        }).toList(),
-                  ),
-                  const SizedBox(height: 12),
-                ],
-                _NoteRow(controller: _noteCtrl),
-              ],
+                return Obx(() => buildGrid(_categoriesForType(_type)));
+              },
             ),
-          ),
-          const SizedBox(height: 20),
-          Obx(() {
-            final loading = _ctrl.isLoading.value;
-            return FilledButton(
-              onPressed: loading ? null : _save,
-              style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(54),
-                shape: const StadiumBorder(),
-              ),
-              child:
-                  loading
-                      ? const SAShimmer(
-                        child: SAShimmerBox(width: 128, height: 14, radius: 8),
-                      )
-                      : Text(
-                        _isEditing ? 'Update transaction' : 'Save transaction',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
+
+            SizedBox(height: ScreenX.dp(16)),
+
+            // ── Details card ────────────────────────────────────────
+            LiquidGlassSurface(
+              padding: EdgeInsets.all(ScreenX.dp(14)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  if (_type == 'transfer') ...<Widget>[
+                    TextField(
+                      controller: _fromAccountCtrl,
+                      textCapitalization: TextCapitalization.words,
+                      maxLength: 60,
+                      onChanged: (_) {
+                        if (_fromAccountError != null) {
+                          setState(() => _fromAccountError = null);
+                        }
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'From Account',
+                        hintText: 'e.g., HDFC Savings / Cash Wallet',
+                        prefixIcon: const Icon(Icons.call_made_rounded),
+                        errorText: _fromAccountError,
+                        counterText: '',
                       ),
-            );
-          }),
-        ],
+                    ),
+                    SizedBox(height: ScreenX.dp(12)),
+                    TextField(
+                      controller: _toAccountCtrl,
+                      textCapitalization: TextCapitalization.words,
+                      maxLength: 60,
+                      onChanged: (_) {
+                        if (_toAccountError != null) {
+                          setState(() => _toAccountError = null);
+                        }
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'To Account',
+                        hintText: 'e.g., ICICI Current / Credit Card',
+                        prefixIcon: const Icon(Icons.call_received_rounded),
+                        errorText: _toAccountError,
+                        counterText: '',
+                      ),
+                    ),
+                  ] else ...<Widget>[
+                    TextField(
+                      controller: _counterpartyCtrl,
+                      textCapitalization: TextCapitalization.words,
+                      maxLength: 80,
+                      decoration: InputDecoration(
+                        labelText: _counterpartyLabelForType(),
+                        hintText: _counterpartyHintForType(),
+                        prefixIcon: const Icon(Icons.storefront_outlined),
+                        counterText: '',
+                      ),
+                    ),
+                  ],
+                  SizedBox(height: ScreenX.dp(12)),
+
+                  // Date picker
+                  OutlinedButton.icon(
+                    onPressed: _pickDate,
+                    icon: const Icon(Icons.calendar_today_outlined),
+                    label: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Date: ${_formatDate(_transactionDate)}',
+                        style: TextStyle(fontSize: ScreenX.sp(14)),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: ScreenX.dp(12)),
+
+                  // Payment mode chips (not shown for transfer)
+                  if (_type != 'transfer') ...<Widget>[
+                    Text(
+                      'Payment Mode',
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                        fontSize: ScreenX.sp(13),
+                      ),
+                    ),
+                    SizedBox(height: ScreenX.dp(8)),
+                    Wrap(
+                      spacing: ScreenX.dp(8),
+                      runSpacing: ScreenX.dp(8),
+                      children:
+                          _paymentModesForType(_type).map((mode) {
+                            final active = _paymentMode == mode;
+                            return ChoiceChip(
+                              label: Text(
+                                _paymentModeLabel(mode),
+                                style: TextStyle(fontSize: ScreenX.sp(13)),
+                              ),
+                              selected: active,
+                              onSelected: (_) => setState(() => _paymentMode = mode),
+                            );
+                          }).toList(),
+                    ),
+                    SizedBox(height: ScreenX.dp(12)),
+                  ],
+
+                  // Note field
+                  _NoteRow(controller: _noteCtrl),
+                ],
+              ),
+            ),
+
+            SizedBox(height: ScreenX.dp(20)),
+
+            // ── Save button ─────────────────────────────────────────
+            Obx(() {
+              final loading = _ctrl.isLoading.value;
+              return FilledButton(
+                onPressed: loading ? null : _save,
+                style: FilledButton.styleFrom(
+                  minimumSize: Size.fromHeight(ScreenX.dp(54)),
+                  shape: const StadiumBorder(),
+                ),
+                child:
+                    loading
+                        ? const SAShimmer(child: SAShimmerBox(width: 128, height: 14, radius: 8))
+                        : Text(
+                          _isEditing ? 'Update transaction' : 'Save transaction',
+                          style: TextStyle(fontSize: ScreenX.sp(16), fontWeight: FontWeight.w700),
+                        ),
+              );
+            }),
+          ],
+        ),
       ),
     );
   }
@@ -801,28 +862,19 @@ class _NoteRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final _ = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        children: <Widget>[
-          Icon(Icons.edit_outlined, size: 18, color: scheme.onSurfaceVariant),
-          const SizedBox(width: 12),
-          Expanded(
-            child: TextField(
-              controller: controller,
-              maxLines: 1,
-              style: Theme.of(context).textTheme.bodyLarge,
-              decoration: InputDecoration(
-                hintText: 'Add a note…',
-                hintStyle: TextStyle(color: scheme.onSurfaceVariant),
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-          ),
-        ],
+      padding: EdgeInsets.symmetric(horizontal: ScreenX.dp(4), vertical: ScreenX.dp(4)),
+      child: TextField(
+        controller: controller,
+        maxLines: 1,
+        maxLength: 200,
+        style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: ScreenX.sp(15)),
+        decoration: InputDecoration(
+          hintText: 'Add a note…',
+          prefixIcon: const Icon(Icons.edit_outlined, size: 18),
+          counterText: '',
+        ),
       ),
     );
   }

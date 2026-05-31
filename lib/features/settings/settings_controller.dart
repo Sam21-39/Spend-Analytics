@@ -1,11 +1,14 @@
-import 'dart:async';
+import 'dart:io';
 
-import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart'
     as permission_handler;
+import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:spend_analytics/core/config/app_config.dart';
@@ -13,6 +16,9 @@ import 'package:spend_analytics/core/local_db/app_database.dart';
 import 'package:spend_analytics/core/supabase/supabase_service.dart';
 import 'package:spend_analytics/core/theme/theme_service.dart';
 import 'package:spend_analytics/shared/models/transaction_model.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
+import 'dart:async';
 
 enum SettingsPermissionState { unknown, granted, denied, unavailable }
 
@@ -45,6 +51,7 @@ class SettingsController extends GetxController {
   final transactionCount = 0.obs;
   final appVersionLabel = 'v1.0.0'.obs;
   final isLoading = true.obs;
+  final isExporting = false.obs;
   final notificationsPermission = SettingsPermissionState.unknown.obs;
   final microphonePermission = SettingsPermissionState.unknown.obs;
   final biometricPermission = SettingsPermissionState.unknown.obs;
@@ -235,9 +242,95 @@ class SettingsController extends GetxController {
     update();
   }
 
+  // ── Clear Data ────────────────────────────────────────────────────────────
+
+  /// Clears local DB only.
   Future<void> clearLocalData() async {
     await _db.clearUserData(_activeUserId);
   }
+
+  /// Clears local DB AND Supabase cloud data for this user.
+  Future<void> clearAllData() async {
+    // 1. Local DB
+    await _db.clearUserData(_activeUserId);
+
+    // 2. Cloud (best-effort — only if authenticated)
+    if (_supabase.isEnabled && _supabase.isAuthenticated) {
+      try {
+        await _supabase.client
+            .from('transactions')
+            .delete()
+            .eq('user_id', _activeUserId);
+        await _supabase.client
+            .from('budgets')
+            .delete()
+            .eq('user_id', _activeUserId);
+      } catch (_) {
+        // Best-effort: don't block on cloud failure
+      }
+    }
+  }
+
+  // ── CSV Export ────────────────────────────────────────────────────────────
+
+  /// Generates a CSV of all transactions and opens the system share sheet.
+  Future<void> exportTransactionsCsv() async {
+    if (isExporting.value) return;
+    isExporting.value = true;
+    try {
+      final transactions = await _db.allTransactionsForUser(_activeUserId);
+      if (transactions.isEmpty) {
+        Get.snackbar('Nothing to export', 'No transactions found.');
+        return;
+      }
+
+      final currency = selectedCurrency.value;
+      final dateFmt = DateFormat('yyyy-MM-dd');
+
+      // Build CSV rows
+      final rows = <List<dynamic>>[
+        <String>[
+          'Date',
+          'Type',
+          'Category',
+          'Amount ($currency)',
+          'Payment Mode',
+          'Note',
+        ],
+        ...transactions.map(
+          (txn) => <dynamic>[
+            dateFmt.format(txn.transactionDate),
+            txn.type,
+            txn.category,
+            txn.amount.toStringAsFixed(2),
+            txn.paymentMode,
+            txn.note ?? '',
+          ],
+        ),
+      ];
+
+      final csvString = const ListToCsvConverter().convert(rows);
+
+      // Write to a temp file
+      final tempDir = await getTemporaryDirectory();
+      final fileName =
+          'spend_analytics_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.csv';
+      final file = File('${tempDir.path}/$fileName');
+      await file.writeAsString(csvString);
+
+      // Share via system share sheet
+      await Share.shareXFiles(
+        <XFile>[XFile(file.path, mimeType: 'text/csv')],
+        subject: 'Spend Analytics Export — $fileName',
+      );
+    } catch (error) {
+      Get.snackbar('Export failed', 'Could not export: $error');
+    } finally {
+      isExporting.value = false;
+    }
+  }
+
+  // ── Permissions ───────────────────────────────────────────────────────────
 
   Future<void> refreshPermissionStatuses() async {
     await _refreshNotificationPermission();

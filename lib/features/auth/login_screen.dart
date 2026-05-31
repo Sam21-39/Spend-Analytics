@@ -2,10 +2,9 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:screenx/screenx.dart';
 import 'package:spend_analytics/features/auth/auth_controller.dart';
 import 'package:spend_analytics/shared/widgets/liquid_glass_background.dart';
-import 'package:spend_analytics/shared/widgets/liquid_glass_surface.dart';
-import 'package:spend_analytics/shared/widgets/sa_pill.dart';
 import 'package:spend_analytics/shared/widgets/sa_shimmer.dart';
 
 class LoginScreen extends GetView<AuthController> {
@@ -16,194 +15,136 @@ class LoginScreen extends GetView<AuthController> {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
+    final size = MediaQuery.sizeOf(context);
+    final isTablet = size.width >= 600;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Stack(
         children: <Widget>[
+          // ── Animated gradient backdrop ────────────────────────────────
           const LiquidGlassBackground(),
+
+          // ── Subtle decorative orbs ───────────────────────────────────
+          Positioned(
+            top: -size.height * 0.08,
+            left: -size.width * 0.2,
+            child: _GlowOrb(
+              size: size.width * 0.75,
+              color: scheme.primary.withValues(alpha: isDark ? 0.18 : 0.12),
+            ),
+          ),
+          Positioned(
+            bottom: size.height * 0.12,
+            right: -size.width * 0.25,
+            child: _GlowOrb(
+              size: size.width * 0.65,
+              color: scheme.tertiary.withValues(alpha: isDark ? 0.14 : 0.09),
+            ),
+          ),
+
+          // ── Content ──────────────────────────────────────────────────
           SafeArea(
-            child: Column(
-              children: <Widget>[
-                Expanded(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(20, 26, 20, 0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: <Widget>[
-                        Align(child: _LogoMark(size: 78, scheme: scheme)),
-                        const SizedBox(height: 18),
-                        Text(
-                          'Track smarter.\nSpend calmer.',
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.headlineLarge?.copyWith(
-                            color: scheme.onSurface,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: -1.0,
-                            height: 1.04,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'One place for your expenses, budgets, and insights.\nPrivate first. Sync when you choose.',
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            color: scheme.onSurfaceVariant,
-                            height: 1.35,
-                          ),
-                        ),
-                        const SizedBox(height: 22),
-                        LiquidGlassSurface(
-                          padding: const EdgeInsets.all(18),
-                          borderRadius: const BorderRadius.all(
-                            Radius.circular(26),
-                          ),
-                          fillOpacity: isDark ? 0.1 : 0.68,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Row(
-                                children: <Widget>[
-                                  SAPill(
-                                    label: 'Offline-first',
-                                    color: scheme.secondary,
-                                    icon: Icons.shield_rounded,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  SAPill(
-                                    label: 'Realtime sync',
-                                    color: scheme.tertiary,
-                                    icon: Icons.cloud_done_rounded,
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 14),
-                              Row(
-                                children: <Widget>[
-                                  Expanded(
-                                    child: _BrandStat(
-                                      label: 'Monthly spend',
-                                      value: '₹24,580',
-                                      color: scheme.onSurface,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: _BrandStat(
-                                      label: 'Transactions',
-                                      value: '47',
-                                      color: scheme.primary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              Divider(
-                                height: 1,
-                                color: scheme.outline.withValues(alpha: 0.25),
-                              ),
-                              const SizedBox(height: 12),
-                              const _ValueProp(
-                                icon: Icons.auto_graph_rounded,
-                                text:
-                                    'Instant analytics with category-level trends.',
-                              ),
-                              const SizedBox(height: 8),
-                              const _ValueProp(
-                                icon: Icons.lock_rounded,
-                                text: 'Your data stays secure on-device first.',
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: isTablet ? 440 : double.infinity,
                 ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: ScreenX.dp(isTablet ? 0 : 28),
+                  ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
-                      Obx(() {
-                        final loading = controller.isLoading.value;
-                        return FilledButton(
-                          onPressed:
-                              loading ? null : controller.signInWithGoogle,
-                          style: FilledButton.styleFrom(
-                            minimumSize: const Size.fromHeight(56),
-                            backgroundColor:
-                                isDark ? Colors.white : Colors.black,
-                            foregroundColor:
-                                isDark ? Colors.black : Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18),
-                            ),
-                            textStyle: const TextStyle(
-                              fontWeight: FontWeight.w800,
-                              fontSize: 15,
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              if (!loading) const _GoogleGlyph(),
-                              if (!loading) const SizedBox(width: 10),
-                              loading
-                                  ? const SAShimmer(
-                                    child: SAShimmerBox(
-                                      width: 150,
-                                      height: 14,
-                                      radius: 8,
-                                    ),
-                                  )
-                                  : const Text('Continue with Google'),
-                            ],
-                          ),
-                        );
-                      }),
-                      const SizedBox(height: 10),
-                      Obx(() {
-                        final loading = controller.isLoading.value;
-                        return OutlinedButton.icon(
-                          onPressed:
-                              loading ? null : controller.continueAsGuest,
-                          icon: const Icon(
-                            Icons.person_outline_rounded,
-                            size: 18,
-                          ),
-                          label: const Text('Continue as Guest'),
-                          style: OutlinedButton.styleFrom(
-                            minimumSize: const Size.fromHeight(52),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            side: BorderSide(
-                              color: scheme.outline.withValues(alpha: 0.35),
-                            ),
-                            foregroundColor: scheme.onSurfaceVariant,
-                            textStyle: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 14,
-                            ),
-                          ),
-                        );
-                      }),
-                      const SizedBox(height: 8),
+                      const Spacer(flex: 2),
+
+                      // ── Logo ─────────────────────────────────────
+                      _AnimatedLogoMark(size: ScreenX.dp(isTablet ? 100 : 88), scheme: scheme),
+                      SizedBox(height: ScreenX.dp(28)),
+
+                      // ── Title ────────────────────────────────────
                       Text(
-                        'By continuing, you agree to Terms and Privacy Policy.',
+                        'Spend Analytics',
                         textAlign: TextAlign.center,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: scheme.onSurfaceVariant.withValues(
-                            alpha: 0.72,
-                          ),
+                        style: TextStyle(
+                          fontSize: ScreenX.sp(isTablet ? 36 : 32),
+                          fontWeight: FontWeight.w900,
+                          color: scheme.onSurface,
+                          letterSpacing: -1.2,
+                          height: 1.0,
                         ),
                       ),
+                      SizedBox(height: ScreenX.dp(10)),
+
+                      // ── Subtitle ─────────────────────────────────
+                      Text(
+                        'Track smarter. Spend calmer.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: ScreenX.sp(isTablet ? 18 : 16),
+                          fontWeight: FontWeight.w500,
+                          color: scheme.onSurfaceVariant,
+                          letterSpacing: 0.1,
+                          height: 1.4,
+                        ),
+                      ),
+                      SizedBox(height: ScreenX.dp(6)),
+                      Text(
+                        'Budgets, expenses & insights — private first.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: ScreenX.sp(13),
+                          fontWeight: FontWeight.w400,
+                          color: scheme.onSurfaceVariant.withValues(alpha: 0.7),
+                          height: 1.4,
+                        ),
+                      ),
+
+                      const Spacer(flex: 3),
+
+                      // ── Feature pills row ─────────────────────────
+                      _FeaturePillRow(scheme: scheme),
+                      SizedBox(height: ScreenX.dp(28)),
+
+                      // ── Sign in with Google button ────────────────
+                      Obx(() {
+                        final loading = controller.isLoading.value;
+                        return _GoogleSignInButton(
+                          isDark: isDark,
+                          loading: loading,
+                          onTap: loading ? null : controller.signInWithGoogle,
+                        );
+                      }),
+                      SizedBox(height: ScreenX.dp(12)),
+
+                      // ── Continue as Guest button ──────────────────
+                      Obx(() {
+                        final loading = controller.isLoading.value;
+                        return _GuestButton(
+                          scheme: scheme,
+                          loading: loading,
+                          onTap: loading ? null : controller.continueAsGuest,
+                        );
+                      }),
+
+                      SizedBox(height: ScreenX.dp(18)),
+
+                      // ── Legal ─────────────────────────────────────
+                      Text(
+                        'By continuing you agree to our Terms & Privacy Policy.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: ScreenX.sp(11.5),
+                          color: scheme.onSurfaceVariant.withValues(alpha: 0.55),
+                          height: 1.4,
+                        ),
+                      ),
+
+                      SizedBox(height: ScreenX.dp(12)),
                     ],
                   ),
                 ),
-              ],
+              ),
             ),
           ),
         ],
@@ -212,11 +153,12 @@ class LoginScreen extends GetView<AuthController> {
   }
 }
 
-class _LogoMark extends StatelessWidget {
-  const _LogoMark({required this.size, required this.scheme});
+// ── Sub-widgets ─────────────────────────────────────────────────────────────
 
+class _GlowOrb extends StatelessWidget {
+  const _GlowOrb({required this.size, required this.color});
   final double size;
-  final ColorScheme scheme;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -224,117 +166,240 @@ class _LogoMark extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(size * 0.28),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: <Color>[
-            scheme.primary,
-            Color.lerp(scheme.primary, scheme.secondary, 0.55)!,
-            scheme.tertiary,
-          ],
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: <Color>[color, color.withValues(alpha: 0)],
         ),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: scheme.primary.withValues(alpha: 0.35),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
-          ),
-        ],
       ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: <Widget>[
-          Positioned(
-            left: size * 0.22,
-            bottom: size * 0.23,
-            child: _Bar(height: size * 0.24),
-          ),
-          Positioned(
-            left: size * 0.42,
-            bottom: size * 0.23,
-            child: _Bar(height: size * 0.34),
-          ),
-          Positioned(
-            left: size * 0.62,
-            bottom: size * 0.23,
-            child: _Bar(height: size * 0.46),
-          ),
-          Positioned(
-            top: size * 0.32,
-            child: Icon(
-              Icons.trending_up_rounded,
-              color: Colors.white.withValues(alpha: 0.94),
-              size: size * 0.28,
+    );
+  }
+}
+
+/// The large hero logo shown on the login screen.
+class _AnimatedLogoMark extends StatefulWidget {
+  const _AnimatedLogoMark({required this.size, required this.scheme});
+  final double size;
+  final ColorScheme scheme;
+
+  @override
+  State<_AnimatedLogoMark> createState() => _AnimatedLogoMarkState();
+}
+
+class _AnimatedLogoMarkState extends State<_AnimatedLogoMark>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _scale;
+  late final Animation<double> _opacity;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _scale = CurvedAnimation(parent: _ctrl, curve: Curves.easeOutBack);
+    _opacity = CurvedAnimation(parent: _ctrl, curve: Curves.easeIn);
+    _ctrl.forward();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = widget.size;
+    final scheme = widget.scheme;
+
+    return FadeTransition(
+      opacity: _opacity,
+      child: ScaleTransition(
+        scale: _scale,
+        child: Container(
+          width: s,
+          height: s,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(s * 0.28),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: <Color>[
+                scheme.primary,
+                Color.lerp(scheme.primary, scheme.secondary, 0.5)!,
+                scheme.tertiary,
+              ],
+              stops: const <double>[0, 0.5, 1],
             ),
+            boxShadow: <BoxShadow>[
+              BoxShadow(
+                color: scheme.primary.withValues(alpha: 0.4),
+                blurRadius: 36,
+                spreadRadius: 4,
+                offset: const Offset(0, 12),
+              ),
+              BoxShadow(
+                color: scheme.tertiary.withValues(alpha: 0.2),
+                blurRadius: 24,
+                offset: const Offset(0, 6),
+              ),
+            ],
           ),
-        ],
+          child: Stack(
+            alignment: Alignment.center,
+            children: <Widget>[
+              // Frosted glass inner ring
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(s * 0.28),
+                    gradient: RadialGradient(
+                      colors: <Color>[
+                        Colors.white.withValues(alpha: 0.18),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              // Bar chart elements
+              Positioned(
+                left: s * 0.20,
+                bottom: s * 0.20,
+                child: _Bar(width: s * 0.10, height: s * 0.22),
+              ),
+              Positioned(
+                left: s * 0.38,
+                bottom: s * 0.20,
+                child: _Bar(width: s * 0.10, height: s * 0.34),
+              ),
+              Positioned(
+                left: s * 0.56,
+                bottom: s * 0.20,
+                child: _Bar(width: s * 0.10, height: s * 0.46),
+              ),
+              Positioned(
+                left: s * 0.74,
+                bottom: s * 0.20,
+                child: _Bar(width: s * 0.10, height: s * 0.30),
+              ),
+              // Trend line icon
+              Positioned(
+                top: s * 0.14,
+                right: s * 0.14,
+                child: Icon(
+                  Icons.trending_up_rounded,
+                  color: Colors.white.withValues(alpha: 0.92),
+                  size: s * 0.24,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
 
 class _Bar extends StatelessWidget {
-  const _Bar({required this.height});
-
+  const _Bar({required this.width, required this.height});
+  final double width;
   final double height;
 
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(width),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 1.8, sigmaY: 1.8),
+        filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
         child: Container(
-          width: 8.5,
+          width: width,
           height: height,
-          color: Colors.white.withValues(alpha: 0.82),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.80),
+            borderRadius: BorderRadius.circular(width),
+          ),
         ),
       ),
     );
   }
 }
 
-class _BrandStat extends StatelessWidget {
-  const _BrandStat({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  final String label;
-  final String value;
-  final Color color;
+class _FeaturePillRow extends StatelessWidget {
+  const _FeaturePillRow({required this.scheme});
+  final ColorScheme scheme;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        _Pill(
+          icon: Icons.shield_rounded,
+          label: 'Offline-first',
+          color: scheme.secondary,
+          scheme: scheme,
+        ),
+        SizedBox(width: ScreenX.dp(10)),
+        _Pill(
+          icon: Icons.cloud_done_rounded,
+          label: 'Cloud sync',
+          color: scheme.primary,
+          scheme: scheme,
+        ),
+        SizedBox(width: ScreenX.dp(10)),
+        _Pill(
+          icon: Icons.auto_graph_rounded,
+          label: 'Smart insights',
+          color: scheme.tertiary,
+          scheme: scheme,
+        ),
+      ],
+    );
+  }
+}
+
+class _Pill extends StatelessWidget {
+  const _Pill({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.scheme,
+  });
+  final IconData icon;
+  final String label;
+  final Color color;
+  final ColorScheme scheme;
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerHighest.withValues(alpha: 0.26),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: scheme.outline.withValues(alpha: 0.15)),
+      padding: EdgeInsets.symmetric(
+        horizontal: ScreenX.dp(10),
+        vertical: ScreenX.dp(6),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: color.withValues(alpha: 0.25),
+          width: 0.8,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: <Widget>[
+          Icon(icon, size: ScreenX.dp(13), color: color),
+          SizedBox(width: ScreenX.dp(5)),
           Text(
-            label.toUpperCase(),
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: scheme.onSurfaceVariant,
+            label,
+            style: TextStyle(
+              fontSize: ScreenX.sp(11.5),
               fontWeight: FontWeight.w700,
-              letterSpacing: 0.8,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: theme.textTheme.titleLarge?.copyWith(
-              color: color,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -0.4,
+              color: scheme.onSurface,
+              letterSpacing: 0.1,
             ),
           ),
         ],
@@ -343,51 +408,136 @@ class _BrandStat extends StatelessWidget {
   }
 }
 
-class _ValueProp extends StatelessWidget {
-  const _ValueProp({required this.icon, required this.text});
-
-  final IconData icon;
-  final String text;
+class _GoogleSignInButton extends StatelessWidget {
+  const _GoogleSignInButton({
+    required this.isDark,
+    required this.loading,
+    required this.onTap,
+  });
+  final bool isDark;
+  final bool loading;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Row(
-      children: <Widget>[
-        Icon(icon, size: 16, color: scheme.primary),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            text,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: scheme.onSurfaceVariant,
-              height: 1.3,
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 120),
+        height: ScreenX.dp(56),
+        decoration: BoxDecoration(
+          color: isDark ? Colors.white : Colors.black,
+          borderRadius: BorderRadius.circular(ScreenX.dp(18)),
+          boxShadow: <BoxShadow>[
+            BoxShadow(
+              color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.18),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: loading
+            ? const Center(
+                child: SAShimmer(
+                  child: SAShimmerBox(width: 160, height: 14, radius: 8),
+                ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  _GoogleGlyph(isDark: isDark),
+                  SizedBox(width: ScreenX.dp(10)),
+                  Text(
+                    'Continue with Google',
+                    style: TextStyle(
+                      fontSize: ScreenX.sp(15),
+                      fontWeight: FontWeight.w800,
+                      color: isDark ? Colors.black : Colors.white,
+                      letterSpacing: -0.1,
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
+class _GuestButton extends StatelessWidget {
+  const _GuestButton({
+    required this.scheme,
+    required this.loading,
+    required this.onTap,
+  });
+  final ColorScheme scheme;
+  final bool loading;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: ScreenX.dp(52),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(ScreenX.dp(16)),
+          border: Border.all(
+            color: scheme.outline.withValues(alpha: 0.30),
+            width: 1,
+          ),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(ScreenX.dp(16)),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: Container(
+              color: scheme.surfaceContainerHighest.withValues(alpha: 0.08),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Icon(
+                    Icons.person_outline_rounded,
+                    size: ScreenX.dp(18),
+                    color: scheme.onSurfaceVariant,
+                  ),
+                  SizedBox(width: ScreenX.dp(8)),
+                  Text(
+                    'Continue as Guest',
+                    style: TextStyle(
+                      fontSize: ScreenX.sp(14),
+                      fontWeight: FontWeight.w700,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-      ],
+      ),
     );
   }
 }
 
 class _GoogleGlyph extends StatelessWidget {
-  const _GoogleGlyph();
+  const _GoogleGlyph({required this.isDark});
+  final bool isDark;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 20,
-      height: 20,
+      width: ScreenX.dp(22),
+      height: ScreenX.dp(22),
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(999),
+        color: isDark ? Colors.black : Colors.white,
+        shape: BoxShape.circle,
       ),
-      child: const Text(
+      child: Text(
         'G',
         style: TextStyle(
-          color: Colors.black,
-          fontSize: 11,
+          color: isDark ? Colors.white : Colors.black,
+          fontSize: ScreenX.sp(11),
           fontWeight: FontWeight.w900,
         ),
       ),

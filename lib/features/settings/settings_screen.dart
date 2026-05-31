@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:screenx/screenx.dart';
 import 'package:spend_analytics/core/routes/app_routes.dart';
 import 'package:spend_analytics/features/settings/settings_controller.dart';
 import 'package:spend_analytics/shared/widgets/icon_box.dart';
@@ -28,14 +29,14 @@ class SettingsScreen extends GetView<SettingsController> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             LiquidGlassSurface(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(ScreenX.dp(20)),
               child: Row(
                 children: <Widget>[
                   _ProfileAvatar(
                     name: controller.displayName.value,
                     avatarUrl: controller.avatarUrl.value,
                   ),
-                  const SizedBox(width: 14),
+                  SizedBox(width: ScreenX.dp(14)),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,28 +44,28 @@ class SettingsScreen extends GetView<SettingsController> {
                         Text(
                           controller.displayName.value,
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: ScreenX.sp(16),
                             fontWeight: FontWeight.w800,
                             color: scheme.onSurface,
                           ),
                         ),
                         if (controller.email.value.isNotEmpty) ...<Widget>[
-                          const SizedBox(height: 2),
+                          SizedBox(height: ScreenX.dp(2)),
                           Text(
                             controller.email.value,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: ScreenX.sp(12),
                               color: scheme.onSurfaceVariant,
                             ),
                           ),
                         ],
-                        const SizedBox(height: 3),
+                        SizedBox(height: ScreenX.dp(3)),
                         Text(
                           controller.profileSubtitle,
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: ScreenX.sp(13),
                             color: scheme.onSurfaceVariant,
                           ),
                         ),
@@ -74,9 +75,9 @@ class SettingsScreen extends GetView<SettingsController> {
                   GestureDetector(
                     onTap: () => Get.toNamed(AppRoutes.subscription),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: ScreenX.dp(12),
+                        vertical: ScreenX.dp(6),
                       ),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
@@ -221,7 +222,7 @@ class SettingsScreen extends GetView<SettingsController> {
                     chevron: true,
                     isDivider: false,
                     isDark: isDark,
-                    onTap: () => _confirmClearLocalData(context),
+                    onTap: () => _confirmClearData(context),
                   ),
                 ],
               ),
@@ -470,12 +471,9 @@ class SettingsScreen extends GetView<SettingsController> {
                 leading: const Icon(Icons.table_chart_rounded),
                 title: const Text('Export CSV'),
                 subtitle: Text(controller.exportSubtitle),
-                onTap: () {
+                onTap: () async {
                   Navigator.of(ctx).pop();
-                  Get.snackbar(
-                    'CSV Export',
-                    'Your export has been queued. You will see it in a future update.',
-                  );
+                  await controller.exportTransactionsCsv();
                 },
               ),
               ListTile(
@@ -529,15 +527,82 @@ class SettingsScreen extends GetView<SettingsController> {
     );
   }
 
-  Future<void> _confirmClearLocalData(BuildContext context) async {
+  /// Two-option confirmation: local-only or local + cloud.
+  Future<void> _confirmClearData(BuildContext context) async {
     final scheme = Theme.of(context).colorScheme;
     await showDialog<void>(
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          title: const Text('Clear local data?'),
+          title: const Text('Clear data'),
           content: const Text(
-            'This removes transactions and settings stored on this device only.',
+            'Choose how much data you want to remove:',
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: scheme.error),
+              onPressed: () async {
+                await controller.clearLocalData();
+                if (ctx.mounted) Navigator.of(ctx).pop();
+                Get.snackbar(
+                  'Local data cleared',
+                  'Device data has been removed.',
+                );
+              },
+              child: const Text('Local only'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: scheme.error),
+              onPressed: () async {
+                Navigator.of(ctx).pop();
+                // Second confirmation for cloud deletion
+                await _confirmClearAllData(context);
+              },
+              child: const Text('Local + Cloud'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Hard confirmation for irreversible cloud + local wipe.
+  Future<void> _confirmClearAllData(BuildContext context) async {
+    final scheme = Theme.of(context).colorScheme;
+    final confirmCtrl = TextEditingController();
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('This cannot be undone'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              const Text(
+                'All transactions will be permanently deleted from both this device and the cloud.',
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Type DELETE to confirm:',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: confirmCtrl,
+                decoration: const InputDecoration(
+                  hintText: 'DELETE',
+                  isDense: true,
+                ),
+                autofocus: true,
+                textCapitalization: TextCapitalization.characters,
+              ),
+            ],
           ),
           actions: <Widget>[
             TextButton(
@@ -547,21 +612,27 @@ class SettingsScreen extends GetView<SettingsController> {
             FilledButton(
               style: FilledButton.styleFrom(backgroundColor: scheme.error),
               onPressed: () async {
-                await controller.clearLocalData();
-                if (ctx.mounted) {
-                  Navigator.of(ctx).pop();
+                if (confirmCtrl.text.trim() != 'DELETE') {
+                  Get.snackbar(
+                    'Type DELETE',
+                    'Please type DELETE exactly to confirm.',
+                  );
+                  return;
                 }
+                await controller.clearAllData();
+                if (ctx.mounted) Navigator.of(ctx).pop();
                 Get.snackbar(
-                  'Local data cleared',
-                  'Device data has been removed.',
+                  'All data cleared',
+                  'Local and cloud data has been permanently removed.',
                 );
               },
-              child: const Text('Clear'),
+              child: const Text('Delete everything'),
             ),
           ],
         );
       },
     );
+    confirmCtrl.dispose();
   }
 
   Future<void> _showPremiumDialog({

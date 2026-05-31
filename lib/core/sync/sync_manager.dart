@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:spend_analytics/core/firebase/crashlytics_service.dart';
 import 'package:spend_analytics/core/local_db/app_database.dart';
 import 'package:spend_analytics/core/supabase/supabase_service.dart';
+import 'package:spend_analytics/core/sync/conflict_resolver.dart';
 import 'package:spend_analytics/shared/models/transaction_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -109,6 +110,69 @@ class SyncManager extends GetxService {
       isSyncing.value = false;
     }
   }
+
+  /// Initial cloud-to-local hydration — called silently after sign-in.
+  /// On a fresh install the local DB is empty, so all remote records win.
+  /// On an existing device the last-write-wins conflict resolver applies.
+  Future<void> pullAllFromCloud(String userId) async {
+    if (!isOnline.value || !_supabase.isEnabled || !_supabase.isAuthenticated) {
+      return;
+    }
+    try {
+      final records = await _supabase.fetchAllTransactions(userId: userId);
+      for (final record in records) {
+        try {
+          final now = DateTime.now().toUtc();
+          final transactionDateRaw =
+              record['transaction_date'] ?? now.toIso8601String();
+          final updatedAtRaw =
+              record['updated_at'] ?? now.toIso8601String();
+          final tagsRaw = record['tags'];
+
+          final remoteTxn = TransactionModel(
+            id: '${record['id']}',
+            userId: userId,
+            amount: (record['amount'] as num?)?.toDouble() ?? 0,
+            type: '${record['type'] ?? 'expense'}',
+            category:
+                '${record['category_name'] ?? record['category'] ?? 'Others'}',
+            paymentMode: '${record['payment_mode'] ?? 'other'}',
+            transactionDate: DateTime.parse('$transactionDateRaw'),
+            updatedAt: DateTime.parse('$updatedAtRaw'),
+            note: record['note'] as String?,
+            tags:
+                (tagsRaw is List)
+                    ? tagsRaw.map((e) => '$e').toList(growable: false)
+                    : const <String>[],
+          );
+
+          final localTxn = await _db.getTransactionById(remoteTxn.id);
+          if (localTxn == null) {
+            // Fresh install: remote always wins
+            await _db.upsertTransaction(remoteTxn);
+          } else {
+            // Existing device: last-write wins
+            final outcome = const ConflictResolver().resolve(
+              localUpdatedAt: localTxn.updatedAt.toUtc(),
+              remoteUpdatedAt: remoteTxn.updatedAt.toUtc(),
+            );
+            if (outcome == ConflictResolution.remoteWins) {
+              await _db.upsertTransaction(remoteTxn);
+            }
+          }
+        } catch (_) {
+          // Skip malformed records silently
+        }
+      }
+    } catch (error, stack) {
+      await _crashlytics.recordError(
+        error,
+        stack,
+        customKeys: const <String, Object?>{'action': 'pull_all_from_cloud'},
+      );
+    }
+  }
+
 
   Future<void> _syncOneItem(SyncQueueItem item, String userId) async {
     if (item.entityType != 'transaction') {

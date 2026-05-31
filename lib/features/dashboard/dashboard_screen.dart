@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:screenx/screenx.dart';
 import 'package:spend_analytics/core/routes/app_routes.dart';
 import 'package:spend_analytics/features/dashboard/dashboard_controller.dart';
 import 'package:spend_analytics/shared/utils/category_visuals.dart';
@@ -74,27 +75,31 @@ class DashboardScreen extends GetView<DashboardController> {
             // ── Guest banner ──────────────────────────────────────
             if (controller.isGuestMode.value) ...<Widget>[
               LiquidGlassSurface(
-                padding: const EdgeInsets.all(14),
+                padding: EdgeInsets.all(ScreenX.dp(14)),
                 child: Row(
                   children: <Widget>[
                     IconBox(
                       icon: Icons.cloud_off_rounded,
                       color: scheme.error.withValues(alpha: 0.8),
-                      size: 36,
+                      size: ScreenX.dp(36),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: ScreenX.dp(12)),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Text(
                             'Guest mode',
-                            style: Theme.of(context).textTheme.titleSmall,
+                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              fontSize: ScreenX.sp(13),
+                            ),
                           ),
                           Text(
                             'Sign in to sync to your other devices.',
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(color: scheme.onSurfaceVariant),
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                              fontSize: ScreenX.sp(12),
+                            ),
                           ),
                         ],
                       ),
@@ -122,7 +127,7 @@ class DashboardScreen extends GetView<DashboardController> {
 
             // ── Greeting ─────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.only(left: 4, bottom: 8),
+              padding: EdgeInsets.only(left: ScreenX.dp(4), bottom: ScreenX.dp(8)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
@@ -130,14 +135,16 @@ class DashboardScreen extends GetView<DashboardController> {
                     'Dashboard overview',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: scheme.onSurfaceVariant,
+                      fontSize: ScreenX.sp(13),
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  SizedBox(height: ScreenX.dp(2)),
                   Text(
                     '${_greetingForHour(now.hour)}, ${controller.firstName.value}',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       color: scheme.onSurface,
                       fontWeight: FontWeight.w800,
+                      fontSize: ScreenX.sp(26),
                     ),
                   ),
                 ],
@@ -146,7 +153,7 @@ class DashboardScreen extends GetView<DashboardController> {
 
             // ── Hero balance card ─────────────────────────────────
             LiquidGlassSurface(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(ScreenX.dp(20)),
               borderRadius: const BorderRadius.all(Radius.circular(24)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,20 +168,20 @@ class DashboardScreen extends GetView<DashboardController> {
                           Text(
                             '${_monthLabel(now)} · SPENT',
                             style: TextStyle(
-                              fontSize: 10,
+                              fontSize: ScreenX.sp(10),
                               fontWeight: FontWeight.w700,
                               letterSpacing: 1.1,
                               color: scheme.onSurfaceVariant,
                             ),
                           ),
-                          const SizedBox(height: 6),
+                          SizedBox(height: ScreenX.dp(6)),
                           RichText(
                             text: TextSpan(
                               children: <TextSpan>[
                                 TextSpan(
                                   text: formatInr(spend),
                                   style: TextStyle(
-                                    fontSize: 38,
+                                    fontSize: ScreenX.sp(36),
                                     fontWeight: FontWeight.w800,
                                     color: scheme.onSurface,
                                     letterSpacing: -1.2,
@@ -195,9 +202,9 @@ class DashboardScreen extends GetView<DashboardController> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  SAProgressBar(value: usage, color: scheme.primary, height: 8),
-                  const SizedBox(height: 10),
+                  SizedBox(height: ScreenX.dp(16)),
+                  SAProgressBar(value: usage, color: scheme.primary, height: ScreenX.dp(8)),
+                  SizedBox(height: ScreenX.dp(10)),
                   LayoutBuilder(
                     builder: (context, constraints) {
                       final leadText =
@@ -220,7 +227,7 @@ class DashboardScreen extends GetView<DashboardController> {
                               style: Theme.of(context).textTheme.bodyMedium
                                   ?.copyWith(color: scheme.onSurfaceVariant),
                             ),
-                            const SizedBox(height: 4),
+                            SizedBox(height: ScreenX.dp(4)),
                             Text(
                               trailText,
                               style: Theme.of(
@@ -248,7 +255,7 @@ class DashboardScreen extends GetView<DashboardController> {
                                   ?.copyWith(color: scheme.onSurfaceVariant),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: ScreenX.dp(12)),
                           Text(
                             trailText,
                             style: Theme.of(
@@ -269,7 +276,7 @@ class DashboardScreen extends GetView<DashboardController> {
               ),
             ),
 
-            const SizedBox(height: 14),
+            SizedBox(height: ScreenX.dp(14)),
 
             // ── Quick stat row ────────────────────────────────────
             LayoutBuilder(
@@ -293,7 +300,7 @@ class DashboardScreen extends GetView<DashboardController> {
                   return Row(
                     children: <Widget>[
                       Expanded(child: incomeCard),
-                      const SizedBox(width: 12),
+                      SizedBox(width: ScreenX.dp(12)),
                       Expanded(child: avgCard),
                     ],
                   );
@@ -301,18 +308,18 @@ class DashboardScreen extends GetView<DashboardController> {
                 return Column(
                   children: <Widget>[
                     incomeCard,
-                    const SizedBox(height: 12),
+                    SizedBox(height: ScreenX.dp(12)),
                     avgCard,
                   ],
                 );
               },
             ),
 
-            const SizedBox(height: 20),
+            SizedBox(height: ScreenX.dp(20)),
 
             // ── Quick add ─────────────────────────────────────────
             _SectionHeader(title: 'Quick add'),
-            const SizedBox(height: 10),
+            SizedBox(height: ScreenX.dp(10)),
             LayoutBuilder(
               builder: (context, constraints) {
                 final options = <Widget>[
@@ -353,7 +360,7 @@ class DashboardScreen extends GetView<DashboardController> {
                       children: options
                           .map(
                             (item) => Padding(
-                              padding: const EdgeInsets.only(right: 10),
+                              padding: EdgeInsets.only(right: ScreenX.dp(10)),
                               child: item,
                             ),
                           )
@@ -361,11 +368,15 @@ class DashboardScreen extends GetView<DashboardController> {
                     ),
                   );
                 }
-                return Wrap(spacing: 10, runSpacing: 10, children: options);
+                return Wrap(
+                  spacing: ScreenX.dp(10),
+                  runSpacing: ScreenX.dp(10),
+                  children: options,
+                );
               },
             ),
 
-            const SizedBox(height: 20),
+            SizedBox(height: ScreenX.dp(20)),
 
             // ── Recent transactions ───────────────────────────────
             _SectionHeader(
@@ -373,13 +384,13 @@ class DashboardScreen extends GetView<DashboardController> {
               action: 'See all',
               onAction: () => Get.toNamed(AppRoutes.txns),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: ScreenX.dp(10)),
             LiquidGlassSurface(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: EdgeInsets.symmetric(horizontal: ScreenX.dp(12)),
               child:
                   txns.isEmpty
                       ? Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: EdgeInsets.symmetric(vertical: ScreenX.dp(16)),
                         child: Text(
                           'No transactions yet. Add one to start tracking.',
                           style: Theme.of(context).textTheme.bodyMedium
@@ -414,7 +425,7 @@ class DashboardScreen extends GetView<DashboardController> {
                       ),
             ),
 
-            const SizedBox(height: 20),
+            SizedBox(height: ScreenX.dp(20)),
 
             // ── Top categories ────────────────────────────────────
             _SectionHeader(
@@ -422,9 +433,9 @@ class DashboardScreen extends GetView<DashboardController> {
               action: 'Manage budgets',
               onAction: () => Get.toNamed(AppRoutes.budgets),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: ScreenX.dp(10)),
             LiquidGlassSurface(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(ScreenX.dp(16)),
               child:
                   topCategories.isEmpty
                       ? Text(
@@ -441,7 +452,9 @@ class DashboardScreen extends GetView<DashboardController> {
                             final isLast =
                                 i == topCategories.take(3).length - 1;
                             return Container(
-                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              padding: EdgeInsets.symmetric(
+                                vertical: ScreenX.dp(10),
+                              ),
                               decoration:
                                   isLast
                                       ? null
@@ -460,9 +473,9 @@ class DashboardScreen extends GetView<DashboardController> {
                                   IconBox(
                                     icon: _iconFor(item.key),
                                     color: _colorFor(item.key),
-                                    size: 32,
+                                    size: ScreenX.dp(32),
                                   ),
-                                  const SizedBox(width: 12),
+                                  SizedBox(width: ScreenX.dp(12)),
                                   Expanded(
                                     child: Text(
                                       item.key,
@@ -471,6 +484,7 @@ class DashboardScreen extends GetView<DashboardController> {
                                       ).textTheme.titleSmall?.copyWith(
                                         color: scheme.onSurface,
                                         fontWeight: FontWeight.w700,
+                                        fontSize: ScreenX.sp(14),
                                       ),
                                     ),
                                   ),
@@ -481,6 +495,7 @@ class DashboardScreen extends GetView<DashboardController> {
                                     ).textTheme.bodyMedium?.copyWith(
                                       color: scheme.onSurfaceVariant,
                                       fontWeight: FontWeight.w700,
+                                      fontSize: ScreenX.sp(13),
                                     ),
                                   ),
                                 ],
@@ -553,7 +568,7 @@ class _SectionHeader extends StatelessWidget {
         Text(
           title.toUpperCase(),
           style: TextStyle(
-            fontSize: 12,
+            fontSize: ScreenX.sp(11),
             fontWeight: FontWeight.w700,
             letterSpacing: 0.8,
             color: scheme.onSurfaceVariant,
@@ -568,14 +583,14 @@ class _SectionHeader extends StatelessWidget {
                 Text(
                   action!,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: ScreenX.sp(12),
                     fontWeight: FontWeight.w700,
                     color: scheme.primary,
                   ),
                 ),
                 Icon(
                   Icons.chevron_right_rounded,
-                  size: 14,
+                  size: ScreenX.dp(14),
                   color: scheme.primary,
                 ),
               ],
@@ -604,36 +619,36 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return LiquidGlassSurface(
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(ScreenX.dp(14)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              IconBox(icon: icon, color: color, size: 32),
+              IconBox(icon: icon, color: color, size: ScreenX.dp(32)),
               Icon(
                 Icons.chevron_right_rounded,
-                size: 14,
+                size: ScreenX.dp(14),
                 color: scheme.onSurfaceVariant,
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: ScreenX.dp(10)),
           Text(
             label.toUpperCase(),
             style: TextStyle(
-              fontSize: 10,
+              fontSize: ScreenX.sp(10),
               fontWeight: FontWeight.w700,
               letterSpacing: 1.1,
               color: scheme.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: 2),
+          SizedBox(height: ScreenX.dp(2)),
           Text(
             value,
             style: TextStyle(
-              fontSize: 22,
+              fontSize: ScreenX.sp(20),
               fontWeight: FontWeight.w800,
               color: scheme.onSurface,
               letterSpacing: -0.5,
@@ -644,7 +659,10 @@ class _StatCard extends StatelessWidget {
             sub,
             style: Theme.of(
               context,
-            ).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+            ).textTheme.bodySmall?.copyWith(
+              color: scheme.onSurfaceVariant,
+              fontSize: ScreenX.sp(11),
+            ),
           ),
         ],
       ),
@@ -670,17 +688,18 @@ class _QuickAdd extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: LiquidGlassSurface(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.all(ScreenX.dp(12)),
         child: SizedBox(
-          width: 76,
+          width: ScreenX.dp(78),
           child: Column(
             children: <Widget>[
-              IconBox(icon: icon, color: color, size: 36),
-              const SizedBox(height: 8),
+              IconBox(icon: icon, color: color, size: ScreenX.dp(36)),
+              SizedBox(height: ScreenX.dp(8)),
               Text(
                 label,
+                textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: ScreenX.sp(11.5),
                   fontWeight: FontWeight.w700,
                   color: scheme.onSurface,
                 ),

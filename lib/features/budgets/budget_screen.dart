@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:screenx/screenx.dart';
 import 'package:spend_analytics/core/routes/app_routes.dart';
 import 'package:spend_analytics/features/budgets/budget_controller.dart';
 import 'package:spend_analytics/features/categories/category_controller.dart';
@@ -57,16 +59,16 @@ class BudgetScreen extends GetView<BudgetController> {
           children: <Widget>[
             // ── Overall summary ring ──────────────────────────────
             LiquidGlassSurface(
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.all(ScreenX.dp(24)),
               child: Row(
                 children: <Widget>[
                   RingProgress(
-                    size: 84,
+                    size: ScreenX.dp(84),
                     value: overallPct,
-                    stroke: 9,
+                    stroke: ScreenX.dp(9),
                     color: ringColor,
                   ),
-                  const SizedBox(width: 24),
+                  SizedBox(width: ScreenX.dp(24)),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -74,34 +76,34 @@ class BudgetScreen extends GetView<BudgetController> {
                         Text(
                           'Monthly Overview',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: ScreenX.sp(12),
                             fontWeight: FontWeight.w700,
                             color: scheme.onSurfaceVariant,
                           ),
                         ),
-                        const SizedBox(height: 6),
+                        SizedBox(height: ScreenX.dp(6)),
                         Text(
                           formatInr(totalSpent),
                           style: TextStyle(
-                            fontSize: 28,
+                            fontSize: ScreenX.sp(28),
                             fontWeight: FontWeight.w800,
                             color: scheme.onSurface,
                             letterSpacing: -0.5,
                           ),
                         ),
-                        const SizedBox(height: 2),
+                        SizedBox(height: ScreenX.dp(2)),
                         Text(
                           'of ${formatInr(totalLimit)} total budget',
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: ScreenX.sp(13),
                             color: scheme.onSurfaceVariant,
                           ),
                         ),
-                        const SizedBox(height: 10),
+                        SizedBox(height: ScreenX.dp(10)),
                         Row(
                           children: <Widget>[
                             _StatusDot(color: ringColor),
-                            const SizedBox(width: 6),
+                            SizedBox(width: ScreenX.dp(6)),
                             Expanded(
                               child: Text(
                                 '${(overallPct * 100).toStringAsFixed(0)}% used · '
@@ -109,7 +111,7 @@ class BudgetScreen extends GetView<BudgetController> {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: ScreenX.sp(12),
                                   fontWeight: FontWeight.w600,
                                   color: scheme.onSurfaceVariant,
                                 ),
@@ -124,19 +126,19 @@ class BudgetScreen extends GetView<BudgetController> {
               ),
             ),
 
-            const SizedBox(height: 20),
+            SizedBox(height: ScreenX.dp(20)),
 
             // ── Section heading ───────────────────────────────────
             Text(
               'CATEGORIES',
               style: TextStyle(
-                fontSize: 11,
+                fontSize: ScreenX.sp(11),
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.8,
                 color: scheme.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: ScreenX.dp(10)),
 
             // ── Per-category cards ────────────────────────────────
             ...budgets.entries.map((entry) {
@@ -169,9 +171,9 @@ class BudgetScreen extends GetView<BudgetController> {
               }
 
               return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
+                padding: EdgeInsets.only(bottom: ScreenX.dp(12)),
                 child: LiquidGlassSurface(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(ScreenX.dp(16)),
                   child: Column(
                     children: <Widget>[
                       Row(
@@ -179,9 +181,9 @@ class BudgetScreen extends GetView<BudgetController> {
                           IconBox(
                             icon: CategoryVisuals.iconFor(cat),
                             color: CategoryVisuals.colorFor(cat),
-                            size: 40,
+                            size: ScreenX.dp(40),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: ScreenX.dp(12)),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,32 +191,36 @@ class BudgetScreen extends GetView<BudgetController> {
                                 Text(
                                   cat,
                                   style: TextStyle(
-                                    fontSize: 15,
+                                    fontSize: ScreenX.sp(15),
                                     fontWeight: FontWeight.w700,
                                     color: scheme.onSurface,
                                   ),
                                 ),
-                                const SizedBox(height: 2),
+                                SizedBox(height: ScreenX.dp(2)),
                                 Text(
                                   '${formatInr(spent)} of ${formatInr(limit)}',
                                   style: TextStyle(
-                                    fontSize: 13,
+                                    fontSize: ScreenX.sp(13),
                                     color: scheme.onSurfaceVariant,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(width: ScreenX.dp(8)),
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
-                              Icon(statusIcon, size: 14, color: statusColor),
-                              const SizedBox(width: 4),
+                              Icon(
+                                statusIcon,
+                                size: ScreenX.dp(14),
+                                color: statusColor,
+                              ),
+                              SizedBox(width: ScreenX.dp(4)),
                               Text(
                                 statusText,
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: ScreenX.sp(12),
                                   fontWeight: FontWeight.w700,
                                   color: statusColor,
                                 ),
@@ -223,16 +229,20 @@ class BudgetScreen extends GetView<BudgetController> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 14),
-                      SAProgressBar(value: pct, color: barColor, height: 7),
-                      const SizedBox(height: 6),
+                      SizedBox(height: ScreenX.dp(14)),
+                      SAProgressBar(
+                        value: pct,
+                        color: barColor,
+                        height: ScreenX.dp(7),
+                      ),
+                      SizedBox(height: ScreenX.dp(6)),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
                           Text(
                             '${(pct * 100).toStringAsFixed(0)}% used',
                             style: TextStyle(
-                              fontSize: 11,
+                              fontSize: ScreenX.sp(11),
                               color: scheme.onSurfaceVariant,
                             ),
                           ),
@@ -251,7 +261,7 @@ class BudgetScreen extends GetView<BudgetController> {
                             child: Text(
                               'Details →',
                               style: TextStyle(
-                                fontSize: 11,
+                                fontSize: ScreenX.sp(11),
                                 fontWeight: FontWeight.w700,
                                 color: scheme.primary,
                               ),
@@ -265,7 +275,7 @@ class BudgetScreen extends GetView<BudgetController> {
               );
             }),
 
-            const SizedBox(height: 4),
+            SizedBox(height: ScreenX.dp(4)),
 
             // ── Add budget dashed button ───────────────────────────
             GestureDetector(
@@ -277,14 +287,14 @@ class BudgetScreen extends GetView<BudgetController> {
                   children: <Widget>[
                     Icon(
                       Icons.add_rounded,
-                      size: 18,
+                      size: ScreenX.dp(18),
                       color: scheme.onSurfaceVariant,
                     ),
-                    const SizedBox(width: 6),
+                    SizedBox(width: ScreenX.dp(6)),
                     Text(
                       'Add a budget',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: ScreenX.sp(14),
                         fontWeight: FontWeight.w600,
                         color: scheme.onSurfaceVariant,
                       ),
@@ -294,7 +304,7 @@ class BudgetScreen extends GetView<BudgetController> {
               ),
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: ScreenX.dp(24)),
           ],
         );
       }),
@@ -311,7 +321,7 @@ class BudgetScreen extends GetView<BudgetController> {
   }
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────
+// ── Add Budget Sheet ───────────────────────────────────────────────────────
 
 class _AddBudgetSheet extends StatefulWidget {
   const _AddBudgetSheet({required this.controller});
@@ -323,56 +333,117 @@ class _AddBudgetSheet extends StatefulWidget {
 }
 
 class _AddBudgetSheetState extends State<_AddBudgetSheet> {
-  String _amountInput = '';
+  final TextEditingController _amountCtrl = TextEditingController();
   String? _selectedCategory;
+  String? _amountError;
+  String? _categoryError;
+
+  @override
+  void dispose() {
+    _amountCtrl.dispose();
+    super.dispose();
+  }
+
+  /// Auto-clear: select-all when field is empty or '0'
+  void _onAmountTap() {
+    final text = _amountCtrl.text;
+    if (text == '0' || text.isEmpty) {
+      _amountCtrl.selection = TextSelection(
+        baseOffset: 0,
+        extentOffset: text.length,
+      );
+    }
+  }
+
+  bool _validate() {
+    final amount = double.tryParse(_amountCtrl.text.trim());
+    String? catErr;
+    String? amtErr;
+
+    if (_selectedCategory == null) {
+      catErr = 'Please choose a category';
+    }
+    if (amount == null || amount <= 0) {
+      amtErr = 'Enter a valid amount (min ₹1)';
+    } else if (amount > 9999999) {
+      amtErr = 'Amount cannot exceed ₹99,99,999';
+    }
+
+    setState(() {
+      _categoryError = catErr;
+      _amountError = amtErr;
+    });
+
+    return catErr == null && amtErr == null;
+  }
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Padding(
       padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 16,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        left: ScreenX.dp(16),
+        right: ScreenX.dp(16),
+        top: ScreenX.dp(16),
+        bottom: MediaQuery.of(context).viewInsets.bottom + ScreenX.dp(24),
       ),
       child: LiquidGlassSurface(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(ScreenX.dp(20)),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
+              // Sheet drag handle
               Center(
                 child: Container(
-                  width: 36,
-                  height: 4,
+                  width: ScreenX.dp(36),
+                  height: ScreenX.dp(4),
                   decoration: BoxDecoration(
                     color: scheme.onSurfaceVariant.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(999),
                   ),
                 ),
               ),
-              const SizedBox(height: 18),
+              SizedBox(height: ScreenX.dp(18)),
+
               Text(
                 'Add / Update Budget',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: ScreenX.sp(18),
                   fontWeight: FontWeight.w800,
                   color: scheme.onSurface,
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: ScreenX.dp(16)),
+
+              // ── Category label ────────────────────────────────────
               Text(
                 'CATEGORY',
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: ScreenX.sp(10),
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1,
-                  color: scheme.onSurfaceVariant,
+                  color:
+                      _categoryError != null
+                          ? scheme.error
+                          : scheme.onSurfaceVariant,
                 ),
               ),
-              const SizedBox(height: 8),
+              if (_categoryError != null) ...[
+                SizedBox(height: ScreenX.dp(4)),
+                Text(
+                  _categoryError!,
+                  style: TextStyle(
+                    fontSize: ScreenX.sp(12),
+                    color: scheme.error,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+              SizedBox(height: ScreenX.dp(8)),
+
+              // ── Category chips ────────────────────────────────────
               Obx(() {
                 final categoryController = Get.find<CategoryController>();
                 final groups = <String, List<String>>{
@@ -386,12 +457,16 @@ class _AddBudgetSheetState extends State<_AddBudgetSheet> {
                 Widget buildChip(String type, String name) {
                   final active = _selectedCategory == name;
                   return GestureDetector(
-                    onTap: () => setState(() => _selectedCategory = name),
+                    onTap:
+                        () => setState(() {
+                          _selectedCategory = name;
+                          _categoryError = null;
+                        }),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 150),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 8,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: ScreenX.dp(14),
+                        vertical: ScreenX.dp(8),
                       ),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(999),
@@ -414,7 +489,7 @@ class _AddBudgetSheetState extends State<_AddBudgetSheet> {
                         children: <Widget>[
                           Icon(
                             CategoryVisuals.iconFor(name, type: type),
-                            size: 14,
+                            size: ScreenX.dp(14),
                             color:
                                 active
                                     ? scheme.primary
@@ -423,13 +498,14 @@ class _AddBudgetSheetState extends State<_AddBudgetSheet> {
                                       type: type,
                                     ),
                           ),
-                          const SizedBox(width: 6),
+                          SizedBox(width: ScreenX.dp(6)),
                           Text(
                             name,
                             style: TextStyle(
-                              fontSize: 13,
+                              fontSize: ScreenX.sp(13),
                               fontWeight: FontWeight.w700,
-                              color: active ? scheme.primary : scheme.onSurface,
+                              color:
+                                  active ? scheme.primary : scheme.onSurface,
                             ),
                           ),
                         ],
@@ -438,27 +514,33 @@ class _AddBudgetSheetState extends State<_AddBudgetSheet> {
                   );
                 }
 
-                Widget buildGroup(String type, List<String> names) {
-                  final label = '${type[0].toUpperCase()}${type.substring(1)}';
+                // Horizontal scrollable row per category type
+                Widget buildHorizontalGroup(String type, List<String> names) {
+                  final label =
+                      '${type[0].toUpperCase()}${type.substring(1)}';
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
                         label,
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: ScreenX.sp(11),
                           fontWeight: FontWeight.w700,
                           color: scheme.onSurfaceVariant,
                           letterSpacing: 0.6,
                         ),
                       ),
-                      const SizedBox(height: 6),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: names
-                            .map((name) => buildChip(type, name))
-                            .toList(growable: false),
+                      SizedBox(height: ScreenX.dp(6)),
+                      SizedBox(
+                        height: ScreenX.dp(40),
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          padding: EdgeInsets.zero,
+                          itemCount: names.length,
+                          separatorBuilder: (_, __) =>
+                              SizedBox(width: ScreenX.dp(8)),
+                          itemBuilder: (_, i) => buildChip(type, names[i]),
+                        ),
                       ),
                     ],
                   );
@@ -467,98 +549,94 @@ class _AddBudgetSheetState extends State<_AddBudgetSheet> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    buildGroup(
+                    buildHorizontalGroup(
                       CategoryController.expenseType,
                       groups[CategoryController.expenseType]!,
                     ),
-                    const SizedBox(height: 10),
-                    buildGroup(
+                    SizedBox(height: ScreenX.dp(10)),
+                    buildHorizontalGroup(
                       CategoryController.incomeType,
                       groups[CategoryController.incomeType]!,
                     ),
-                    const SizedBox(height: 10),
-                    buildGroup(
+                    SizedBox(height: ScreenX.dp(10)),
+                    buildHorizontalGroup(
                       CategoryController.transferType,
                       groups[CategoryController.transferType]!,
                     ),
                   ],
                 );
               }),
-              const SizedBox(height: 18),
+              SizedBox(height: ScreenX.dp(18)),
+
+              // ── Monthly limit ────────────────────────────────────
               Text(
                 'MONTHLY LIMIT',
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: ScreenX.sp(10),
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1,
-                  color: scheme.onSurfaceVariant,
+                  color:
+                      _amountError != null
+                          ? scheme.error
+                          : scheme.onSurfaceVariant,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: ScreenX.dp(8)),
+
               TextField(
+                controller: _amountCtrl,
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                onChanged: (value) => _amountInput = value,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                ],
+                onTap: _onAmountTap,
+                onChanged: (_) {
+                  if (_amountError != null) {
+                    setState(() => _amountError = null);
+                  }
+                },
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: ScreenX.sp(20),
                   fontWeight: FontWeight.w700,
                   color: scheme.onSurface,
                 ),
                 decoration: InputDecoration(
                   prefixText: '₹ ',
                   prefixStyle: TextStyle(
-                    fontSize: 20,
+                    fontSize: ScreenX.sp(20),
                     fontWeight: FontWeight.w700,
                     color: scheme.onSurfaceVariant,
                   ),
                   hintText: '0',
-                  hintStyle: TextStyle(color: scheme.onSurfaceVariant),
-                  filled: true,
-                  fillColor: scheme.surfaceContainerHighest.withValues(
-                    alpha: 0.4,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
+                  errorText: _amountError,
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: ScreenX.dp(20)),
+
               FilledButton(
                 onPressed: () async {
-                  final cat = _selectedCategory;
-                  final amount = double.tryParse(_amountInput.trim());
-                  if (cat == null) {
-                    Get.snackbar(
-                      'Select a category',
-                      'Please choose a category.',
-                    );
-                    return;
-                  }
-                  if (amount == null || amount <= 0) {
-                    Get.snackbar(
-                      'Invalid amount',
-                      'Please enter a valid amount.',
-                    );
-                    return;
-                  }
-                  await widget.controller.upsertBudget(cat, amount);
+                  if (!_validate()) return;
+                  final amount = double.parse(_amountCtrl.text.trim());
+                  await widget.controller.upsertBudget(
+                    _selectedCategory!,
+                    amount,
+                  );
                   if (mounted) {
                     Navigator.of(context).pop();
                   }
                 },
                 style: FilledButton.styleFrom(
-                  minimumSize: const Size.fromHeight(50),
+                  minimumSize: Size.fromHeight(ScreenX.dp(50)),
                   shape: const StadiumBorder(),
                 ),
-                child: const Text(
+                child: Text(
                   'Save budget',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                  style: TextStyle(
+                    fontSize: ScreenX.sp(15),
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],
@@ -568,6 +646,8 @@ class _AddBudgetSheetState extends State<_AddBudgetSheet> {
     );
   }
 }
+
+// ── Skeleton & helpers ───────────────────────────────────────────────────────
 
 class _BudgetLoadingSkeleton extends StatelessWidget {
   const _BudgetLoadingSkeleton();
@@ -637,7 +717,7 @@ class DashedBorderContainer extends StatelessWidget {
 
     return CustomPaint(
       painter: _DashedBorderPainter(color: borderColor),
-      child: SizedBox(height: 52, child: Center(child: child)),
+      child: SizedBox(height: ScreenX.dp(52), child: Center(child: child)),
     );
   }
 }

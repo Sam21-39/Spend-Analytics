@@ -13,6 +13,7 @@ import 'package:spend_analytics/core/local_db/app_database.dart';
 import 'package:spend_analytics/core/routes/app_routes.dart';
 import 'package:spend_analytics/core/supabase/realtime_service.dart';
 import 'package:spend_analytics/core/supabase/supabase_service.dart';
+import 'package:spend_analytics/core/sync/sync_manager.dart';
 import 'package:spend_analytics/features/categories/category_controller.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -82,6 +83,12 @@ class AuthController extends GetxController {
       await _refreshCategoriesForCurrentUser();
       await _analytics.logEvent('login_success_google');
       final activeUserId = resolveActiveUserId();
+
+      // Silently pull all cloud transactions in background (reinstall recovery)
+      if (Get.isRegistered<SyncManager>()) {
+        unawaited(Get.find<SyncManager>().pullAllFromCloud(activeUserId));
+      }
+
       await _ensurePrivacyGateAcknowledged(activeUserId);
       await _requestInitialNotificationsPermission(activeUserId);
       Get.offAllNamed(AppRoutes.dashboard);
