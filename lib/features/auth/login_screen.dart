@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:screenx/screenx.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:spend_analytics/features/auth/auth_controller.dart';
 import 'package:spend_analytics/shared/widgets/liquid_glass_background.dart';
 import 'package:spend_analytics/shared/widgets/sa_shimmer.dart';
@@ -47,13 +48,9 @@ class LoginScreen extends GetView<AuthController> {
           SafeArea(
             child: Center(
               child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: isTablet ? 440 : double.infinity,
-                ),
+                constraints: BoxConstraints(maxWidth: isTablet ? 440 : double.infinity),
                 child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: ScreenX.dp(isTablet ? 0 : 28),
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: ScreenX.dp(isTablet ? 0 : 28)),
                   child: Column(
                     children: <Widget>[
                       const Spacer(flex: 2),
@@ -167,9 +164,7 @@ class _GlowOrb extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: RadialGradient(
-          colors: <Color>[color, color.withValues(alpha: 0)],
-        ),
+        gradient: RadialGradient(colors: <Color>[color, color.withValues(alpha: 0)]),
       ),
     );
   }
@@ -185,8 +180,7 @@ class _AnimatedLogoMark extends StatefulWidget {
   State<_AnimatedLogoMark> createState() => _AnimatedLogoMarkState();
 }
 
-class _AnimatedLogoMarkState extends State<_AnimatedLogoMark>
-    with SingleTickerProviderStateMixin {
+class _AnimatedLogoMarkState extends State<_AnimatedLogoMark> with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
   late final Animation<double> _scale;
   late final Animation<double> _opacity;
@@ -194,10 +188,7 @@ class _AnimatedLogoMarkState extends State<_AnimatedLogoMark>
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
+    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 800));
     _scale = CurvedAnimation(parent: _ctrl, curve: Curves.easeOutBack);
     _opacity = CurvedAnimation(parent: _ctrl, curve: Curves.easeIn);
     _ctrl.forward();
@@ -256,70 +247,14 @@ class _AnimatedLogoMarkState extends State<_AnimatedLogoMark>
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(s * 0.28),
                     gradient: RadialGradient(
-                      colors: <Color>[
-                        Colors.white.withValues(alpha: 0.18),
-                        Colors.transparent,
-                      ],
+                      colors: <Color>[Colors.white.withValues(alpha: 0.18), Colors.transparent],
                     ),
                   ),
                 ),
               ),
               // Bar chart elements
-              Positioned(
-                left: s * 0.20,
-                bottom: s * 0.20,
-                child: _Bar(width: s * 0.10, height: s * 0.22),
-              ),
-              Positioned(
-                left: s * 0.38,
-                bottom: s * 0.20,
-                child: _Bar(width: s * 0.10, height: s * 0.34),
-              ),
-              Positioned(
-                left: s * 0.56,
-                bottom: s * 0.20,
-                child: _Bar(width: s * 0.10, height: s * 0.46),
-              ),
-              Positioned(
-                left: s * 0.74,
-                bottom: s * 0.20,
-                child: _Bar(width: s * 0.10, height: s * 0.30),
-              ),
-              // Trend line icon
-              Positioned(
-                top: s * 0.14,
-                right: s * 0.14,
-                child: Icon(
-                  Icons.trending_up_rounded,
-                  color: Colors.white.withValues(alpha: 0.92),
-                  size: s * 0.24,
-                ),
-              ),
+              SvgPicture.asset('assets/images/spend_analytics_logo.svg', width: s, height: s),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _Bar extends StatelessWidget {
-  const _Bar({required this.width, required this.height});
-  final double width;
-  final double height;
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(width),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
-        child: Container(
-          width: width,
-          height: height,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.80),
-            borderRadius: BorderRadius.circular(width),
           ),
         ),
       ),
@@ -333,41 +268,40 @@ class _FeaturePillRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        _Pill(
-          icon: Icons.shield_rounded,
-          label: 'Offline-first',
-          color: scheme.secondary,
-          scheme: scheme,
-        ),
-        SizedBox(width: ScreenX.dp(10)),
-        _Pill(
-          icon: Icons.cloud_done_rounded,
-          label: 'Cloud sync',
-          color: scheme.primary,
-          scheme: scheme,
-        ),
-        SizedBox(width: ScreenX.dp(10)),
-        _Pill(
-          icon: Icons.auto_graph_rounded,
-          label: 'Smart insights',
-          color: scheme.tertiary,
-          scheme: scheme,
-        ),
-      ],
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          _Pill(
+            icon: Icons.shield_rounded,
+            label: 'Offline-first',
+            color: scheme.secondary,
+            scheme: scheme,
+          ),
+          SizedBox(width: ScreenX.dp(10)),
+          _Pill(
+            icon: Icons.cloud_done_rounded,
+            label: 'Cloud sync',
+            color: scheme.primary,
+            scheme: scheme,
+          ),
+          SizedBox(width: ScreenX.dp(10)),
+          _Pill(
+            icon: Icons.auto_graph_rounded,
+            label: 'Smart insights',
+            color: scheme.tertiary,
+            scheme: scheme,
+          ),
+        ],
+      ),
     );
   }
 }
 
 class _Pill extends StatelessWidget {
-  const _Pill({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.scheme,
-  });
+  const _Pill({required this.icon, required this.label, required this.color, required this.scheme});
   final IconData icon;
   final String label;
   final Color color;
@@ -376,17 +310,11 @@ class _Pill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: ScreenX.dp(10),
-        vertical: ScreenX.dp(6),
-      ),
+      padding: EdgeInsets.symmetric(horizontal: ScreenX.dp(10), vertical: ScreenX.dp(6)),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: color.withValues(alpha: 0.25),
-          width: 0.8,
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.25), width: 0.8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -409,11 +337,7 @@ class _Pill extends StatelessWidget {
 }
 
 class _GoogleSignInButton extends StatelessWidget {
-  const _GoogleSignInButton({
-    required this.isDark,
-    required this.loading,
-    required this.onTap,
-  });
+  const _GoogleSignInButton({required this.isDark, required this.loading, required this.onTap});
   final bool isDark;
   final bool loading;
   final VoidCallback? onTap;
@@ -436,39 +360,34 @@ class _GoogleSignInButton extends StatelessWidget {
             ),
           ],
         ),
-        child: loading
-            ? const Center(
-                child: SAShimmer(
-                  child: SAShimmerBox(width: 160, height: 14, radius: 8),
-                ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  _GoogleGlyph(isDark: isDark),
-                  SizedBox(width: ScreenX.dp(10)),
-                  Text(
-                    'Continue with Google',
-                    style: TextStyle(
-                      fontSize: ScreenX.sp(15),
-                      fontWeight: FontWeight.w800,
-                      color: isDark ? Colors.black : Colors.white,
-                      letterSpacing: -0.1,
+        child:
+            loading
+                ? const Center(
+                  child: SAShimmer(child: SAShimmerBox(width: 160, height: 14, radius: 8)),
+                )
+                : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    _GoogleGlyph(isDark: isDark),
+                    SizedBox(width: ScreenX.dp(10)),
+                    Text(
+                      'Continue with Google',
+                      style: TextStyle(
+                        fontSize: ScreenX.sp(15),
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? Colors.black : Colors.white,
+                        letterSpacing: -0.1,
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
       ),
     );
   }
 }
 
 class _GuestButton extends StatelessWidget {
-  const _GuestButton({
-    required this.scheme,
-    required this.loading,
-    required this.onTap,
-  });
+  const _GuestButton({required this.scheme, required this.loading, required this.onTap});
   final ColorScheme scheme;
   final bool loading;
   final VoidCallback? onTap;
@@ -481,10 +400,7 @@ class _GuestButton extends StatelessWidget {
         height: ScreenX.dp(52),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(ScreenX.dp(16)),
-          border: Border.all(
-            color: scheme.outline.withValues(alpha: 0.30),
-            width: 1,
-          ),
+          border: Border.all(color: scheme.outline.withValues(alpha: 0.30), width: 1),
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(ScreenX.dp(16)),

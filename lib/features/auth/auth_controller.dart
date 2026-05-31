@@ -98,22 +98,34 @@ class AuthController extends GetxController {
         stack,
         customKeys: const <String, Object?>{'action': 'google_sign_in'},
       );
+      final errStr = '$error';
       final isApi10 =
+          error is PlatformException && (error.message?.contains('ApiException: 10') ?? false);
+      final isApi12500 =
           error is PlatformException &&
-          (error.message?.contains('ApiException: 10') ?? false);
-      if (isApi10) {
+          (error.message!.contains('12500') ||
+              (error.code == 'sign_in_failed' && (error.message?.contains('12500') ?? false)));
+
+      if (isApi12500) {
+        Get.snackbar(
+          'Google Sign-In Failed (12500)',
+          'SHA-1 fingerprint not registered. Add your debug SHA-1 to Firebase Console → Project Settings → Your Android app.',
+          duration: const Duration(seconds: 8),
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      } else if (isApi10) {
         Get.snackbar(
           'Google Sign-In Config Error',
           'Check package name and SHA-1/SHA-256 in Google Cloud OAuth client.',
         );
-      } else if ('$error'.contains('Unacceptable audience in id_token')) {
+      } else if (errStr.contains('Unacceptable audience in id_token')) {
         Get.snackbar(
           'Google Audience Mismatch',
           'Set GOOGLE_WEB_CLIENT_ID to the same Web Client ID configured in Supabase Auth > Providers > Google.',
           duration: const Duration(seconds: 6),
         );
       } else {
-        Get.snackbar('Sign-in Failed', 'Please try again.');
+        Get.snackbar('Sign-in Failed', errStr.length > 80 ? errStr.substring(0, 80) : errStr);
       }
     } finally {
       isLoading.value = false;
@@ -202,10 +214,7 @@ class AuthController extends GetxController {
             ],
           ),
           actions: <Widget>[
-            FilledButton(
-              onPressed: () => Get.back<void>(),
-              child: const Text('I Understand'),
-            ),
+            FilledButton(onPressed: () => Get.back<void>(), child: const Text('I Understand')),
           ],
         ),
       ),
@@ -224,11 +233,7 @@ class AuthController extends GetxController {
     }
 
     try {
-      await FirebaseMessaging.instance.requestPermission(
-        alert: true,
-        badge: true,
-        sound: true,
-      );
+      await FirebaseMessaging.instance.requestPermission(alert: true, badge: true, sound: true);
     } catch (_) {
       // Best-effort prompt; failure should not block sign-in.
     } finally {
