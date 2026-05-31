@@ -343,4 +343,6 @@ class RulesController extends GetxController {
     _rulesSub?.cancel();
     super.onClose();
   }
+
+  Future<void> saveRule(String ruleType, Map<String, dynamic> params) async {}
 }

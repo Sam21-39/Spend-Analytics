@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:spend_analytics/core/routes/app_routes.dart';
+import 'package:spend_analytics/core/services/biometric_lock_service.dart';
 import 'package:spend_analytics/features/auth/auth_controller.dart';
+import 'package:spend_analytics/features/auth/biometric_lock_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spend_analytics/shared/widgets/liquid_glass_background.dart';
 
@@ -49,7 +51,17 @@ class _SplashScreenState extends State<SplashScreen>
 
     final auth = Get.find<AuthController>();
     if (auth.hasActiveSession || auth.isLoggedIn.value) {
-      Get.offAllNamed(AppRoutes.dashboard);
+      await Get.offAllNamed(AppRoutes.dashboard);
+      if (Get.isRegistered<BiometricLockService>()) {
+        final lockService = Get.find<BiometricLockService>();
+        if (lockService.shouldLock) {
+          Get.dialog<void>(
+            const BiometricLockScreen(),
+            barrierDismissible: false,
+            barrierColor: Colors.black.withValues(alpha: 0.6),
+          );
+        }
+      }
       return;
     }
     Get.offAllNamed(AppRoutes.login);

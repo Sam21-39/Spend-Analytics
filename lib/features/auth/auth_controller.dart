@@ -1,9 +1,8 @@
 import 'dart:async';
-
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:permission_handler/permission_handler.dart' as permission_handler;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spend_analytics/core/config/app_config.dart';
@@ -74,6 +73,7 @@ class AuthController extends GetxController {
       }
 
       final auth = await googleUser.authentication;
+      await permission_handler.Permission.notification.status;
       await _linkSupabaseUser(googleAuth: auth, googleUser: googleUser);
       if (Get.isRegistered<RealtimeService>()) {
         await Get.find<RealtimeService>().refreshSubscription();
@@ -90,7 +90,7 @@ class AuthController extends GetxController {
       }
 
       await _ensurePrivacyGateAcknowledged(activeUserId);
-      await _requestInitialNotificationsPermission(activeUserId);
+      await permission_handler.Permission.notification.request();
       Get.offAllNamed(AppRoutes.dashboard);
     } catch (error, stack) {
       await _crashlytics.recordError(
@@ -223,22 +223,6 @@ class AuthController extends GetxController {
 
     await prefs.setBool(key, true);
     await _analytics.logEvent('onboarding_privacy_gate_completed');
-  }
-
-  Future<void> _requestInitialNotificationsPermission(String userId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final key = 'notifications_prompted_$userId';
-    if (prefs.getBool(key) ?? false) {
-      return;
-    }
-
-    try {
-      await FirebaseMessaging.instance.requestPermission(alert: true, badge: true, sound: true);
-    } catch (_) {
-      // Best-effort prompt; failure should not block sign-in.
-    } finally {
-      await prefs.setBool(key, true);
-    }
   }
 
   Future<void> signOut({bool clearLocalData = false}) async {

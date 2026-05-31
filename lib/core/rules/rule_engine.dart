@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:spend_analytics/core/firebase/fcm_service.dart';
+import 'package:spend_analytics/core/services/local_notification_service.dart';
 import 'package:spend_analytics/core/local_db/app_database.dart';
 import 'package:spend_analytics/core/routes/app_routes.dart';
 import 'package:spend_analytics/shared/models/transaction_model.dart';
@@ -7,7 +7,7 @@ import 'package:spend_analytics/shared/utils/currency_formatter.dart';
 
 class RuleEngine extends GetxService {
   final AppDatabase _db = Get.find<AppDatabase>();
-  final FcmService _fcm = Get.find<FcmService>();
+  final LocalNotificationService _fcm = Get.find<LocalNotificationService>();
 
   Future<RuleEngine> init() async {
     return this;
@@ -80,12 +80,16 @@ class RuleEngine extends GetxService {
       payload: <String, dynamic>{'category': txn.category},
       source: 'rule',
     );
-    await _fcm.showLocalNotification(
-      title: title,
-      body: body,
-      route: AppRoutes.budgets,
-      payload: <String, dynamic>{'category': txn.category},
-    );
+    try {
+      await _fcm.showLocalNotification(
+        title: title,
+        body: body,
+        route: AppRoutes.budgets,
+        payload: <String, dynamic>{'category': txn.category},
+      );
+    } catch (e) {
+      // Ignore notification errors
+    }
   }
 
   Future<void> _checkDailyLimit(TransactionModel txn, Map<String, dynamic> params) async {
@@ -114,11 +118,15 @@ class RuleEngine extends GetxService {
       payload: <String, dynamic>{},
       source: 'rule',
     );
-    await _fcm.showLocalNotification(
-      title: title,
-      body: body,
-      route: AppRoutes.dashboard,
-      payload: <String, dynamic>{},
-    );
+    try {
+      await _fcm.showLocalNotification(
+        title: title,
+        body: body,
+        route: AppRoutes.dashboard,
+        payload: <String, dynamic>{},
+      );
+    } catch (e) {
+      // Ignore notification errors
+    }
   }
 }

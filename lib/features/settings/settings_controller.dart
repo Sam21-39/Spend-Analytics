@@ -6,8 +6,8 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart'
-    as permission_handler;
+import 'package:permission_handler/permission_handler.dart' as permission_handler;
+import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speech_to_text/speech_to_text.dart';
@@ -16,7 +16,6 @@ import 'package:spend_analytics/core/local_db/app_database.dart';
 import 'package:spend_analytics/core/supabase/supabase_service.dart';
 import 'package:spend_analytics/core/theme/theme_service.dart';
 import 'package:spend_analytics/shared/models/transaction_model.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 
 import 'dart:async';
 
@@ -61,10 +60,7 @@ class SettingsController extends GetxController {
 
   String get profileSubtitle {
     final mode = isGuestMode.value ? 'Guest mode' : 'Signed in';
-    final sync =
-        _supabase.isEnabled && !isGuestMode.value
-            ? 'Cloud sync enabled'
-            : 'Offline mode';
+    final sync = _supabase.isEnabled && !isGuestMode.value ? 'Cloud sync enabled' : 'Offline mode';
     return '$mode · $sync';
   }
 
@@ -90,14 +86,11 @@ class SettingsController extends GetxController {
     return syncSubtitle;
   }
 
-  String get notificationsPermissionLabel =>
-      _permissionLabel(notificationsPermission.value);
+  String get notificationsPermissionLabel => _permissionLabel(notificationsPermission.value);
 
-  String get microphonePermissionLabel =>
-      _permissionLabel(microphonePermission.value);
+  String get microphonePermissionLabel => _permissionLabel(microphonePermission.value);
 
-  String get biometricPermissionLabel =>
-      _permissionLabel(biometricPermission.value);
+  String get biometricPermissionLabel => _permissionLabel(biometricPermission.value);
 
   String get privacyUpdatedLabel {
     final now = DateTime.now();
@@ -121,8 +114,7 @@ class SettingsController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _activeUserId =
-        _supabase.isAuthenticated ? _supabase.currentUserId! : 'guest';
+    _activeUserId = _supabase.isAuthenticated ? _supabase.currentUserId! : 'guest';
     _hydrateProfile();
     unawaited(_loadPrefs());
     _txnSub = _db.watchTransactionsForUser(_activeUserId).listen((rows) {
@@ -159,8 +151,7 @@ class SettingsController extends GetxController {
   }
 
   void _hydrateProfile() {
-    final sessionUser =
-        _supabase.isEnabled ? _supabase.client.auth.currentUser : null;
+    final sessionUser = _supabase.isEnabled ? _supabase.client.auth.currentUser : null;
     if (sessionUser == null) {
       isGuestMode.value = true;
       displayName.value = 'Guest User';
@@ -257,14 +248,8 @@ class SettingsController extends GetxController {
     // 2. Cloud (best-effort — only if authenticated)
     if (_supabase.isEnabled && _supabase.isAuthenticated) {
       try {
-        await _supabase.client
-            .from('transactions')
-            .delete()
-            .eq('user_id', _activeUserId);
-        await _supabase.client
-            .from('budgets')
-            .delete()
-            .eq('user_id', _activeUserId);
+        await _supabase.client.from('transactions').delete().eq('user_id', _activeUserId);
+        await _supabase.client.from('budgets').delete().eq('user_id', _activeUserId);
       } catch (_) {
         // Best-effort: don't block on cloud failure
       }
@@ -289,14 +274,7 @@ class SettingsController extends GetxController {
 
       // Build CSV rows
       final rows = <List<dynamic>>[
-        <String>[
-          'Date',
-          'Type',
-          'Category',
-          'Amount ($currency)',
-          'Payment Mode',
-          'Note',
-        ],
+        <String>['Date', 'Type', 'Category', 'Amount ($currency)', 'Payment Mode', 'Note'],
         ...transactions.map(
           (txn) => <dynamic>[
             dateFmt.format(txn.transactionDate),
@@ -319,10 +297,9 @@ class SettingsController extends GetxController {
       await file.writeAsString(csvString);
 
       // Share via system share sheet
-      await Share.shareXFiles(
-        <XFile>[XFile(file.path, mimeType: 'text/csv')],
-        subject: 'Spend Analytics Export — $fileName',
-      );
+      await Share.shareXFiles(<XFile>[
+        XFile(file.path, mimeType: 'text/csv'),
+      ], subject: 'Spend Analytics Export — $fileName');
     } catch (error) {
       Get.snackbar('Export failed', 'Could not export: $error');
     } finally {
@@ -340,18 +317,10 @@ class SettingsController extends GetxController {
 
   Future<bool> requestNotificationsPermission() async {
     try {
-      final settings = await FirebaseMessaging.instance.requestPermission(
-        alert: true,
-        badge: true,
-        sound: true,
-      );
-      final granted =
-          settings.authorizationStatus == AuthorizationStatus.authorized ||
-          settings.authorizationStatus == AuthorizationStatus.provisional;
+      final status = await permission_handler.Permission.notification.request();
+      final granted = status.isGranted || status.isProvisional;
       notificationsPermission.value =
-          granted
-              ? SettingsPermissionState.granted
-              : SettingsPermissionState.denied;
+          granted ? SettingsPermissionState.granted : SettingsPermissionState.denied;
       return granted;
     } catch (_) {
       notificationsPermission.value = SettingsPermissionState.denied;
@@ -361,15 +330,10 @@ class SettingsController extends GetxController {
 
   Future<bool> requestMicrophonePermission() async {
     try {
-      final available = await _speechToText.initialize(
-        onStatus: (_) {},
-        onError: (_) {},
-      );
+      final available = await _speechToText.initialize(onStatus: (_) {}, onError: (_) {});
       final granted = available && (_speechToText.hasPermission == true);
       microphonePermission.value =
-          granted
-              ? SettingsPermissionState.granted
-              : SettingsPermissionState.denied;
+          granted ? SettingsPermissionState.granted : SettingsPermissionState.denied;
       return granted;
     } catch (_) {
       microphonePermission.value = SettingsPermissionState.denied;
@@ -397,15 +361,10 @@ class SettingsController extends GetxController {
 
       final authed = await _localAuth.authenticate(
         localizedReason: 'Enable biometric lock for Spend Analytics',
-        options: const AuthenticationOptions(
-          biometricOnly: true,
-          stickyAuth: false,
-        ),
+        options: const AuthenticationOptions(biometricOnly: true, stickyAuth: false),
       );
       biometricPermission.value =
-          authed
-              ? SettingsPermissionState.granted
-              : SettingsPermissionState.denied;
+          authed ? SettingsPermissionState.granted : SettingsPermissionState.denied;
       return authed;
     } catch (_) {
       biometricPermission.value = SettingsPermissionState.denied;
@@ -415,19 +374,13 @@ class SettingsController extends GetxController {
 
   Future<void> _refreshNotificationPermission() async {
     try {
-      final settings =
-          await FirebaseMessaging.instance.getNotificationSettings();
-      switch (settings.authorizationStatus) {
-        case AuthorizationStatus.authorized:
-        case AuthorizationStatus.provisional:
-          notificationsPermission.value = SettingsPermissionState.granted;
-          break;
-        case AuthorizationStatus.denied:
-          notificationsPermission.value = SettingsPermissionState.denied;
-          break;
-        case AuthorizationStatus.notDetermined:
-          notificationsPermission.value = SettingsPermissionState.unknown;
-          break;
+      final status = await permission_handler.Permission.notification.status;
+      if (status.isGranted || status.isProvisional) {
+        notificationsPermission.value = SettingsPermissionState.granted;
+      } else if (status.isDenied || status.isPermanentlyDenied) {
+        notificationsPermission.value = SettingsPermissionState.denied;
+      } else {
+        notificationsPermission.value = SettingsPermissionState.unknown;
       }
     } catch (_) {
       notificationsPermission.value = SettingsPermissionState.unknown;
@@ -444,9 +397,7 @@ class SettingsController extends GetxController {
       }
       final enrolled = await _localAuth.getAvailableBiometrics();
       biometricPermission.value =
-          enrolled.isNotEmpty
-              ? SettingsPermissionState.unknown
-              : SettingsPermissionState.denied;
+          enrolled.isNotEmpty ? SettingsPermissionState.unknown : SettingsPermissionState.denied;
     } catch (_) {
       biometricPermission.value = SettingsPermissionState.unknown;
     }
@@ -474,10 +425,7 @@ class SettingsController extends GetxController {
     }
   }
 
-  Future<void> _openAppSettingsWithMessage({
-    required String title,
-    required String message,
-  }) async {
+  Future<void> _openAppSettingsWithMessage({required String title, required String message}) async {
     Get.snackbar(title, message);
     await openSystemAppSettings();
   }

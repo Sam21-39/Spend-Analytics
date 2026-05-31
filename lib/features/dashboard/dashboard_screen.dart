@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:screenx/screenx.dart';
+import 'package:spend_analytics/core/config/app_config.dart';
+import 'package:upgrader/upgrader.dart';
 import 'package:spend_analytics/core/routes/app_routes.dart';
 import 'package:spend_analytics/features/dashboard/dashboard_controller.dart';
 import 'package:spend_analytics/shared/utils/category_visuals.dart';
@@ -20,450 +22,426 @@ class DashboardScreen extends GetView<DashboardController> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
 
-    return LiquidPageScaffold(
-      title: 'Spend Analytics',
-      activeRoute: AppRoutes.dashboard,
-      actions: <Widget>[
-        BarActionButton(
-          icon: Icons.notifications_outlined,
-          onTap: () => Get.toNamed(AppRoutes.notifications),
-        ),
-        const SizedBox(width: 4),
-        BarActionButton(
-          icon: Icons.settings_outlined,
-          onTap: () => Get.toNamed(AppRoutes.settings),
-        ),
-      ],
-      child: Obx(() {
-        if (controller.isLoading.value) {
-          return const _DashboardLoadingSkeleton();
-        }
-        final now = DateTime.now();
-        final txns = controller.transactions;
-        final monthTxns = txns
-            .where(
-              (t) =>
-                  t.transactionDate.month == now.month &&
-                  t.transactionDate.year == now.year,
-            )
-            .toList(growable: false);
-        final spend = monthTxns
-            .where((t) => t.type == 'expense')
-            .fold<double>(0, (sum, t) => sum + t.amount);
-        final income = monthTxns
-            .where((t) => t.type == 'income')
-            .fold<double>(0, (sum, t) => sum + t.amount);
-        final budgetBase = income > 0 ? income : (spend > 0 ? spend : 1);
-        final remaining = (budgetBase - spend);
-        final usage = (spend / budgetBase).clamp(0.0, 1.0);
-        final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
-        final avgPerDay = now.day == 0 ? 0.0 : spend / now.day;
-        final byCategory = <String, double>{};
-        for (final txn in monthTxns.where((t) => t.type == 'expense')) {
-          byCategory.update(
-            txn.category,
-            (value) => value + txn.amount,
-            ifAbsent: () => txn.amount,
-          );
-        }
-        final topCategories = byCategory.entries.toList(growable: false)
-          ..sort((a, b) => b.value.compareTo(a.value));
+    return UpgradeAlert(
+      dialogStyle: UpgradeDialogStyle.cupertino,
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            // ── Guest banner ──────────────────────────────────────
-            if (controller.isGuestMode.value) ...<Widget>[
-              LiquidGlassSurface(
-                padding: EdgeInsets.all(ScreenX.dp(14)),
-                child: Row(
+      upgrader: Upgrader(
+        debugDisplayAlways: false,
+        durationUntilAlertAgain: const Duration(days: 7),
+        minAppVersion: AppConfig.appVersionString,
+      ),
+      child: LiquidPageScaffold(
+        title: 'Spend Analytics',
+        activeRoute: AppRoutes.dashboard,
+        actions: <Widget>[
+          BarActionButton(
+            icon: Icons.notifications_outlined,
+            onTap: () => Get.toNamed(AppRoutes.notifications),
+          ),
+          const SizedBox(width: 4),
+          BarActionButton(
+            icon: Icons.settings_outlined,
+            onTap: () => Get.toNamed(AppRoutes.settings),
+          ),
+        ],
+        child: Obx(() {
+          if (controller.isLoading.value) {
+            return const _DashboardLoadingSkeleton();
+          }
+          final now = DateTime.now();
+          final txns = controller.transactions;
+          final monthTxns = txns
+              .where(
+                (t) => t.transactionDate.month == now.month && t.transactionDate.year == now.year,
+              )
+              .toList(growable: false);
+          final spend = monthTxns
+              .where((t) => t.type == 'expense')
+              .fold<double>(0, (sum, t) => sum + t.amount);
+          final income = monthTxns
+              .where((t) => t.type == 'income')
+              .fold<double>(0, (sum, t) => sum + t.amount);
+          final budgetBase = income > 0 ? income : (spend > 0 ? spend : 1);
+          final remaining = (budgetBase - spend);
+          final usage = (spend / budgetBase).clamp(0.0, 1.0);
+          final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
+          final avgPerDay = now.day == 0 ? 0.0 : spend / now.day;
+          final byCategory = <String, double>{};
+          for (final txn in monthTxns.where((t) => t.type == 'expense')) {
+            byCategory.update(
+              txn.category,
+              (value) => value + txn.amount,
+              ifAbsent: () => txn.amount,
+            );
+          }
+          final topCategories = byCategory.entries.toList(growable: false)
+            ..sort((a, b) => b.value.compareTo(a.value));
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              // ── Guest banner ──────────────────────────────────────
+              if (controller.isGuestMode.value) ...<Widget>[
+                LiquidGlassSurface(
+                  padding: EdgeInsets.all(ScreenX.dp(14)),
+                  child: Row(
+                    children: <Widget>[
+                      IconBox(
+                        icon: Icons.cloud_off_rounded,
+                        color: scheme.error.withValues(alpha: 0.8),
+                        size: ScreenX.dp(36),
+                      ),
+                      SizedBox(width: ScreenX.dp(12)),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              'Guest mode',
+                              style: Theme.of(
+                                context,
+                              ).textTheme.titleSmall?.copyWith(fontSize: ScreenX.sp(13)),
+                            ),
+                            Text(
+                              'Sign in to sync to your other devices.',
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: scheme.onSurfaceVariant,
+                                fontSize: ScreenX.sp(12),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      FilledButton(
+                        onPressed: () => Get.offAllNamed(AppRoutes.login),
+                        style: FilledButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          shape: const StadiumBorder(),
+                          textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                        ),
+                        child: const Text('Sync now'),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+
+              // ── Greeting ─────────────────────────────────────────
+              Padding(
+                padding: EdgeInsets.only(left: ScreenX.dp(4), bottom: ScreenX.dp(8)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    IconBox(
-                      icon: Icons.cloud_off_rounded,
-                      color: scheme.error.withValues(alpha: 0.8),
-                      size: ScreenX.dp(36),
-                    ),
-                    SizedBox(width: ScreenX.dp(12)),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            'Guest mode',
-                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              fontSize: ScreenX.sp(13),
-                            ),
-                          ),
-                          Text(
-                            'Sign in to sync to your other devices.',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: scheme.onSurfaceVariant,
-                              fontSize: ScreenX.sp(12),
-                            ),
-                          ),
-                        ],
+                    Text(
+                      'Dashboard overview',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                        fontSize: ScreenX.sp(13),
                       ),
                     ),
-                    FilledButton(
-                      onPressed: () => Get.offAllNamed(AppRoutes.login),
-                      style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 8,
-                        ),
-                        shape: const StadiumBorder(),
-                        textStyle: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                        ),
+                    SizedBox(height: ScreenX.dp(2)),
+                    Text(
+                      '${_greetingForHour(now.hour)}, ${controller.firstName.value}',
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        color: scheme.onSurface,
+                        fontWeight: FontWeight.w800,
+                        fontSize: ScreenX.sp(26),
                       ),
-                      child: const Text('Sync now'),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
-            ],
 
-            // ── Greeting ─────────────────────────────────────────
-            Padding(
-              padding: EdgeInsets.only(left: ScreenX.dp(4), bottom: ScreenX.dp(8)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    'Dashboard overview',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                      fontSize: ScreenX.sp(13),
-                    ),
-                  ),
-                  SizedBox(height: ScreenX.dp(2)),
-                  Text(
-                    '${_greetingForHour(now.hour)}, ${controller.firstName.value}',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: scheme.onSurface,
-                      fontWeight: FontWeight.w800,
-                      fontSize: ScreenX.sp(26),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // ── Hero balance card ─────────────────────────────────
-            LiquidGlassSurface(
-              padding: EdgeInsets.all(ScreenX.dp(20)),
-              borderRadius: const BorderRadius.all(Radius.circular(24)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            '${_monthLabel(now)} · SPENT',
-                            style: TextStyle(
-                              fontSize: ScreenX.sp(10),
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 1.1,
-                              color: scheme.onSurfaceVariant,
-                            ),
-                          ),
-                          SizedBox(height: ScreenX.dp(6)),
-                          RichText(
-                            text: TextSpan(
-                              children: <TextSpan>[
-                                TextSpan(
-                                  text: formatInr(spend),
-                                  style: TextStyle(
-                                    fontSize: ScreenX.sp(36),
-                                    fontWeight: FontWeight.w800,
-                                    color: scheme.onSurface,
-                                    letterSpacing: -1.2,
-                                    fontFeatures: const <FontFeature>[
-                                      FontFeature.tabularFigures(),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      SAPill(
-                        label: '${monthTxns.length} txns',
-                        color: scheme.primary,
-                        icon: Icons.receipt_long_rounded,
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: ScreenX.dp(16)),
-                  SAProgressBar(value: usage, color: scheme.primary, height: ScreenX.dp(8)),
-                  SizedBox(height: ScreenX.dp(10)),
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      final leadText =
-                          income > 0
-                              ? '${(usage * 100).toStringAsFixed(0)}% of ${formatInr(income)} income'
-                              : 'Track income to compare against spend';
-                      final trailText =
-                          remaining >= 0
-                              ? '${formatInr(remaining)} left'
-                              : '${formatInr(remaining.abs())} over';
-
-                      if (constraints.maxWidth < 330) {
-                        return Column(
+              // ── Hero balance card ─────────────────────────────────
+              LiquidGlassSurface(
+                padding: EdgeInsets.all(ScreenX.dp(20)),
+                borderRadius: const BorderRadius.all(Radius.circular(24)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             Text(
-                              leadText,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(color: scheme.onSurfaceVariant),
+                              '${_monthLabel(now)} · SPENT',
+                              style: TextStyle(
+                                fontSize: ScreenX.sp(10),
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 1.1,
+                                color: scheme.onSurfaceVariant,
+                              ),
                             ),
-                            SizedBox(height: ScreenX.dp(4)),
+                            SizedBox(height: ScreenX.dp(6)),
+                            RichText(
+                              text: TextSpan(
+                                children: <TextSpan>[
+                                  TextSpan(
+                                    text: formatInr(spend),
+                                    style: TextStyle(
+                                      fontSize: ScreenX.sp(36),
+                                      fontWeight: FontWeight.w800,
+                                      color: scheme.onSurface,
+                                      letterSpacing: -1.2,
+                                      fontFeatures: const <FontFeature>[
+                                        FontFeature.tabularFigures(),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        SAPill(
+                          label: '${monthTxns.length} txns',
+                          color: scheme.primary,
+                          icon: Icons.receipt_long_rounded,
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: ScreenX.dp(16)),
+                    SAProgressBar(value: usage, color: scheme.primary, height: ScreenX.dp(8)),
+                    SizedBox(height: ScreenX.dp(10)),
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final leadText =
+                            income > 0
+                                ? '${(usage * 100).toStringAsFixed(0)}% of ${formatInr(income)} income'
+                                : 'Track income to compare against spend';
+                        final trailText =
+                            remaining >= 0
+                                ? '${formatInr(remaining)} left'
+                                : '${formatInr(remaining.abs())} over';
+
+                        if (constraints.maxWidth < 330) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(
+                                leadText,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
+                              ),
+                              SizedBox(height: ScreenX.dp(4)),
+                              Text(
+                                trailText,
+                                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  color: remaining >= 0 ? scheme.tertiary : scheme.error,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          );
+                        }
+
+                        return Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: Text(
+                                leadText,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
+                              ),
+                            ),
+                            SizedBox(width: ScreenX.dp(12)),
                             Text(
                               trailText,
-                              style: Theme.of(
-                                context,
-                              ).textTheme.titleSmall?.copyWith(
-                                color:
-                                    remaining >= 0
-                                        ? scheme.tertiary
-                                        : scheme.error,
+                              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                color: remaining >= 0 ? scheme.tertiary : scheme.error,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
                           ],
                         );
-                      }
+                      },
+                    ),
+                  ],
+                ),
+              ),
 
-                      return Row(
-                        children: <Widget>[
-                          Expanded(
-                            child: Text(
-                              leadText,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(color: scheme.onSurfaceVariant),
-                            ),
+              SizedBox(height: ScreenX.dp(14)),
+
+              // ── Quick stat row ────────────────────────────────────
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final isWide = constraints.maxWidth >= 620;
+                  final incomeCard = _StatCard(
+                    icon: Icons.trending_up_rounded,
+                    color: scheme.tertiary,
+                    label: 'Income',
+                    value: formatInr(income),
+                    sub: _monthLabel(now),
+                  );
+                  final avgCard = _StatCard(
+                    icon: Icons.receipt_long_rounded,
+                    color: scheme.secondary,
+                    label: 'Avg/day',
+                    value: formatInr(avgPerDay),
+                    sub: '${now.day}/$daysInMonth days',
+                  );
+                  if (isWide) {
+                    return Row(
+                      children: <Widget>[
+                        Expanded(child: incomeCard),
+                        SizedBox(width: ScreenX.dp(12)),
+                        Expanded(child: avgCard),
+                      ],
+                    );
+                  }
+                  return Column(
+                    children: <Widget>[incomeCard, SizedBox(height: ScreenX.dp(12)), avgCard],
+                  );
+                },
+              ),
+
+              SizedBox(height: ScreenX.dp(20)),
+
+              // ── Quick add ─────────────────────────────────────────
+              _SectionHeader(title: 'Quick add'),
+              SizedBox(height: ScreenX.dp(10)),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final options = <Widget>[
+                    _QuickAdd(
+                      icon: Icons.edit_note_rounded,
+                      label: 'Manual',
+                      color: scheme.primary,
+                      onTap: () => Get.toNamed(AppRoutes.addTxn),
+                    ),
+                    _QuickAdd(
+                      icon: Icons.mic_rounded,
+                      label: 'Voice (Beta)',
+                      color: scheme.secondary,
+                      onTap: () => Get.toNamed(AppRoutes.voiceReview),
+                    ),
+                    _QuickAdd(
+                      icon: Icons.category_rounded,
+                      label: 'Category',
+                      color: scheme.tertiary,
+                      onTap: () => Get.toNamed(AppRoutes.categories),
+                    ),
+                    _QuickAdd(
+                      icon: Icons.repeat_rounded,
+                      label: 'Recurring (Soon)',
+                      color: const Color(0xFFFFB860),
+                      onTap:
+                          () => Get.snackbar(
+                            'Coming soon',
+                            'Recurring tracking will be available in a future update.',
                           ),
-                          SizedBox(width: ScreenX.dp(12)),
-                          Text(
-                            trailText,
+                    ),
+                  ];
+                  if (constraints.maxWidth < 500) {
+                    return SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      child: Row(
+                        children: options
+                            .map(
+                              (item) => Padding(
+                                padding: EdgeInsets.only(right: ScreenX.dp(10)),
+                                child: item,
+                              ),
+                            )
+                            .toList(growable: false),
+                      ),
+                    );
+                  }
+                  return Wrap(
+                    spacing: ScreenX.dp(10),
+                    runSpacing: ScreenX.dp(10),
+                    children: options,
+                  );
+                },
+              ),
+
+              SizedBox(height: ScreenX.dp(20)),
+
+              // ── Recent transactions ───────────────────────────────
+              _SectionHeader(
+                title: 'Today',
+                action: 'See all',
+                onAction: () => Get.toNamed(AppRoutes.txns),
+              ),
+              SizedBox(height: ScreenX.dp(10)),
+              LiquidGlassSurface(
+                padding: EdgeInsets.symmetric(horizontal: ScreenX.dp(12)),
+                child:
+                    txns.isEmpty
+                        ? Padding(
+                          padding: EdgeInsets.symmetric(vertical: ScreenX.dp(16)),
+                          child: Text(
+                            'No transactions yet. Add one to start tracking.',
                             style: Theme.of(
                               context,
-                            ).textTheme.titleSmall?.copyWith(
-                              color:
-                                  remaining >= 0
-                                      ? scheme.tertiary
-                                      : scheme.error,
-                              fontWeight: FontWeight.w700,
-                            ),
+                            ).textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
                           ),
-                        ],
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-
-            SizedBox(height: ScreenX.dp(14)),
-
-            // ── Quick stat row ────────────────────────────────────
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final isWide = constraints.maxWidth >= 620;
-                final incomeCard = _StatCard(
-                  icon: Icons.trending_up_rounded,
-                  color: scheme.tertiary,
-                  label: 'Income',
-                  value: formatInr(income),
-                  sub: _monthLabel(now),
-                );
-                final avgCard = _StatCard(
-                  icon: Icons.receipt_long_rounded,
-                  color: scheme.secondary,
-                  label: 'Avg/day',
-                  value: formatInr(avgPerDay),
-                  sub: '${now.day}/$daysInMonth days',
-                );
-                if (isWide) {
-                  return Row(
-                    children: <Widget>[
-                      Expanded(child: incomeCard),
-                      SizedBox(width: ScreenX.dp(12)),
-                      Expanded(child: avgCard),
-                    ],
-                  );
-                }
-                return Column(
-                  children: <Widget>[
-                    incomeCard,
-                    SizedBox(height: ScreenX.dp(12)),
-                    avgCard,
-                  ],
-                );
-              },
-            ),
-
-            SizedBox(height: ScreenX.dp(20)),
-
-            // ── Quick add ─────────────────────────────────────────
-            _SectionHeader(title: 'Quick add'),
-            SizedBox(height: ScreenX.dp(10)),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final options = <Widget>[
-                  _QuickAdd(
-                    icon: Icons.edit_note_rounded,
-                    label: 'Manual',
-                    color: scheme.primary,
-                    onTap: () => Get.toNamed(AppRoutes.addTxn),
-                  ),
-                  _QuickAdd(
-                    icon: Icons.mic_rounded,
-                    label: 'Voice (Beta)',
-                    color: scheme.secondary,
-                    onTap: () => Get.toNamed(AppRoutes.voiceReview),
-                  ),
-                  _QuickAdd(
-                    icon: Icons.category_rounded,
-                    label: 'Category',
-                    color: scheme.tertiary,
-                    onTap: () => Get.toNamed(AppRoutes.categories),
-                  ),
-                  _QuickAdd(
-                    icon: Icons.repeat_rounded,
-                    label: 'Recurring (Soon)',
-                    color: const Color(0xFFFFB860),
-                    onTap:
-                        () => Get.snackbar(
-                          'Coming soon',
-                          'Recurring tracking will be available in a future update.',
-                        ),
-                  ),
-                ];
-                if (constraints.maxWidth < 500) {
-                  return SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    child: Row(
-                      children: options
-                          .map(
-                            (item) => Padding(
-                              padding: EdgeInsets.only(right: ScreenX.dp(10)),
-                              child: item,
-                            ),
-                          )
-                          .toList(growable: false),
-                    ),
-                  );
-                }
-                return Wrap(
-                  spacing: ScreenX.dp(10),
-                  runSpacing: ScreenX.dp(10),
-                  children: options,
-                );
-              },
-            ),
-
-            SizedBox(height: ScreenX.dp(20)),
-
-            // ── Recent transactions ───────────────────────────────
-            _SectionHeader(
-              title: 'Today',
-              action: 'See all',
-              onAction: () => Get.toNamed(AppRoutes.txns),
-            ),
-            SizedBox(height: ScreenX.dp(10)),
-            LiquidGlassSurface(
-              padding: EdgeInsets.symmetric(horizontal: ScreenX.dp(12)),
-              child:
-                  txns.isEmpty
-                      ? Padding(
-                        padding: EdgeInsets.symmetric(vertical: ScreenX.dp(16)),
-                        child: Text(
-                          'No transactions yet. Add one to start tracking.',
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(color: scheme.onSurfaceVariant),
-                        ),
-                      )
-                      : Column(
-                        children: List<Widget>.generate(txns.take(4).length, (
-                          i,
-                        ) {
-                          final txn = txns[i];
-                          final isLast = i == txns.take(4).length - 1;
-                          return TxnRow(
-                            data: TransactionRowData(
-                              merchant: txn.category,
-                              category: txn.category,
-                              icon: _iconFor(txn.category),
-                              iconColor: _colorFor(txn.category),
-                              amount: txn.amount,
-                              time: _formatTime(txn.transactionDate),
-                              isIncome: txn.type == 'income',
-                              mode: txn.paymentMode,
-                            ),
-                            showDivider: !isLast,
-                            onTap:
-                                () => Get.toNamed(
-                                  AppRoutes.txnDetail,
-                                  arguments: txn,
-                                ),
-                          );
-                        }),
-                      ),
-            ),
-
-            SizedBox(height: ScreenX.dp(20)),
-
-            // ── Top categories ────────────────────────────────────
-            _SectionHeader(
-              title: 'Top categories',
-              action: 'Manage budgets',
-              onAction: () => Get.toNamed(AppRoutes.budgets),
-            ),
-            SizedBox(height: ScreenX.dp(10)),
-            LiquidGlassSurface(
-              padding: EdgeInsets.all(ScreenX.dp(16)),
-              child:
-                  topCategories.isEmpty
-                      ? Text(
-                        'No category spends yet for this month.',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
-                      )
-                      : Column(
-                        children: List<Widget>.generate(
-                          topCategories.take(3).length,
-                          (i) {
-                            final item = topCategories[i];
-                            final isLast =
-                                i == topCategories.take(3).length - 1;
-                            return Container(
-                              padding: EdgeInsets.symmetric(
-                                vertical: ScreenX.dp(10),
+                        )
+                        : Column(
+                          children: List<Widget>.generate(txns.take(4).length, (i) {
+                            final txn = txns[i];
+                            final isLast = i == txns.take(4).length - 1;
+                            return TxnRow(
+                              data: TransactionRowData(
+                                merchant: txn.category,
+                                category: txn.category,
+                                icon: _iconFor(txn.category),
+                                iconColor: _colorFor(txn.category),
+                                amount: txn.amount,
+                                time: _formatTime(txn.transactionDate),
+                                isIncome: txn.type == 'income',
+                                mode: txn.paymentMode,
                               ),
+                              showDivider: !isLast,
+                              onTap: () => Get.toNamed(AppRoutes.txnDetail, arguments: txn),
+                            );
+                          }),
+                        ),
+              ),
+
+              SizedBox(height: ScreenX.dp(20)),
+
+              // ── Top categories ────────────────────────────────────
+              _SectionHeader(
+                title: 'Top categories',
+                action: 'Manage budgets',
+                onAction: () => Get.toNamed(AppRoutes.budgets),
+              ),
+              SizedBox(height: ScreenX.dp(10)),
+              LiquidGlassSurface(
+                padding: EdgeInsets.all(ScreenX.dp(16)),
+                child:
+                    topCategories.isEmpty
+                        ? Text(
+                          'No category spends yet for this month.',
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
+                        )
+                        : Column(
+                          children: List<Widget>.generate(topCategories.take(3).length, (i) {
+                            final item = topCategories[i];
+                            final isLast = i == topCategories.take(3).length - 1;
+                            return Container(
+                              padding: EdgeInsets.symmetric(vertical: ScreenX.dp(10)),
                               decoration:
                                   isLast
                                       ? null
                                       : BoxDecoration(
                                         border: Border(
                                           bottom: BorderSide(
-                                            color: scheme.outline.withValues(
-                                              alpha: 0.2,
-                                            ),
+                                            color: scheme.outline.withValues(alpha: 0.2),
                                             width: 0.5,
                                           ),
                                         ),
@@ -479,9 +457,7 @@ class DashboardScreen extends GetView<DashboardController> {
                                   Expanded(
                                     child: Text(
                                       item.key,
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.titleSmall?.copyWith(
+                                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
                                         color: scheme.onSurface,
                                         fontWeight: FontWeight.w700,
                                         fontSize: ScreenX.sp(14),
@@ -490,9 +466,7 @@ class DashboardScreen extends GetView<DashboardController> {
                                   ),
                                   Text(
                                     formatInr(item.value),
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.bodyMedium?.copyWith(
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                       color: scheme.onSurfaceVariant,
                                       fontWeight: FontWeight.w700,
                                       fontSize: ScreenX.sp(13),
@@ -501,13 +475,13 @@ class DashboardScreen extends GetView<DashboardController> {
                                 ],
                               ),
                             );
-                          },
+                          }),
                         ),
-                      ),
-            ),
-          ],
-        );
-      }),
+              ),
+            ],
+          );
+        }),
+      ),
     );
   }
 
@@ -588,11 +562,7 @@ class _SectionHeader extends StatelessWidget {
                     color: scheme.primary,
                   ),
                 ),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  size: ScreenX.dp(14),
-                  color: scheme.primary,
-                ),
+                Icon(Icons.chevron_right_rounded, size: ScreenX.dp(14), color: scheme.primary),
               ],
             ),
           ),
@@ -657,9 +627,7 @@ class _StatCard extends StatelessWidget {
           ),
           Text(
             sub,
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: scheme.onSurfaceVariant,
               fontSize: ScreenX.sp(11),
             ),

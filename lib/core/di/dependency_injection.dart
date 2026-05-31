@@ -4,11 +4,11 @@ import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:spend_analytics/core/firebase/analytics_service.dart';
 import 'package:spend_analytics/core/firebase/crashlytics_service.dart';
-import 'package:spend_analytics/core/firebase/fcm_service.dart';
 import 'package:spend_analytics/core/firebase/firebase_bootstrap_service.dart';
 import 'package:spend_analytics/core/local_db/app_database.dart';
 import 'package:spend_analytics/core/rules/rule_engine.dart';
 import 'package:spend_analytics/core/services/biometric_lock_service.dart';
+import 'package:spend_analytics/core/services/local_notification_service.dart';
 import 'package:spend_analytics/core/supabase/realtime_service.dart';
 import 'package:spend_analytics/core/supabase/supabase_service.dart';
 import 'package:spend_analytics/core/sync/sync_manager.dart';
@@ -51,8 +51,12 @@ class DependencyInjection {
   }
 
   static Future<void> _initNonCritical() async {
-    final fcm = Get.put(FcmService(), permanent: true);
-    await _runWithTimeout('fcm', fcm.init, timeout: const Duration(seconds: 4));
+    final localNotification = Get.put(LocalNotificationService(), permanent: true);
+    await _runWithTimeout(
+      'local_notification',
+      localNotification.init,
+      timeout: const Duration(seconds: 4),
+    );
 
     final syncManager = Get.put(SyncManager(), permanent: true);
     await _runWithTimeout(

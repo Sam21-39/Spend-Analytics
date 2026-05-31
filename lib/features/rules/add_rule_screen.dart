@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:spend_analytics/features/rules/rules_controller.dart';
 import 'package:spend_analytics/shared/utils/currency_formatter.dart';
 import 'package:spend_analytics/shared/widgets/icon_box.dart';
 import 'package:spend_analytics/shared/widgets/liquid_glass_surface.dart';
@@ -65,20 +66,13 @@ class _AddRuleScreenState extends State<AddRuleScreen> {
       title: 'New rule',
       showBottomNav: false,
       onBack: () => Get.back<void>(),
-      actions: <Widget>[
-        BarActionButton(
-          icon: Icons.close_rounded,
-          onTap: () => Get.back<void>(),
-        ),
-      ],
+      actions: <Widget>[BarActionButton(icon: Icons.close_rounded, onTap: () => Get.back<void>())],
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           Text(
             'Pick what should trigger a nudge. You can tune it after.',
-            style: Theme.of(
-              context,
-            ).textTheme.bodyLarge?.copyWith(color: scheme.onSurfaceVariant),
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: scheme.onSurfaceVariant),
           ),
           const SizedBox(height: 16),
 
@@ -94,10 +88,7 @@ class _AddRuleScreenState extends State<AddRuleScreen> {
                   duration: const Duration(milliseconds: 160),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
-                    border:
-                        isActive
-                            ? Border.all(color: scheme.primary, width: 1.5)
-                            : null,
+                    border: isActive ? Border.all(color: scheme.primary, width: 1.5) : null,
                     boxShadow:
                         isActive
                             ? <BoxShadow>[
@@ -113,12 +104,7 @@ class _AddRuleScreenState extends State<AddRuleScreen> {
                     padding: const EdgeInsets.all(16),
                     child: Row(
                       children: <Widget>[
-                        IconBox(
-                          icon: type.icon,
-                          color: color,
-                          size: 42,
-                          radius: 12,
-                        ),
+                        IconBox(icon: type.icon, color: color, size: 42, radius: 12),
                         const SizedBox(width: 14),
                         Expanded(
                           child: Column(
@@ -126,9 +112,7 @@ class _AddRuleScreenState extends State<AddRuleScreen> {
                             children: <Widget>[
                               Text(
                                 type.name,
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.titleSmall?.copyWith(
+                                style: Theme.of(context).textTheme.titleSmall?.copyWith(
                                   color: scheme.onSurface,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -136,8 +120,9 @@ class _AddRuleScreenState extends State<AddRuleScreen> {
                               const SizedBox(height: 2),
                               Text(
                                 type.body,
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(color: scheme.onSurfaceVariant),
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
                               ),
                             ],
                           ),
@@ -166,13 +151,26 @@ class _AddRuleScreenState extends State<AddRuleScreen> {
           const SizedBox(height: 8),
 
           FilledButton(
-            onPressed: () => Get.back<void>(),
+            onPressed: () async {
+              final ruleType = _types[_selected].id;
+              final params = <String, dynamic>{};
+              if (ruleType == 'budget_threshold') params['threshold_pct'] = 0.8;
+              if (ruleType == 'daily_limit') params['limit_amount'] = 1500.0;
+
+              if (!Get.isRegistered<RulesController>()) {
+                Get.put(RulesController());
+              }
+              await Get.find<RulesController>().saveRule(ruleType, params);
+
+              Get.back<void>();
+              Get.snackbar('Rule added', 'Your nudge rule has been activated.');
+            },
             style: FilledButton.styleFrom(
               minimumSize: const Size.fromHeight(54),
               shape: const StadiumBorder(),
             ),
             child: const Text(
-              'Configure rule',
+              'Save rule',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
             ),
           ),
@@ -183,12 +181,7 @@ class _AddRuleScreenState extends State<AddRuleScreen> {
 }
 
 class _RuleType {
-  const _RuleType({
-    required this.id,
-    required this.icon,
-    required this.name,
-    required this.body,
-  });
+  const _RuleType({required this.id, required this.icon, required this.name, required this.body});
   final String id;
   final IconData icon;
   final String name;
