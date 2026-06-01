@@ -177,21 +177,15 @@ class DashboardScreen extends GetView<DashboardController> {
                               ),
                             ),
                             SizedBox(height: ScreenX.dp(6)),
-                            RichText(
-                              text: TextSpan(
-                                children: <TextSpan>[
-                                  TextSpan(
-                                    text: formatInr(spend),
-                                    style: TextStyle(
-                                      fontSize: ScreenX.sp(36),
-                                      fontWeight: FontWeight.w800,
-                                      color: scheme.onSurface,
-                                      letterSpacing: -1.2,
-                                      fontFeatures: const <FontFeature>[
-                                        FontFeature.tabularFigures(),
-                                      ],
-                                    ),
-                                  ),
+                            Text(
+                              formatInr(spend),
+                              style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                                fontSize: ScreenX.sp(36),
+                                fontWeight: FontWeight.w800,
+                                color: scheme.onSurface,
+                                letterSpacing: -1.2,
+                                fontFeatures: const <FontFeature>[
+                                  FontFeature.tabularFigures(),
                                 ],
                               ),
                             ),
