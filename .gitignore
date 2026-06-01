@@ -1,3 +1,72 @@
-
+# OS / Editor
 .DS_Store
+*.swp
+*.swo
+.idea/
+*.iml
+.vscode/
+.atom/
+.buildlog/
+.history/
+.svn/
+
+# Build / Tooling
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub/
+.pub-cache/
+build/
+**/doc/api/
+**/ios/Flutter/.last_build_id
+lib/generated_plugin_registrant.dart
+
+# Logs / Symbols
+*.log
+app.*.symbols
+app.*.map.json
+
+# Local env / secrets
+.env
+.env.*
+assets/env/.env.*
+!.env.example
+!.env.*.example
+!assets/env/*.example
+!env.secrets.example
+!.env.secrets.*.example
+
+# Platform local secrets
 **/key.properties
+firebase/**/google-services.json
+firebase/**/GoogleService-Info.plist
+
+# Project-local metadata
+.fvm/
+skills-lock.json
+.agents/
+
+# Flutter test fixture exception
+!/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
+windows/
+web/
+macos/
+linux/
+
+
+#android 
+android/app/caches/
+android/caches/
+android/wrapper/
+android/native/
+android/daemon/
+android/.tmp/
+
+# Android signing secrets
+*.jks
+*.keystore
+android/key.properties
+android/app/keys/
+upload_certificate.pem
+secrets.g.dart
