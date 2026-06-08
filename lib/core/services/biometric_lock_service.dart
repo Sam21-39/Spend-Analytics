@@ -41,10 +41,7 @@ class BiometricLockService extends GetxService {
     try {
       final result = await _localAuth.authenticate(
         localizedReason: 'Unlock Spend Analytics',
-        options: const AuthenticationOptions(
-          biometricOnly: false,
-          stickyAuth: true,
-        ),
+        persistAcrossBackgrounding: true,
       );
       if (result) {
         recordAuthSuccess();

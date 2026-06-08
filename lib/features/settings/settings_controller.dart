@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:csv/csv.dart';
+import 'package:csv/csv.dart' show CsvEncoder;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -287,7 +287,7 @@ class SettingsController extends GetxController {
         ),
       ];
 
-      final csvString = const ListToCsvConverter().convert(rows);
+      final csvString = const CsvEncoder().convert(rows);
 
       // Write to a temp file
       final tempDir = await getTemporaryDirectory();
@@ -297,9 +297,12 @@ class SettingsController extends GetxController {
       await file.writeAsString(csvString);
 
       // Share via system share sheet
-      await Share.shareXFiles(<XFile>[
-        XFile(file.path, mimeType: 'text/csv'),
-      ], subject: 'Spend Analytics Export — $fileName');
+      await SharePlus.instance.share(
+        ShareParams(
+          files: <XFile>[XFile(file.path, mimeType: 'text/csv')],
+          subject: 'Spend Analytics Export — $fileName',
+        ),
+      );
     } catch (error) {
       Get.snackbar('Export failed', 'Could not export: $error');
     } finally {
@@ -361,7 +364,7 @@ class SettingsController extends GetxController {
 
       final authed = await _localAuth.authenticate(
         localizedReason: 'Enable biometric lock for Spend Analytics',
-        options: const AuthenticationOptions(biometricOnly: true, stickyAuth: false),
+        biometricOnly: true,
       );
       biometricPermission.value =
           authed ? SettingsPermissionState.granted : SettingsPermissionState.denied;

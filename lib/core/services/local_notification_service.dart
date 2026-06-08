@@ -8,7 +8,7 @@ class LocalNotificationService extends GetxService {
 
   Future<LocalNotificationService> init() async {
     await _localNotifications.initialize(
-      const InitializationSettings(
+      settings: const InitializationSettings(
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
         iOS: DarwinInitializationSettings(),
       ),
@@ -29,10 +29,10 @@ class LocalNotificationService extends GetxService {
     }
 
     await _localNotifications.show(
-      DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      title,
-      body,
-      const NotificationDetails(
+      id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      title: title,
+      body: body,
+      notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
           'spendsense_alerts',
           'Spend Analytics Alerts',

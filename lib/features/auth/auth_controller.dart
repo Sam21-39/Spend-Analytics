@@ -21,13 +21,9 @@ class AuthController extends GetxController {
   final AnalyticsService _analytics = Get.find<AnalyticsService>();
   final CrashlyticsService _crashlytics = Get.find<CrashlyticsService>();
   final AppDatabase _db = Get.find<AppDatabase>();
-  late final GoogleSignIn _googleSignIn =
-      AppConfig.googleWebClientId.isEmpty
-          ? GoogleSignIn()
-          : GoogleSignIn(
-            serverClientId: AppConfig.googleWebClientId,
-            scopes: const <String>['email', 'profile'],
-          );
+  // google_sign_in 7.x uses a singleton with an explicit initialize() call.
+  // Phase 6 will replace this entire flow with FirebaseAuth.signInWithCredential.
+  GoogleSignIn get _googleSignIn => GoogleSignIn.instance;
 
   final isLoggedIn = false.obs;
   final isLoading = false.obs;
@@ -38,6 +34,14 @@ class AuthController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    // Initialize GoogleSignIn singleton. Must be called exactly once.
+    unawaited(
+      GoogleSignIn.instance.initialize(
+        serverClientId: AppConfig.googleWebClientId.isEmpty
+            ? null
+            : AppConfig.googleWebClientId,
+      ),
+    );
     if (_supabase.isEnabled) {
       _authSub = _supabase.client.auth.onAuthStateChange.listen((state) {
         isLoggedIn.value = state.session != null;
@@ -67,10 +71,9 @@ class AuthController extends GetxController {
         );
       }
 
-      final googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) {
-        return;
-      }
+      // google_sign_in 7.x: authenticate() is the interactive sign-in method.
+      // It throws on cancellation/failure rather than returning null.
+      final googleUser = await _googleSignIn.authenticate();
 
       final auth = await googleUser.authentication;
       await permission_handler.Permission.notification.status;
@@ -143,10 +146,11 @@ class AuthController extends GetxController {
       );
     }
 
+    // google_sign_in 7.x no longer exposes accessToken on GoogleSignInAuthentication.
+    // Supabase accepts idToken-only for Google sign-in.
     final authResponse = await _supabase.client.auth.signInWithIdToken(
       provider: OAuthProvider.google,
       idToken: idToken,
-      accessToken: googleAuth.accessToken,
     );
 
     final supabaseUser = authResponse.user ?? _supabase.client.auth.currentUser;
