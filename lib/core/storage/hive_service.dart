@@ -7,9 +7,20 @@ import 'package:hive_ce_flutter/hive_flutter.dart';
 
 import '../constants/app_constants.dart';
 import '../constants/hive_box_names.dart';
-
-// Hive box type imports — added as each model is generated in Phase 1.
-// Placeholder comments mark where adapters are registered.
+import '../enums/budget_period.dart';
+import '../enums/expense_type.dart';
+import '../enums/payment_type.dart';
+import '../enums/recurring_frequency.dart';
+import '../enums/rule_type.dart';
+import '../enums/subscription_tier.dart';
+import '../sync/models/sync_operation_model.dart';
+import '../../features/budget/data/models/budget_model.dart';
+import '../../features/categories/data/models/category_model.dart';
+import '../../features/expense/data/models/expense_model.dart';
+import '../../features/notifications/data/models/notification_event_model.dart';
+import '../../features/recurring/data/models/recurring_model.dart';
+import '../../features/rules/data/models/rule_model.dart';
+import '../../features/settings/data/models/settings_model.dart';
 
 class HiveService {
   HiveService._();
@@ -104,27 +115,23 @@ class HiveService {
   // ---------------------------------------------------------------------------
 
   void _registerAdapters() {
-    // TypeIds 0–7 (models) and 100–105 (enums) are registered here as each
-    // model class is generated in Phase 1. Stubs are commented out below and
-    // will be uncommented as corresponding model files are added.
-    //
-    // Phase 1 models (uncomment as generated):
-    // Hive.registerAdapter(ExpenseModelAdapter());       // TypeId 0
-    // Hive.registerAdapter(BudgetModelAdapter());        // TypeId 1
-    // Hive.registerAdapter(RuleModelAdapter());          // TypeId 2
-    // Hive.registerAdapter(RecurringModelAdapter());     // TypeId 3
-    // Hive.registerAdapter(CategoryModelAdapter());      // TypeId 4
-    // Hive.registerAdapter(NotificationEventModelAdapter()); // TypeId 5
-    // Hive.registerAdapter(SettingsModelAdapter());      // TypeId 6
-    // Hive.registerAdapter(SyncOperationModelAdapter()); // TypeId 7
-    //
-    // Phase 1 enums (uncomment as generated):
-    // Hive.registerAdapter(PaymentTypeAdapter());        // TypeId 100
-    // Hive.registerAdapter(ExpenseTypeAdapter());        // TypeId 101
-    // Hive.registerAdapter(BudgetPeriodAdapter());       // TypeId 102
-    // Hive.registerAdapter(RuleTypeAdapter());           // TypeId 103
-    // Hive.registerAdapter(RecurringFrequencyAdapter()); // TypeId 104
-    // Hive.registerAdapter(SubscriptionTierAdapter());   // TypeId 105
+    // Models — TypeIds 0–7
+    Hive.registerAdapter(ExpenseModelAdapter());
+    Hive.registerAdapter(BudgetModelAdapter());
+    Hive.registerAdapter(RuleModelAdapter());
+    Hive.registerAdapter(RecurringModelAdapter());
+    Hive.registerAdapter(CategoryModelAdapter());
+    Hive.registerAdapter(NotificationEventModelAdapter());
+    Hive.registerAdapter(SettingsModelAdapter());
+    Hive.registerAdapter(SyncOperationModelAdapter());
+
+    // Enums — TypeIds 100–105
+    Hive.registerAdapter(PaymentTypeAdapter());
+    Hive.registerAdapter(ExpenseTypeAdapter());
+    Hive.registerAdapter(BudgetPeriodAdapter());
+    Hive.registerAdapter(RuleTypeAdapter());
+    Hive.registerAdapter(RecurringFrequencyAdapter());
+    Hive.registerAdapter(SubscriptionTierAdapter());
   }
 
   // ---------------------------------------------------------------------------
@@ -134,51 +141,77 @@ class HiveService {
   Future<void> _openBoxes(HiveAesCipher cipher) async {
     // Settings box opens first — needed by DataMigrationService and feature
     // flag checks before other boxes are ready.
-    await Hive.openBox<dynamic>(
+    await Hive.openBox<SettingsModel>(
       HiveBoxNames.settings,
       encryptionCipher: cipher,
     );
 
     // All remaining boxes open in parallel.
     await Future.wait([
-      Hive.openBox<dynamic>(HiveBoxNames.expenses, encryptionCipher: cipher),
-      Hive.openBox<dynamic>(HiveBoxNames.budgets, encryptionCipher: cipher),
-      Hive.openBox<dynamic>(HiveBoxNames.rules, encryptionCipher: cipher),
-      Hive.openBox<dynamic>(HiveBoxNames.recurring, encryptionCipher: cipher),
-      Hive.openBox<dynamic>(HiveBoxNames.categories, encryptionCipher: cipher),
-      Hive.openBox<dynamic>(
+      Hive.openBox<ExpenseModel>(
+        HiveBoxNames.expenses,
+        encryptionCipher: cipher,
+      ),
+      Hive.openBox<BudgetModel>(
+        HiveBoxNames.budgets,
+        encryptionCipher: cipher,
+      ),
+      Hive.openBox<RuleModel>(HiveBoxNames.rules, encryptionCipher: cipher),
+      Hive.openBox<RecurringModel>(
+        HiveBoxNames.recurring,
+        encryptionCipher: cipher,
+      ),
+      Hive.openBox<CategoryModel>(
+        HiveBoxNames.categories,
+        encryptionCipher: cipher,
+      ),
+      Hive.openBox<NotificationEventModel>(
         HiveBoxNames.notificationEvents,
         encryptionCipher: cipher,
       ),
-      Hive.openBox<dynamic>(HiveBoxNames.syncQueue, encryptionCipher: cipher),
+      Hive.openBox<SyncOperationModel>(
+        HiveBoxNames.syncQueue,
+        encryptionCipher: cipher,
+      ),
     ]);
   }
 
   // ---------------------------------------------------------------------------
   // Typed box accessors
-  // Phase 1: replace Box<dynamic> with the concrete typed Box<*Model> once
-  // models and adapters are registered above.
   // ---------------------------------------------------------------------------
 
-  Box<dynamic> get settingsBox => Hive.box(HiveBoxNames.settings);
-  Box<dynamic> get expensesBox => Hive.box(HiveBoxNames.expenses);
-  Box<dynamic> get budgetsBox => Hive.box(HiveBoxNames.budgets);
-  Box<dynamic> get rulesBox => Hive.box(HiveBoxNames.rules);
-  Box<dynamic> get recurringBox => Hive.box(HiveBoxNames.recurring);
-  Box<dynamic> get categoriesBox => Hive.box(HiveBoxNames.categories);
-  Box<dynamic> get notificationEventsBox =>
-      Hive.box(HiveBoxNames.notificationEvents);
-  Box<dynamic> get syncQueueBox => Hive.box(HiveBoxNames.syncQueue);
+  Box<SettingsModel> get settingsBox =>
+      Hive.box<SettingsModel>(HiveBoxNames.settings);
+  Box<ExpenseModel> get expensesBox =>
+      Hive.box<ExpenseModel>(HiveBoxNames.expenses);
+  Box<BudgetModel> get budgetsBox =>
+      Hive.box<BudgetModel>(HiveBoxNames.budgets);
+  Box<RuleModel> get rulesBox => Hive.box<RuleModel>(HiveBoxNames.rules);
+  Box<RecurringModel> get recurringBox =>
+      Hive.box<RecurringModel>(HiveBoxNames.recurring);
+  Box<CategoryModel> get categoriesBox =>
+      Hive.box<CategoryModel>(HiveBoxNames.categories);
+  Box<NotificationEventModel> get notificationEventsBox =>
+      Hive.box<NotificationEventModel>(HiveBoxNames.notificationEvents);
+  Box<SyncOperationModel> get syncQueueBox =>
+      Hive.box<SyncOperationModel>(HiveBoxNames.syncQueue);
 
   // ---------------------------------------------------------------------------
   // Schema version helpers (used by DataMigrationService)
   // ---------------------------------------------------------------------------
 
-  int? get storedSchemaVersion =>
-      settingsBox.get(AppConstants.hiveSchemaVersionKey) as int?;
+  int? get storedSchemaVersion {
+    try {
+      final raw = Hive.box(HiveBoxNames.settings)
+          .get(AppConstants.hiveSchemaVersionKey);
+      return raw as int?;
+    } catch (_) {
+      return null;
+    }
+  }
 
   Future<void> markSchemaMigrated() async {
-    await settingsBox.put(
+    await Hive.box(HiveBoxNames.settings).put(
       AppConstants.hiveSchemaVersionKey,
       AppConstants.hiveSchemaVersion,
     );
